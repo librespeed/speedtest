@@ -180,6 +180,12 @@
     </head>
     <body>
         <h1>Speed Test</h1>
+        <script>
+	        function getIP(json) {
+                document.write("<h3>IP address: " + json.ip + "</h3>");
+            }
+        </script>
+        <script src="getIP.php"></script>
         <div id="testArea">
             <div class="meter" id="ggdl"></div>
             <div class="meter" id="ggul"></div>
