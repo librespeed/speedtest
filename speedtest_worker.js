@@ -155,7 +155,7 @@ function dlTest(done){
 					return reader.read().then(function(result){
 						if(result.done) testStream(i); else{
 							totLoaded+=result.value.length;
-							if(xhr[i].canelRequested) reader.cancel();
+							if(xhr[i].cancelRequested) reader.cancel();
 						}
 					  return consume();
 					}.bind(this));
