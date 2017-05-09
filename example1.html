@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Speedtest</title>
+    <title>Speedtest</title>
 </head>
+
 <body>
-<h1>Speedtest</h1>
-<h4>IP Address</h4>
-<div id="ip"></div>
-<h4>Download</h4>
-<div id="download"></div>
-<h4>Upload</h4>
-<div id="upload"></div>
-<h4>Latency</h4>
-<div id="ping"></div>
-<script type="text/javascript">
-	var w=new Worker("speedtest_worker.min.js"); //create new worker
-	setInterval(function(){w.postMessage("status");}.bind(this),100); //ask for status every 100ms
-	w.onmessage=function(event){ //when status is received, split the string and put the values in the appropriate fields
-		var data=event.data.split(";"); //string format: status;download;upload;ping (speeds are in mbit/s) (status: 0=not started, 1=downloading, 2=uploading, 3=ping, 4=done, 5=aborted)
-		document.getElementById("download").innerHTML=data[1]+" Mbit/s";
-		document.getElementById("upload").innerHTML=data[2]+" Mbit/s";
-		document.getElementById("ping").innerHTML=data[3]+" ms, "+data[5]+" ms jitter";
-		document.getElementById("ip").innerHTML=data[4];
-	}
-	w.postMessage("start"); //start the speedtest (default params. keep garbage.php and empty.dat in the same directory as the js file)
-</script>
+    <h1>Speedtest</h1>
+
+    <h4>IP Address</h4>
+    <p id="ip"></p>
+
+    <h4>Download</h4>
+    <p id="download"></p>
+
+    <h4>Upload</h4>
+    <p id="upload"></p>
+
+    <h4>Latency</h4>
+    <p id="ping"></p>
+
+    <script type="text/javascript">
+        var w = new Worker('speedtest_worker.min.js') // create new worker
+        setInterval(function () { w.postMessage('status') }, 100) // ask for status every 100ms
+        w.onmessage = function (event) { // when status is received, split the string and put the values in the appropriate fields
+            var data = event.data.split(';') // string format: status;download;upload;ping (speeds are in mbit/s) (status: 0=not started, 1=downloading, 2=uploading, 3=ping, 4=done, 5=aborted)
+            document.getElementById('download').textContent = data[1] + ' Mbit/s'
+            document.getElementById('upload').textContent = data[2] + ' Mbit/s'
+            document.getElementById('ping').textContent = data[3] + ' ms, ' + data[5] + ' ms jitter'
+            document.getElementById('ip').textContent = data[4]
+        }
+        w.postMessage('start') // start the speedtest (default params. keep garbage.php and empty.dat in the same directory as the js file)
+    </script>
 </body>
 </html>

@@ -1,196 +1,197 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Speedtest</title>
-        <style type="text/css">
+<head>
+    <title>Speedtest</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            border: none;
+            text-align: center;
+            font-family: 'Open Sans';
+        }
 
-            html,body{
-                margin:0;
-                padding:0;
-                border:none;
-                text-align:center;
-                font-family: 'Open Sans';
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+        }
+
+        div.meter {
+            display: inline-block;
+            height: 300px;
+            width: 400px;
+            text-align: center;
+            font-size: 6vw;
+        }
+
+        div#testArea {
+            display: flex;
+            justify-content: center;
+            flex-flow: row wrap;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .button {
+            display: inline-block;
+            margin: 10px 5px 0 2px;
+            padding: 16px 40px;
+            border-radius: 5px;
+            font-size: 18px;
+            border: none;
+            background: #34aadc;
+            color: white;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-family: 'Roboto';
+        }
+
+        #ip {
+            margin: 1em 0;
+            font-size: 1.2em;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.2.2/justgage.min.js"></script>
+    <script type="text/javascript">
+        var w = null
+        var ggdl, ggul, ggping
+        function runTest() {
+            w = new Worker('speedtest_worker.min.js')
+            var interval = setInterval(function () { w.postMessage('status') }, 100)
+            document.getElementById('abortBtn').style.display = ''
+            document.getElementById('startBtn').style.display = 'none'
+            w.onmessage = function (event) {
+                var data = event.data.split(';')
+                var status = Number(data[0])
+                if (status >= 4) {
+                    clearInterval(interval)
+                    document.getElementById('abortBtn').style.display = 'none'
+                    document.getElementById('startBtn').style.display = ''
+                    w = null
+                }
+                updateGauge(ggdl, data[1])
+                updateGauge(ggul, data[2])
+                updateGauge(ggping, data[3])
+                document.getElementById('ip').textContent = 'Your IP: ' + data[4]
+                updateGauge(ggjitter, data[5])
             }
+            w.postMessage('start {"time_ul": "10", "time_dl": "10", "count_ping": "50", "url_dl": "garbage.php", "url_ul": "empty.dat", "url_ping": "empty.dat", "url_getIp": "getIP.php"}')
+        }
+        function abortTest() {
+            if (w) w.postMessage('abort')
+        }
 
-            h1,h2,h3,h4,h5,h6
-            {
-                font-family: 'Roboto', sans-serif;
-                font-weight: 700;
-            }
+        document.addEventListener('DOMContentLoaded', function (event) {
+            ggdl = new JustGage({
+                id: 'ggdl',
+                title: 'Download',
+                label: 'Mbit/s',
+                titleFontFamily: 'Open Sans',
+                valueFontFamily: 'Open Sans',
+                refreshAnimationTime: 300,
+                value: 0,
+                min: 0,
+                max: 10,
+                decimals: 2,
+                formatNumber: true,
+                humanFriendly: false,
+                levelColors: [
+                    '#999999',
+                    '#339933'
+                ]
+            })
 
-            div.meter{
-                display:inline-block;
-                height:300px;
-                width:400px;
-                text-align: center;
-                font-size:6vw;
-            }
+            ggul = new JustGage({
+                id: 'ggul',
+                title: 'Upload',
+                label: 'Mbit/s',
+                titleFontFamily: 'Open Sans',
+                valueFontFamily: 'Open Sans',
+                refreshAnimationTime: 300,
+                value: 0,
+                min: 0,
+                max: 10,
+                decimals: 2,
+                formatNumber: true,
+                humanFriendly: false,
+                levelColors: [
+                    '#999999',
+                    '#333399'
+                ]
 
-            div#testArea
-            {
-                display: flex; 
-                justify-content: center;
-                flex-flow: row wrap;
-            }
+            })
 
+            ggping = new JustGage({
+                id: 'ggping',
+                title: 'Ping',
+                label: 'ms',
+                titleFontFamily: 'Open Sans',
+                valueFontFamily: 'Open Sans',
+                refreshAnimationTime: 300,
+                value: 0,
+                min: 0,
+                max: 100,
+                decimals: 2,
+                formatNumber: true,
+                humanFriendly: false,
+                levelColors: [
+                    '#999999',
+                    '#993333'
+                ]
+            })
+            ggjitter = new JustGage({
+                id: 'ggjitter',
+                title: 'Jitter',
+                label: 'ms',
+                titleFontFamily: 'Open Sans',
+                valueFontFamily: 'Open Sans',
+                refreshAnimationTime: 300,
+                value: 0,
+                min: 0,
+                max: 100,
+                decimals: 2,
+                formatNumber: true,
+                humanFriendly: false,
+                levelColors: [
+                    '#999999',
+                    '#993333'
+                ]
+            })
+        })
 
-            a {
-                text-decoration: none;
-            }
+        function updateGauge(gauge, value) {
+            // Alway use next power of 2 as maximum
+            var max = Math.max(Math.pow(2, Math.ceil(Math.log2(value))), gauge.config.max)
+            // Refresh the gauge
+            gauge.refresh(value, max)
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700|Roboto:400,500,700" rel="stylesheet">
+</head>
 
-            .button {
-                display: inline-block;
-                margin: 10px 5px 0 2px;
-                padding: 16px 40px;
-                border-radius: 5px;
-                font-size: 18px;
-                border: none;
-                background: #34aadc;
-                color: white;
-                cursor: pointer;
-                text-transform: uppercase;
-                font-weight: 700;
-                font-family: 'Roboto';
-            }    
-			
-			#ip{
-				margin:1em 0;
-				font-size:1.2em;
-			}
-
-        </style>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.2.2/justgage.min.js"></script>
-        <script type="text/javascript">
-            var w=null;
-            var ggdl,ggul,ggping;
-            function runTest(){
-                w=new Worker("speedtest_worker.min.js");
-                var interval=setInterval(function(){w.postMessage("status");}.bind(this),100);
-                document.getElementById("abortBtn").style.display="";
-                document.getElementById("startBtn").style.display="none";
-                w.onmessage=function(event){
-                    var data=event.data.split(";");
-                    var status=Number(data[0]);
-                    if(status>=4){
-                        clearInterval(interval);
-                        document.getElementById("abortBtn").style.display="none";
-                        document.getElementById("startBtn").style.display="";
-                        w=null;
-                    }
-                    updateGauge(ggdl,   data[1]);
-                    updateGauge(ggul,   data[2]);
-                    updateGauge(ggping, data[3]);
-					document.getElementById("ip").innerHTML="Your IP: "+data[4];
-					updateGauge(ggjitter, data[5]);
-                }.bind(this);
-                w.postMessage('start {"time_ul":"10", "time_dl":"10", "count_ping":"50", "url_dl":"garbage.php","url_ul":"empty.dat","url_ping":"empty.dat","url_getIp":"getIP.php"}');
-            }
-            function abortTest(){
-                if(w)w.postMessage("abort");
-            }
-
-            document.addEventListener("DOMContentLoaded", function(event) {
-                ggdl = new JustGage({
-                    id: 'ggdl',
-                    title: "Download",
-                    label: "Mbit/s",
-                    titleFontFamily : "Open Sans",
-                    valueFontFamily : "Open Sans",                    
-                    refreshAnimationTime: 300,                    
-                    value: 0,
-                    min: 0,
-                    max: 10,
-                    decimals : 2,
-                    formatNumber: true,                    
-                    humanFriendly : false,  
-                    levelColors: [
-                        "#999999",
-                        "#339933"
-                    ]
-                });
-
-                ggul = new JustGage({
-                    id: 'ggul',
-                    title: "Upload",
-                    label: "Mbit/s",
-                    titleFontFamily : "Open Sans",
-                    valueFontFamily : "Open Sans",
-                    refreshAnimationTime: 300, 
-                    value: 0,
-                    min: 0,
-                    max: 10,
-                    decimals : 2,
-                    formatNumber: true,                    
-                    humanFriendly : false,  
-                    levelColors: [
-                        "#999999",
-                        "#333399"
-                    ]
-
-                });
-
-                ggping = new JustGage({
-                    id: 'ggping',
-                    title: "Ping",
-                    label: "ms",
-                    titleFontFamily : "Open Sans",
-                    valueFontFamily : "Open Sans",
-                    refreshAnimationTime: 300, 
-                    value: 0,
-                    min: 0,
-                    max: 100,
-                    decimals : 2,
-                    formatNumber: true,                    
-                    humanFriendly : false,  
-                    levelColors: [
-                        "#999999",
-                        "#993333"
-                    ]
-                });
-				ggjitter = new JustGage({
-                    id: 'ggjitter',
-                    title: "Jitter",
-                    label: "ms",
-                    titleFontFamily : "Open Sans",
-                    valueFontFamily : "Open Sans",
-                    refreshAnimationTime: 300, 
-                    value: 0,
-                    min: 0,
-                    max: 100,
-                    decimals : 2,
-                    formatNumber: true,                    
-                    humanFriendly : false,  
-                    levelColors: [
-                        "#999999",
-                        "#993333"
-                    ]
-                });
-            });
-
-            function updateGauge(gauge, value)
-            {
-                // Alway use next power of 2 as maximum
-                var max = Math.max(Math.pow(2, Math.ceil(Math.log2(value))), gauge.config.max);
-                // Refresh the gauge
-                gauge.refresh(value, max);
-            }
-        </script>        
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,700|Roboto:400,500,700" rel="stylesheet">
-    </head>
-    <body>
-        <h1>Speed Test</h1>
-        <div id="testArea">
-            <div class="meter" id="ggdl"></div>
-            <div class="meter" id="ggul"></div>
-            <div class="meter" id="ggping"></div>
-			<div class="meter" id="ggjitter"></div>
-        </div>
-		<div id="ip"></div>
-        <div>
-            <a href="javascript:runTest()"   id="startBtn" class="button">Start</a>
-            <a href="javascript:abortTest()" id="abortBtn" class="button" style="display:none;">Abort</a>
-        </div>
-        <p>Fonts: <a href="https://fonts.google.com/">Google Gonts</a> | Gauges: <a href="http://justgage.com/">justgage.com</a></p>
-    </body>
+<body>
+    <h1>Speed Test</h1>
+    <div id="testArea">
+        <div class="meter" id="ggdl"></div>
+        <div class="meter" id="ggul"></div>
+        <div class="meter" id="ggping"></div>
+        <div class="meter" id="ggjitter"></div>
+    </div>
+    <div id="ip"></div>
+    <div>
+        <a href="javascript:runTest()" id="startBtn" class="button">Start</a>
+        <a href="javascript:abortTest()" id="abortBtn" class="button" style="display:none;">Abort</a>
+    </div>
+    <p>Fonts: <a href="https://fonts.google.com/">Google Fonts</a> | Gauges: <a href="http://justgage.com/">justgage.com</a></p>
+</body>
 </html>

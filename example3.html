@@ -1,116 +1,133 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Speedtest</title>
-        <style type="text/css">
-            html,body{
-                margin:0;
-                padding:0;
-                border:none;
-                text-align:center;
+<head>
+    <title>Speedtest</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            border: none;
+            text-align: center;
+        }
+
+        div.test {
+            display: inline-block;
+            margin: 1em;
+            font-size: 2vw;
+            min-width: 20vw;
+            text-align: center;
+        }
+
+        div.testName,
+        div.meterUnit {
+            font-size: 1em;
+        }
+
+        div.meter {
+            font-size: 1.5em;
+            line-height: 1.5em;
+            height: 2em !important;
+        }
+
+        .flash {
+            animation: flash 0.6s linear infinite;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        a {
+            display: inline-block;
+            border: 0.15em solid #000000;
+            padding: 0.3em 0.5em;
+            margin: 0.6em;
+            color: #000000;
+            text-decoration: none;
+        }
+
+        #ip {
+            margin: 0.8em 0;
+            font-size: 1.2em;
+        }
+
+        @media all and (max-width: 50em) {
+            div.test {
+                font-size: 2em;
             }
-            div.test{
-                display:inline-block;
-                margin:1em;
-				font-size:2vw;
-				min-width:20vw;
-                text-align:center;
+        }
+    </style>
+    <script type="text/javascript">
+        var w = null
+        function runTest() {
+            document.getElementById('startBtn').style.display = 'none'
+            document.getElementById('testArea').style.display = ''
+            document.getElementById('abortBtn').style.display = ''
+            w = new Worker('speedtest_worker.min.js')
+            var interval = setInterval(function () { w.postMessage('status') }, 100)
+            w.onmessage = function (event) {
+                var data = event.data.split(';')
+                var status = Number(data[0])
+                var dl = document.getElementById('download')
+                var ul = document.getElementById('upload')
+                var ping = document.getElementById('ping')
+                var ip = document.getElementById('ip')
+                var jitter = document.getElementById('jitter')
+                dl.className = status === 1 ? 'flash' : ''
+                ping.className = status === 2 ? 'flash' : ''
+                jitter.className = ul.className = status === 3 ? 'flash' : ''
+                if (status >= 4) {
+                    clearInterval(interval)
+                    document.getElementById('abortBtn').style.display = 'none'
+                    document.getElementById('startBtn').style.display = ''
+                    w = null
+                }
+                if (status === 5) {
+                    document.getElementById('testArea').style.display = 'none'
+                }
+                dl.textContent = data[1]
+                ul.textContent = data[2]
+                ping.textContent = data[3]
+                jitter.textContent = data[5]
+                ip.textContent = data[4]
             }
-            div.testName,div.meterUnit{
-                font-size:1em;
-            }
-            div.meter{
-                font-size:1.5em;
-                line-height:1.5em;
-                height:2em !important;
-            }
-            .flash{
-                animation:flash 0.6s linear infinite;
-            }
-            @keyframes flash{
-                0%{opacity:0.6;}
-                50%{opacity:1;}
-            }
-            a{
-                display:inline-block;
-                border:0.15em solid #000000;
-                padding:0.3em 0.5em;
-                margin:0.6em;
-                color:#000000;
-                text-decoration:none;
-            }
-			#ip{
-				margin:0.8em 0;
-				font-size:1.2em;
-			}
-			@media all and (max-width: 50em){
-				div.test{
-					font-size:2em;
-				}
-			}
-        </style>
-        <script type="text/javascript">
-            var w=null;
-            function runTest(){
-                document.getElementById("startBtn").style.display="none";
-                document.getElementById("testArea").style.display="";
-                document.getElementById("abortBtn").style.display="";
-                w=new Worker("speedtest_worker.min.js");
-                var interval=setInterval(function(){w.postMessage("status");}.bind(this),100);
-                w.onmessage=function(event){
-                    var data=event.data.split(";");
-                    var status=Number(data[0]);
-                    var dl=document.getElementById("download"),ul=document.getElementById("upload"),ping=document.getElementById("ping"),ip=document.getElementById("ip"),jitter=document.getElementById("jitter");
-					dl.className=status==1?"flash":"";ping.className=status==2?"flash":"";jitter.className=ul.className=status==3?"flash":"";
-                    if(status>=4){
-                        clearInterval(interval);
-                        document.getElementById("abortBtn").style.display="none";
-                        document.getElementById("startBtn").style.display="";
-                        w=null;
-                    }
-                    if(status==5){
-                        document.getElementById("testArea").style.display="none";
-                    }
-                    dl.innerHTML=data[1];
-                    ul.innerHTML=data[2];
-                    ping.innerHTML=data[3];
-					jitter.innerHTML=data[5];
-					ip.innerHTML=data[4];
-                }.bind(this);
-                w.postMessage("start");
-            }
-            function abortTest(){
-                if(w)w.postMessage("abort");
-            }
-        </script>
-    </head>
-    <body>
-        <h1>Speedtest</h1>
-        <div id="testArea" style="display:none">
-			<div id="ip">Please wait...</div>
-            <div class="test">
-                <div class="testName">Download</div>
-                <div class="meter">&nbsp;<span id="download"></span>&nbsp;</div>
-                <div class="meterUnit">Mbit/s</div>
-            </div>
-            <div class="test">
-                <div class="testName">Upload</div>
-                <div class="meter">&nbsp;<span id="upload"></span>&nbsp;</div>
-                <div class="meterUnit">Mbit/s</div>
-            </div>
-            <div class="test">
-                <div class="testName">Latency</div>
-                <div class="meter">&nbsp;<span id="ping"></span>&nbsp;</div>
-                <div class="meterUnit">ms</div>
-            </div>
-			<div class="test">
-                <div class="testName">Jitter</div>
-                <div class="meter">&nbsp;<span id="jitter"></span>&nbsp;</div>
-                <div class="meterUnit">ms</div>
-            </div>
-            <br/>
-            <a href="javascript:abortTest()" id="abortBtn">Abort</a>
+            w.postMessage('start')
+        }
+        function abortTest() {
+            if (w) w.postMessage('abort')
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Speedtest</h1>
+    <div id="testArea" style="display:none">
+        <div id="ip">Please wait...</div>
+        <div class="test">
+            <div class="testName">Download</div>
+            <div class="meter">&nbsp;<span id="download"></span>&nbsp;</div>
+            <div class="meterUnit">Mbit/s</div>
         </div>
-        <a href="javascript:runTest()" id="startBtn">Run speedtest</a>
-    </body>
+        <div class="test">
+            <div class="testName">Upload</div>
+            <div class="meter">&nbsp;<span id="upload"></span>&nbsp;</div>
+            <div class="meterUnit">Mbit/s</div>
+        </div>
+        <div class="test">
+            <div class="testName">Latency</div>
+            <div class="meter">&nbsp;<span id="ping"></span>&nbsp;</div>
+            <div class="meterUnit">ms</div>
+        </div>
+        <div class="test">
+            <div class="testName">Jitter</div>
+            <div class="meter">&nbsp;<span id="jitter"></span>&nbsp;</div>
+            <div class="meterUnit">ms</div>
+        </div>
+        <br/>
+        <a href="javascript:abortTest()" id="abortBtn">Abort</a>
+    </div>
+    <a href="javascript:runTest()" id="startBtn">Run speedtest</a>
+</body>
 </html>
