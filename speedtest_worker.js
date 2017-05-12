@@ -12,7 +12,8 @@ var testStatus=0, //0=not started, 1=download test, 2=ping+jitter test, 3=upload
     pingStatus="", //ping in milliseconds with 2 decimal digits
     jitterStatus="", //jitter in milliseconds with 2 decimal digits
     clientIp="", //client's IP address as reported by getIP.php
-    pot=""; //point of test (fastest answer for a ping test)
+    pot="", //point of test (fastest answer for a ping test)
+    packetLoss=0; //failed ping requests
 
 //test settings. can be overridden by sending specific values with the start command
 var settings={ 
@@ -56,7 +57,7 @@ this.addEventListener('message', function(e){
     var params=e.data.split(" ");
     if(params[0]=="status"){ //return status
         postMessage(testStatus+";"+dlStatus+";"+ulStatus+";"+pingStatus+";"+clientIp+";"+jitterStatus+";"
-            +pot);
+            +pot+";"+packetLoss);
     }
     if(params[0]=="start"&&testStatus==0){ //start new test
         testStatus=1;
@@ -412,11 +413,7 @@ function pingTest(done){
             if(i<settings.count_ping) doPing(); else done(); //more pings to do?
         }.bind(this);
         xhr[0].onerror=function(){
-            //a ping failed, cancel test
-            pingStatus="Fail";
-            jitterStatus="Fail";
-            clearRequests();
-            done();
+           packetLoss += 1;
         }.bind(this);
         //sent xhr
         xhr[0].open("GET",settings.url_ping+"?r="+Math.random(),true); //random string to prevent caching
