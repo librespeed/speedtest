@@ -27,8 +27,8 @@ var settings={
     url_ul:"empty.dat", //path to an empty file, used for upload test. must be relative to this js file
     url_ping:"empty.dat", //path to an empty file, used for ping test. must be relative to this js file
     url_getIp:"getIP.php", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
-    url_getPointsOfTest:"getPointsOfTest", //REST service URL to retrieve the list of available Points of Test
-    url_saveResult:"saveResult", //REST service URL to save test results
+    url_getPointsOfTest:"pointsOfTest.php", //REST service URL to retrieve the list of available Points of Test
+    url_saveResult:"saveResult.php", //REST service URL to save test results
     url_ispInfo:"http://ipinfo.io", //Geolocation service and ISP information
     xhr_dlMultistream:10, //number of download streams to use (can be different if enable_quirks is active)
     xhr_ulMultistream:3, //number of upload streams to use (can be different if enable_quirks is active)
