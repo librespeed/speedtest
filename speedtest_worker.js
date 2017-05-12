@@ -11,7 +11,8 @@ var testStatus=0, //0=not started, 1=download test, 2=ping+jitter test, 3=upload
     ulStatus="", //upload speed in megabit/s with 2 decimal digits
     pingStatus="", //ping in milliseconds with 2 decimal digits
     jitterStatus="", //jitter in milliseconds with 2 decimal digits
-    clientIp=""; //client's IP address as reported by getIP.php
+    clientIp="", //client's IP address as reported by getIP.php
+    pot=""; //point of test (fastest answer for a ping test)
 
 //test settings. can be overridden by sending specific values with the start command
 var settings={ 
@@ -22,6 +23,7 @@ var settings={
     url_ul:"empty.dat", //path to an empty file, used for upload test. must be relative to this js file
     url_ping:"empty.dat", //path to an empty file, used for ping test. must be relative to this js file
     url_getIp:"getIP.php", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
+    url_getPointsOfTest:"getPointsOfTest", //path to the REST service to retrieve the list of available Points of Test
     xhr_dlMultistream:10, //number of download streams to use (can be different if enable_quirks is active)
     xhr_ulMultistream:3, //number of upload streams to use (can be different if enable_quirks is active)
     xhr_dlUseBlob:false, //if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
@@ -53,13 +55,16 @@ var useFetchAPI=false;
 this.addEventListener('message', function(e){
     var params=e.data.split(" ");
     if(params[0]=="status"){ //return status
-        postMessage(testStatus+";"+dlStatus+";"+ulStatus+";"+pingStatus+";"+clientIp+";"+jitterStatus);
+        postMessage(testStatus+";"+dlStatus+";"+ulStatus+";"+pingStatus+";"+clientIp+";"+jitterStatus+";"
+            +pot);
     }
     if(params[0]=="start"&&testStatus==0){ //start new test
         testStatus=1;
         try{
             //parse settings, if present
             var s=JSON.parse(e.data.substring(5));
+            if(typeof s.url_getPointsOfTest != "undefined") 
+                settings.url_getPointsOfTest=s.url_getPointsOfTest; // point of test list url
             if(typeof s.url_dl != "undefined") settings.url_dl=s.url_dl; //download url
             if(typeof s.url_ul != "undefined") settings.url_ul=s.url_ul; //upload url
             if(typeof s.url_ping != "undefined") settings.url_ping=s.url_ping; //ping url
@@ -101,13 +106,33 @@ this.addEventListener('message', function(e){
         }catch(e){}
         //run the tests
         console.log(settings);
-        console.log("Fetch API: "+useFetchAPI);
-        getIp(function(){dlTest(function(){testStatus=2;pingTest(function(){testStatus=3;ulTest(function(){testStatus=4;});});})});
+        console.log("Fetch API: "+useFetchAPI); 
+        getServer(function() { // Point of test selection
+            getIp(function() { // Get WAN IP
+                dlTest(function() { // Download
+                    testStatus=2;
+                    pingTest(function() { // Ping
+                        testStatus=3;
+                        ulTest(function() { // Upload
+                            testStatus=4;
+                        });
+                    });
+                })
+            });
+        });
+        
     }
     if(params[0]=="abort"){ //abort command
         clearRequests(); //stop all xhr activity
-        if(interval)clearInterval(interval); //clear timer if present
-        testStatus=5;dlStatus="";ulStatus="";pingStatus="";jitterStatus=""; //set test as aborted
+        if(interval)
+            clearInterval(interval); //clear timer if present
+        //set test as aborted
+        testStatus=5;
+        dlStatus="";
+        ulStatus="";
+        pingStatus="";
+        jitterStatus="";
+        pot="";
     }
 });
 //stops all XHR activity, aggressively
@@ -135,6 +160,58 @@ function getIp(done){
     }
     xhr.open("GET",settings.url_getIp+"?r="+Math.random(),true);
     xhr.send();
+}
+//returns a server url with the lowest latency
+function getServer(done){
+    var pots = {};
+    var times = [];
+    var ping = "";
+    xhr = new XMLHttpRequest();
+    xhr.onload = function(){
+        var tmp = JSON.parse(xhr.responseText);
+        pointsOfTest = tmp["result"];
+        var doPing = function(url) {
+            var start = new Date().getTime();
+            xhr = new XMLHttpRequest();
+            xhr.onload = function(){
+                var end = new Date().getTime();
+                ping = end - start;
+                ping = ping.toFixed(2);
+            };
+            xhr.onerror = function() {
+                ping = "Fail";
+            };
+            xhr.open("GET", url, false);
+            xhr.send();
+        };
+        for (var i = 0; i < pointsOfTest.length; i++) {
+            try {
+                doPing(pointsOfTest[i]);
+            } catch (e) {
+                ping = "Fail";
+            }
+            if (ping != "Fail") {
+                pots[ping] = pointsOfTest[i];
+                times.push(ping);
+            }
+        }
+        times.sort(function(a, b){return a - b});
+        pot = pots[times[0]];
+        settings.url_ping = pot;
+        settings.url_dl = pot + "/download/";
+        settings.url_ul = pot + "/upload";
+        settings.url_getIp = "http://icanhazip.com";
+        console.log("Available servers:" + JSON.stringify(pots));
+        console.log("Best point of test: " + pot);
+        done();
+    }
+    xhr.onerror=function(){
+        done();
+    }
+    xhr.open("POST", settings.url_getPointsOfTest, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.send(JSON.stringify({"data":{}}));
 }
 //download test, calls done function when it's over
 var dlCalled=false; //used to prevent multiple accidental calls to dlTest
