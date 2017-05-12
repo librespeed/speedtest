@@ -28,7 +28,8 @@ var settings={
     url_ping:"empty.dat", //path to an empty file, used for ping test. must be relative to this js file
     url_getIp:"getIP.php", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
     url_getPointsOfTest:"getPointsOfTest", //REST service URL to retrieve the list of available Points of Test
-    url_ispInfo:"http://ipinfo.io", // Geolocation service and ISP information
+    url_saveResult:"saveResult", //REST service URL to save test results
+    url_ispInfo:"http://ipinfo.io", //Geolocation service and ISP information
     xhr_dlMultistream:10, //number of download streams to use (can be different if enable_quirks is active)
     xhr_ulMultistream:3, //number of upload streams to use (can be different if enable_quirks is active)
     xhr_dlUseBlob:false, //if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
@@ -59,9 +60,27 @@ var useFetchAPI=false;
 */
 this.addEventListener('message', function(e){
     var params=e.data.split(" ");
+    var useragent = "";
+    try {
+        useragent = navigator.userAgent;
+    } catch (e) {
+        console.log(e.message);
+    }
     if(params[0]=="status"){ //return status
         postMessage(testStatus+";"+dlStatus+";"+ulStatus+";"+pingStatus+";"+clientIp+";"+jitterStatus+";"
-            +pot+";"+packetLoss+";"+country+";"+region+";"+isp);
+            +pot+";"+packetLoss+";"+country+";"+region+";"+isp+";"+useragent);
+        saveResult({
+            "download":dlStatus,
+            "upload":ulStatus,
+            "ping":pingStatus,
+            "jitter":jitterStatus,
+            "packetloss":packetLoss,
+            "pot":pot,
+            "useragent":useragent,
+            "country":country,
+            "region":region,
+            "isp":isp
+        });
     }
     if(params[0]=="start"&&testStatus==0){ //start new test
         testStatus=1;
@@ -70,6 +89,8 @@ this.addEventListener('message', function(e){
             var s=JSON.parse(e.data.substring(5));
             if(typeof s.url_getPointsOfTest != "undefined") 
                 settings.url_getPointsOfTest=s.url_getPointsOfTest; // point of test list url
+            if(typeof s.url_saveResult != "undefined") 
+                settings.url_saveResult=s.url_saveResult; // save result url
             if(typeof s.url_dl != "undefined") settings.url_dl=s.url_dl; //download url
             if(typeof s.url_ul != "undefined") settings.url_ul=s.url_ul; //upload url
             if(typeof s.url_ping != "undefined") settings.url_ping=s.url_ping; //ping url
@@ -450,4 +471,19 @@ function ispInfo(done)
     } catch (e) {
         console.log(e.message);
     }
+}
+function saveResult(result)
+{
+    if (testStatus != 4)
+        return;
+    xhr=new XMLHttpRequest();
+    xhr.onload=function(){
+        var tmp = JSON.parse(xhr.responseText);
+    }
+    xhr.onerror=function(){
+    }
+    xhr.open("POST",settings.url_saveResult,true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.send(JSON.stringify({"data":result}));
 }
