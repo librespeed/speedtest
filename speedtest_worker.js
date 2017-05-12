@@ -195,6 +195,7 @@ function getServer(done){
     xhr = new XMLHttpRequest();
     xhr.onload = function(){
         var tmp = JSON.parse(xhr.responseText);
+        var routes = tmp["routes"];
         pointsOfTest = tmp["result"];
         var doPing = function(url) {
             var start = new Date().getTime();
@@ -224,9 +225,8 @@ function getServer(done){
         times.sort(function(a, b){return a - b});
         pot = pots[times[0]];
         settings.url_ping = pot;
-        settings.url_dl = pot + "/download/";
-        settings.url_ul = pot + "/upload";
-        settings.url_getIp = "http://icanhazip.com";
+        settings.url_dl = pot + routes["download"];
+        settings.url_ul = pot + routes["upload"];
         console.log("Available servers:" + JSON.stringify(pots));
         console.log("Best point of test: " + pot);
         done();
@@ -252,7 +252,8 @@ function dlTest(done){
         setTimeout(function(){
             if(testStatus!=1) return; //delayed stream ended up starting after the end of the download test
             if(useFetchAPI){
-                xhr[i]=fetch(settings.url_dl+"?r="+Math.random()+"&ckSize="+settings.garbagePhp_chunkSize).then(function(response) {
+                var queryString = settings.url_dl+settings.garbagePhp_chunkSize+"?r="+Math.random();
+                xhr[i]=fetch(queryString).then(function(response) {
                   var reader = response.body.getReader();
                   var consume=function() {
                     return reader.read().then(function(result){
@@ -290,7 +291,8 @@ function dlTest(done){
                 }.bind(this);
                 //send xhr
                 try{if(settings.xhr_dlUseBlob) xhr[i].responseType='blob'; else xhr[i].responseType='arraybuffer';}catch(e){}
-                xhr[i].open("GET",settings.url_dl+"?r="+Math.random()+"&ckSize="+settings.garbagePhp_chunkSize,true); //random string to prevent caching
+                var queryString = settings.url_dl+settings.garbagePhp_chunkSize+"?r="+Math.random();
+                xhr[i].open("GET", queryString, true); //random string to prevent caching
                 xhr[i].send();
             }
         }.bind(this),1+delay);
