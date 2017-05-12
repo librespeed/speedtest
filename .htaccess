@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteRule download/([0-9]+) php/garbage.php?ckSize=$1
+RewriteRule ip php/getIp.php
+RewriteRule pots php/pointsOfTest.php
+RewriteRule save php/saveResult.php
