@@ -52,11 +52,11 @@
                 font-weight: 700;
                 font-family: 'Roboto';
             }    
-			
-			#ip, #server, #isp {
-				margin:1em 0;
-				font-size:1.2em;
-			}
+            
+            #ip, #server, #isp {
+                margin:1em 0;
+                font-size:1.2em;
+            }
 
         </style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
@@ -81,8 +81,9 @@
                     updateGauge(ggdl, data[1]);
                     updateGauge(ggul, data[2]);
                     updateGauge(ggping, data[3]);
-					document.getElementById("ip").innerHTML="Your IP: "+data[4];
-                    document.getElementById("server").innerHTML="Point of Test: "+data[6];
+                    document.getElementById("ip").innerHTML="Your IP: "+data[4];
+                    if (data[6] !== "")
+                        document.getElementById("server").innerHTML="Point of Test: "+data[6];
                     document.getElementById("isp").innerHTML=data[9] + " - " + data[10];
                 }.bind(this);
                 var params = {
@@ -173,7 +174,7 @@
             <div class="meter" id="ggul"></div>
             <div class="meter" id="ggping"></div>
         </div>
-		<div id="ip"></div>
+        <div id="ip"></div>
         <div id="isp"></div>
         <div id="server"></div>
         <div>

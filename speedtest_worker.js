@@ -23,18 +23,19 @@ var settings={
     time_ul:15, //duration of upload test in seconds
     time_dl:15, //duration of download test in seconds
     count_ping:35, //number of pings to perform in ping test
-    url_dl:"garbage.php", //path to a large file or garbage.php, used for download test. must be relative to this js file
+    url_dl:"/download/", //path to a large file or garbage.php, used for download test. must be relative to this js file
     url_ul:"empty.dat", //path to an empty file, used for upload test. must be relative to this js file
     url_ping:"empty.dat", //path to an empty file, used for ping test. must be relative to this js file
-    url_getIp:"getIP.php", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
-    url_getPointsOfTest:"pointsOfTest.php", //REST service URL to retrieve the list of available Points of Test
-    url_saveResult:"saveResult.php", //REST service URL to save test results
+    url_getIp:"/ip", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
+    url_getPointsOfTest:"/pots", //REST service URL to retrieve the list of available Points of Test
+    url_saveResult:"/save", //REST service URL to save test results
     url_ispInfo:"http://ipinfo.io", //Geolocation service and ISP information
     xhr_dlMultistream:10, //number of download streams to use (can be different if enable_quirks is active)
     xhr_ulMultistream:3, //number of upload streams to use (can be different if enable_quirks is active)
     xhr_dlUseBlob:false, //if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
     garbagePhp_chunkSize:20, //size of chunks sent by garbage.php (can be different if enable_quirks is active)
     enable_quirks:true, //enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
+    enable_multiPots:false,//enable multiple points of test
     allow_fetchAPI:false, //enables Fetch API. currently disabled because it leaks memory like no tomorrow
     force_fetchAPI:false //when Fetch API is enabled, it will force usage on every browser that supports it
 };
@@ -189,6 +190,10 @@ function getIp(done){
 }
 //returns a server url with the lowest latency
 function getServer(done){
+    //single point of test
+    if (!settings.enable_multiPots) {
+        return done();
+    }
     var pots = {};
     var times = [];
     var ping = "";
