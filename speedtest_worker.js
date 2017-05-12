@@ -13,7 +13,10 @@ var testStatus=0, //0=not started, 1=download test, 2=ping+jitter test, 3=upload
     jitterStatus="", //jitter in milliseconds with 2 decimal digits
     clientIp="", //client's IP address as reported by getIP.php
     pot="", //point of test (fastest answer for a ping test)
-    packetLoss=0; //failed ping requests
+    packetLoss=0, //failed ping requests
+    country="", //country of origin
+    region="", //region of origin
+    isp=""; //internet service provider
 
 //test settings. can be overridden by sending specific values with the start command
 var settings={ 
@@ -24,7 +27,8 @@ var settings={
     url_ul:"empty.dat", //path to an empty file, used for upload test. must be relative to this js file
     url_ping:"empty.dat", //path to an empty file, used for ping test. must be relative to this js file
     url_getIp:"getIP.php", //path to getIP.php relative to this js file, or a similar thing that outputs the client's ip
-    url_getPointsOfTest:"getPointsOfTest", //path to the REST service to retrieve the list of available Points of Test
+    url_getPointsOfTest:"getPointsOfTest", //REST service URL to retrieve the list of available Points of Test
+    url_ispInfo:"http://ipinfo.io", // Geolocation service and ISP information
     xhr_dlMultistream:10, //number of download streams to use (can be different if enable_quirks is active)
     xhr_ulMultistream:3, //number of upload streams to use (can be different if enable_quirks is active)
     xhr_dlUseBlob:false, //if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
@@ -57,7 +61,7 @@ this.addEventListener('message', function(e){
     var params=e.data.split(" ");
     if(params[0]=="status"){ //return status
         postMessage(testStatus+";"+dlStatus+";"+ulStatus+";"+pingStatus+";"+clientIp+";"+jitterStatus+";"
-            +pot+";"+packetLoss);
+            +pot+";"+packetLoss+";"+country+";"+region+";"+isp);
     }
     if(params[0]=="start"&&testStatus==0){ //start new test
         testStatus=1;
@@ -109,7 +113,7 @@ this.addEventListener('message', function(e){
         console.log(settings);
         console.log("Fetch API: "+useFetchAPI); 
         getServer(function() { // Point of test selection
-            getIp(function() { // Get WAN IP
+            ispInfo(function() { // WAN IP, Geolocation and ISP data
                 dlTest(function() { // Download
                     testStatus=2;
                     pingTest(function() { // Ping
@@ -420,4 +424,30 @@ function pingTest(done){
         xhr[0].send();
     }.bind(this);
     doPing(); //start first ping
+}
+function ispInfo(done)
+{
+    try {
+        xhr = new XMLHttpRequest();
+        xhr.onload = function(){
+            var ispInfo = JSON.parse(xhr.responseText);
+            if (ispInfo.hasOwnProperty("ip"))
+                clientIp = ispInfo["ip"];
+            if (ispInfo.hasOwnProperty("country"))
+                country = ispInfo["country"];
+            if (ispInfo.hasOwnProperty("region"))
+                region = ispInfo["region"];
+            if (ispInfo.hasOwnProperty("org"))
+                isp = ispInfo["org"];
+            done();
+        }
+        xhr.onerror = function(){
+            done();
+        }
+        xhr.open("GET", settings.url_ispInfo, true);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.send();
+    } catch (e) {
+        console.log(e.message);
+    }
 }
