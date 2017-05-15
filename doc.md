@@ -170,13 +170,13 @@ w.postMessage('start {"param1": "value1", "param2": "value2", ...}')
     * __Important:__ route configured in .htaccess file
 * __url_getPointsOfTest__: REST service URL to retrieve the list of available Points of Test
     * Default: `/pots`
-* __url_saveResult___: REST service URL to save test results
+* __url_saveResult__: REST service URL to save test results
     * Default: `/save`
 * __url_ispInfo___: Geolocation service and ISP information (http://ipinfo.io/developers#terms-of-use)
     * Default: `http://ipinfo.io`
 * __enable_quirks__: enables browser-specific optimizations. These optimizations override some of the default settings below. They do not override settings that are explicitly set.
     * Default: `true`
-* __enable_multiPots: enables multiple servers deployment with detection of lowest latency available
+* __enable_multiPots__: enables multiple servers deployment with detection of lowest latency available
     * Default: `false`
 * __garbagePhp_chunkSize__: size of chunks sent by garbage.php in megabytes
     * Default: `20`
