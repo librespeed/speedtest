@@ -223,7 +223,7 @@ A replacement for `garbage.php` must generate incompressible garbage data.
 
 A large file (10-100 Mbytes) is a possible replacement. You can get [one here](http://downloads.fdossena.com/geth.php?r=speedtest-bigfile).
 
-If you're using Node.js or some other server, your replacement should accept `beautiful` URLs via GET (/download/chuckSize) which tells it how many megabytes of garbage to generate.
+If you're using Node.js or some other server, your replacement should accept `beautiful` URLs via GET (/download/chunkSize) which tells it how many megabytes of garbage to generate.
 It is important here to turn off compression, and generate incompressible data.
 A symlink to `/dev/urandom` is also ok.
 
