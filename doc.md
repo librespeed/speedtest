@@ -1,7 +1,7 @@
 # HTML5 Speedtest
 
 > by Federico Dossena  
-> Version 4.2, April 26 2017  
+> Version 4.2.1, May 15 2017  
 > [https://github.com/adolfintel/speedtest/](https://github.com/adolfintel/speedtest/)
 
 
@@ -31,7 +31,7 @@ To install the test on your server, upload the following files:
 * `speedtest_worker.min.js`
 * `garbage.php`
 * `getIP.php`
-* `empty.dat`
+* `empty.php`
 
 You may also want to upload one of the examples to test it.  
 Later we'll see how to use the test without PHP.
@@ -139,11 +139,11 @@ w.postMessage('start {"param1": "value1", "param2": "value2", ...}')
 * __url_dl__: path to garbage.php or a large file to use for the download test
     * Default: `garbage.php`
     * __Important:__ path is relative to js file
-* __url_ul__: path to ab empty file or empty.dat to use for the upload test
-    * Default: `empty.dat`
+* __url_ul__: path to ab empty file or empty.php to use for the upload test
+    * Default: `empty.php`
     * __Important:__ path is relative to js file
-* __url_ping__: path to an empty file or empty.dat to use for the ping test
-    * Default: `empty.dat`
+* __url_ping__: path to an empty file or empty.php to use for the ping test
+    * Default: `empty.php`
     * __Important:__ path is relative to js file
 * __url_getIp__: path to getIP.php or replacement
     * Default: `getIP.php`
@@ -186,7 +186,7 @@ __Important:__ do not simply kill the worker while it's running, as it will leav
 
 
 ## Using the test without PHP
-If your server does not support PHP, or you're using something newer like Node.js, you can still use this test by replacing `garbage.php` and `getIP.php`.
+If your server does not support PHP, or you're using something newer like Node.js, you can still use this test by replacing `garbage.php`, `empty.php` and `getIP.php` with equivalents.
 
 ### Replacements
 
@@ -199,6 +199,9 @@ If you're using Node.js or some other server, your replacement should accept the
 It is important here to turn off compression, and generate incompressible data.
 A symlink to `/dev/urandom` is also ok.
 
+#### Replacement for `empty.php`
+Your replacement must simply respond with a HTTP code 200 and send nothing else. You may want to send additional headers to disable caching.
+
 #### Replacement for `getIP.php`
 Your replacement must simply respond with the client's IP as plaintext. Nothing fancy.
 
@@ -206,7 +209,7 @@ Your replacement must simply respond with the client's IP as plaintext. Nothing 
 You need to start the test with your replacements like this:
 
 ```js
-w.postMessage('start {"url_dl": "newGarbageURL", "url_getIp": "newIpURL"}')
+w.postMessage('start {"url_dl": "newGarbageURL", "url_ul": "newEmptyURL", "url_ping": "newEmptyURL", "url_getIp": "newIpURL"}')
 ```
 
 
