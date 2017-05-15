@@ -7,7 +7,7 @@
 
 ## Introduction
 In this document, we will introduce an XHR based HTML5 Speedtest and see how to use it.
-This test measures download speed, upload speed, ping and jitter.
+This test measures download speed, upload speed, ping, jitter, packet loss and collects geolocation data from [http://ipinfo.io](http://ipinfo.io/developers#terms-of-use).
 
 First of all, the requirements to run this test:
 
@@ -29,14 +29,21 @@ If this looks good, let's proceed and see how to use the test.
 To install the test on your server, upload the following files:
 
 * `speedtest_worker.min.js`
-* `garbage.php`
-* `getIP.php`
-* `empty.php`
+* `.htaccess`
+* `apache2_dynamic/php/*`
+
+Enable mod_rewrite:
+
+http://httpd.apache.org/docs/current/mod/mod_rewrite.html
+
+Accept directory specific configuration changes or put the rewrite rules directly into your .conf:
+
+https://httpd.apache.org/docs/2.4/mod/core.html#allowoverride
 
 You may also want to upload one of the examples to test it.  
 Later we'll see how to use the test without PHP.
 
-__Important:__ keep all the files together; all paths are relative to the js file
+__Important:__ keep the directory structure exactly as in apache2_dynamic example or update the .htaccess to handle your custom routes
 
 
 ## Usage
@@ -72,7 +79,13 @@ w.onmessage = function (event) {
   var ulStatus = data[2]
   var pingStatus = data[3]
   var jitterStatus = data[5]
+  var packetLoss = data[7]
   var clientIp = data[4]
+  var testServer = data[6]
+  var country = data[8]
+  var region = data[9]
+  var isp = data[10]
+
   if (testState >= 4) {
     clearInterval(timer) // test is finished or aborted
   }
@@ -84,7 +97,7 @@ w.onmessage = function (event) {
 The response from the worker is composed of values separated by `;` (semicolon) in this
 format:
 
-`testState;dlStatus;ulStatus;pingStatus;clientIp;jitterStatus`
+`testState;dlStatus;ulStatus;pingStatus;clientIp;jitterStatus;pointOfTest;packetLoss;country;region;isp`
 
 * __testState__ is an integer 0-5
     * `0` = Test starting
@@ -112,6 +125,13 @@ format:
     * Empty string (not started or aborted)
     * Estimated jitter in milliseconds as a number with 2 digits (lower = stable connection)
     * The string "Fail" (test failed)
+* __pointOfTest__ is either
+    * Empty string for a single server test or failure on list retrieval
+    * URI of a CORS enabled traffic generator
+* __packetLoss__ is an integer with ping tests failures
+* __country__ ISO Alpha-2 country code of client's origin country (http://ipinfo.io/developers#terms-of-use)
+* __region__ Client's origin region (http://ipinfo.io/developers#terms-of-use)
+* __isp__ Internet Service Provider name (http://ipinfo.io/developers#terms-of-use)
 
 ### Starting the test
 To start the test, send the start command to the worker:
@@ -137,19 +157,27 @@ w.postMessage('start {"param1": "value1", "param2": "value2", ...}')
     * Default: `35`
     * Recommended: `>=20`
 * __url_dl__: path to garbage.php or a large file to use for the download test
-    * Default: `garbage.php`
-    * __Important:__ path is relative to js file
+    * Default: `/download/`
+    * __Important:__ route configured in .htaccess file
 * __url_ul__: path to ab empty file or empty.php to use for the upload test
-    * Default: `empty.php`
-    * __Important:__ path is relative to js file
+    * Default: `/upload`
+    * __Important:__ route configured in .htaccess file
 * __url_ping__: path to an empty file or empty.php to use for the ping test
-    * Default: `empty.php`
-    * __Important:__ path is relative to js file
+    * Default: `/ping`
+    * __Important:__ route configured in .htaccess file
 * __url_getIp__: path to getIP.php or replacement
-    * Default: `getIP.php`
-    * __Important:__ path is relative to js file
+    * Default: `/ip`
+    * __Important:__ route configured in .htaccess file
+* __url_getPointsOfTest__: REST service URL to retrieve the list of available Points of Test
+    * Default: `/pots`
+* __url_saveResult__: REST service URL to save test results
+    * Default: `/save`
+* __url_ispInfo___: Geolocation service and ISP information (http://ipinfo.io/developers#terms-of-use)
+    * Default: `http://ipinfo.io`
 * __enable_quirks__: enables browser-specific optimizations. These optimizations override some of the default settings below. They do not override settings that are explicitly set.
     * Default: `true`
+* __enable_multiPots__: enables multiple servers deployment with detection of lowest latency available
+    * Default: `false`
 * __garbagePhp_chunkSize__: size of chunks sent by garbage.php in megabytes
     * Default: `20`
     * Recommended: `>=10`
@@ -195,7 +223,7 @@ A replacement for `garbage.php` must generate incompressible garbage data.
 
 A large file (10-100 Mbytes) is a possible replacement. You can get [one here](http://downloads.fdossena.com/geth.php?r=speedtest-bigfile).
 
-If you're using Node.js or some other server, your replacement should accept the `ckSize` parameter (via GET) which tells it how many megabytes of garbage to generate.
+If you're using Node.js or some other server, your replacement should accept `beautiful` URLs via GET (/download/chunkSize) which tells it how many megabytes of garbage to generate.
 It is important here to turn off compression, and generate incompressible data.
 A symlink to `/dev/urandom` is also ok.
 
