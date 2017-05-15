@@ -94,7 +94,7 @@ this.addEventListener('message', function (e) {
       if (typeof s.time_dl !== 'undefined') settings.time_dl = s.time_dl // duration of download test
       if (typeof s.time_ul !== 'undefined') settings.time_ul = s.time_ul // duration of upload test
       if (typeof s.enable_quirks !== 'undefined') settings.enable_quirks = s.enable_quirks // enable quirks or not
-      if (typeof s.enable_quirks !== 'undefined') settings.enable_quirks = s.enable_quirks // enable quirks or not
+      if (typeof s.enable_multiPots !== 'undefined') settings.enable_multiPots = s.enable_multiPots // enable multiple points of test and lowest latency detection using cross domain requests
       if (typeof s.allow_fetchAPI !== 'undefined') settings.allow_fetchAPI = s.allow_fetchAPI // allows fetch api to be used if supported
       // quirks for specific browsers. more may be added in future releases
       if (settings.enable_quirks) {
