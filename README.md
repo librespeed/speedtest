@@ -23,6 +23,27 @@ Only modern browsers are supported (IE11, latest Edge, latest Chrome, latest Fir
 ## How to use in your site
 See the examples or doc.md
 
+## Docker + Docker Compose
+
+The project includes a basic `docker-compose.yml` for development.  To run, execute the following:
+
+```
+$ docker-compose build
+
+$ docker-compose up
+```
+
+
+Speedtest will be available at [http://0.0.0.0:8888/](http://0.0.0.0:8888/).  You can try out all of the examples via their associated urls (i.e. `http://0.0.0.0:8888/example1.html`).
+
+To run via Docker directly:
+
+```
+$ docker build -t adolfintel/speedtest:latest .
+
+$ docker run -d --name  speedtest -p 0.0.0.0:80:80 adolfintel/speedtest:latest
+```
+
 ## License
 Copyright (C) 2016-2017 Federico Dossena
 
@@ -38,3 +59,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/lgpl>.
+

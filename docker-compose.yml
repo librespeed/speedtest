@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  speedtest:
+    build: .
+    image: adolfintel/speedtest:${TAG:-latest}
+    ports:
+      - "8888:80"
+    volumes:
+      - .:/var/www/html
