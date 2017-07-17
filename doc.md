@@ -129,6 +129,8 @@ If you want, you can change these settings and pass them to the worker as JSON w
 w.postMessage('start {"param1": "value1", "param2": "value2", ...}')
 ```
 
+Pass "-1" to disable specific tests
+
 #### Test parameters
 * __time_dl__: How long the download test should be in seconds. The test will continue regardless of this limit if the speed is still 0.00 when the limit is reached.
     * Default: `15`
