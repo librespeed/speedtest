@@ -37,22 +37,26 @@
                 </p>
                 <p class="lead">
                     Your IP: <span id="st-ip"></span>
+                    <input type="checkbox" id="st-ip-checkbox">
                 </p>
             </div>
             <div class="col-lg-3 col-md-6 mb-3 st-block">
                 <h3>Download</h3>
                 <p class="display-4 st-value"><span id="st-download"></span></p>
                 <p class="lead">Mbit/s</p>
+                <p><input type="checkbox" id="st-download-checkbox"></p>
             </div>
             <div class="col-lg-3 col-md-6 mb-3 st-block">
                 <h3>Upload</h3>
                 <p class="display-4 st-value"><span id="st-upload"></span></p>
                 <p class="lead">Mbit/s</p>
+                <p><input type="checkbox" id="st-upload-checkbox"></p>
             </div>
             <div class="col-lg-3 col-md-6 mb-3 st-block">
                 <h3>Ping</h3>
                 <p class="display-4 st-value"><span id="st-ping"></span></p>
                 <p class="lead">ms</p>
+                <p><input type="checkbox" id="st-ping-checkbox" checked></p>
             </div>
             <div class="col-lg-3 col-md-6 mb-3 st-block">
                 <h3>Jitter</h3>
@@ -94,7 +98,18 @@
                 ip.textContent = data[4]
                 jitter.textContent = data[5]
             }
-            worker.postMessage('start {"url_dl": "-1", "url_ul": "-1", "url_getIp": "-1"}')
+            var ip_checkbox = document.getElementById("st-ip-checkbox")
+            var dl_checkbox = document.getElementById("st-download-checkbox")
+            var ul_checkbox = document.getElementById("st-upload-checkbox")
+            var ping_checkbox = document.getElementById("st-ping-checkbox")
+            var str_parameters = []
+
+            if (!ip_checkbox.checked) {str_parameters.push('"url_getIp": "-1"')}
+            if (!dl_checkbox.checked) {str_parameters.push('"url_dl": "-1"')}
+            if (!ul_checkbox.checked) {str_parameters.push('"url_ul": "-1"')}
+            if (!ping_checkbox.checked) {str_parameters.push('"url_ping": "-1"')}
+
+            worker.postMessage('start {' + str_parameters.join(",") + '}')
         }
         function stopTest() {
             if (worker) worker.postMessage('abort')

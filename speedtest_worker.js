@@ -104,11 +104,6 @@ this.addEventListener('message', function (e) {
       if (typeof s.time_dlGraceTime !== 'undefined') settings.time_dlGraceTime = s.time_dlGraceTime // dl test grace time before measuring
       if (typeof s.time_ulGraceTime !== 'undefined') settings.time_ulGraceTime = s.time_ulGraceTime // ul test grace time before measuring
       if (typeof s.overheadCompensationFactor !== 'undefined') settings.overheadCompensationFactor = s.overheadCompensationFactor //custom overhead compensation factor (default assumes HTTP+TCP+IP+ETH with typical MTUs)
-
-      if (settings.url_dl == "-1") {settings.time_dl = 0; settings.time_dlGraceTime = 0} // disable dl grace time
-      if (settings.url_ul == "-1") {settings.time_ul = 0; settings.time_ulGraceTime = 0} // disable ul grace time
-      if (settings.url_ping == "-1") {settings.count_ping = 0} // disable ping test
-
     } catch (e) { console.warn("Possible error in custom test settings. Some settings may not be applied. Exception: "+e) }
     // run the tests
     console.log(settings)
