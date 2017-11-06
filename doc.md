@@ -304,10 +304,10 @@ You need to start the test with your replacements like this:
 w.postMessage('start {"url_dl": "newGarbageURL", "url_ul": "newEmptyURL", "url_ping": "newEmptyURL", "url_getIp": "newIpURL"}')
 ```
 ## Telemetry
-Telemetry currently requires PHP and either MySQL or SQLite.  
+Telemetry currently requires PHP and either MySQL, PostgreSQL or SQLite.
 To set up the telemetry, we need to do 4 things:
-* copy `telemetry.php`
-* edit `telemetry.php` to add your database settings
+* copy `telemetry.php` and `telemetry_settings.php`
+* edit `telemetry_settings.php` to add your database settings
 * create the database
 * enable telemetry
 
@@ -317,14 +317,27 @@ Log into your database using phpMyAdmin or a similar software and import `teleme
 If you see a table called `speedtest_users`, empty, you did it right.
 
 ### Configuring `telemetry.php`
-Open telemetry.php with notepad or a similar text editor.  
-Set your preferred database, ``$db_type="mysql";`` or ``$db_type="sqlite";``  
+Open telemetry_settings.php with notepad or a similar text editor.
+Set your preferred database, ``$db_type="mysql";``, ``$db_type="sqlite";`` or ``$db_type="postgresql";``
+If you choose to use Sqlite3, you must set the path to your database file:
+```php
+$Sqlite_db_file = "../telemetry.sql";
+```
+
 If you choose to use MySQL, you must also add your database credentials:
 ```php
 $MySql_username="USERNAME"; //your database username
 $MySql_password="PASSWORD"; //your database password
 $MySql_hostname="DB_HOSTNAME"; //database address, usually localhost\
 $MySql_databasename="DB_NAME"; //the name of the database where you loaded telemetry.sql
+```
+
+If you choose to use PostgreSQL, you must also add your database credentials:
+```php
+$PostgreSql_username="USERNAME"; //your database username
+$PostgreSql_password="PASSWORD"; //your database password
+$PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
+$PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry.sql
 ```
 
 ### Enabling telemetry
