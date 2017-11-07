@@ -313,7 +313,7 @@ To set up the telemetry, we need to do 4 things:
 
 ### Creating the database
 This step is only for MySQL and PostgreSQL. Skip this if you want to use SQLite.
-Log into your database using phpMyAdmin or a similar software and import `telemetry.sql` into an empty database.  
+Log into your database using phpMyAdmin or a similar software and import the appropriate sql file into an empty database. For MySQL databases use `telemetry_mysql.sql` and for PostgreSQL databases use `telemetry_postgesql.sql`.
 If you see a table called `speedtest_users`, empty, you did it right.
 
 ### Configuring `telemetry.php`
@@ -329,7 +329,7 @@ If you choose to use MySQL, you must also add your database credentials:
 $MySql_username="USERNAME"; //your database username
 $MySql_password="PASSWORD"; //your database password
 $MySql_hostname="DB_HOSTNAME"; //database address, usually localhost\
-$MySql_databasename="DB_NAME"; //the name of the database where you loaded telemetry.sql
+$MySql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_mysql.sql
 ```
 
 If you choose to use PostgreSQL, you must also add your database credentials:
@@ -337,7 +337,7 @@ If you choose to use PostgreSQL, you must also add your database credentials:
 $PostgreSql_username="USERNAME"; //your database username
 $PostgreSql_password="PASSWORD"; //your database password
 $PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
-$PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry.sql
+$PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_postgresql.sql
 ```
 
 ### Enabling telemetry
