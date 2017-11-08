@@ -58,7 +58,7 @@ CREATE TABLE speedtest_users (
 -- Name: speedtest_users_id_seq; Type: SEQUENCE; Schema: public; Owner: speedtest
 --
 
-CREATE SEQUENCE speedtest_users_id_seqd
+CREATE SEQUENCE speedtest_users_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
