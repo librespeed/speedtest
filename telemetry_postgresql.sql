@@ -41,13 +41,13 @@ SET default_with_oids = false;
 CREATE TABLE speedtest_users (
     id integer NOT NULL,
     "timestamp" timestamp without time zone DEFAULT now() NOT NULL,
-    ip text NOT NULL,
+    ip inet NOT NULL,
     ua text NOT NULL,
     lang text NOT NULL,
-    dl text,
-    ul text,
-    ping text,
-    jitter text,
+    dl real,
+    ul real,
+    ping real,
+    jitter real,
     log text
 );
 
