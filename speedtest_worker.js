@@ -11,6 +11,7 @@ var dlStatus = '' // download speed in megabit/s with 2 decimal digits
 var ulStatus = '' // upload speed in megabit/s with 2 decimal digits
 var pingStatus = '' // ping in milliseconds with 2 decimal digits
 var jitterStatus = '' // jitter in milliseconds with 2 decimal digits
+var maxValues = {dl: 0, ul: 0, ping: 999999999, jitter: 0} // the maximum dlStatus, ulStatus, pingStatus and jitterStatus
 var clientIp = '' // client's IP address as reported by getIP.php
 var dlProgress = 0 //progress of download test 0-1
 var ulProgress = 0 //progress of upload test 0-1
@@ -66,8 +67,12 @@ function url_sep (url) { return url.match(/\?/) ? '&' : '?'; }
 */
 this.addEventListener('message', function (e) {
   var params = e.data.split(' ')
-  if (params[0] === 'status') { // return status
-    postMessage(testStatus + ';' + dlStatus + ';' + ulStatus + ';' + pingStatus + ';' + clientIp + ';' + jitterStatus + ';' + dlProgress + ';' + ulProgress + ';' + pingProgress)
+  if (params[0] === 'status') { // return status and current values (if done or aborted return status and max values)
+    if (testStatus === 4 || testStatus === 5) {
+      postMessage(testStatus + ';' + maxValues.dl + ';' + maxValues.ul + ';' + maxValues.ping + ';' + clientIp + ';' + maxValues.jitter + ';' + dlProgress + ';' + ulProgress + ';' + pingProgress);
+    } else {
+      postMessage(testStatus + ';' + dlStatus + ';' + ulStatus + ';' + pingStatus + ';' + clientIp + ';' + jitterStatus + ';' + dlProgress + ';' + ulProgress + ';' + pingProgress);
+    }
   }
   if (params[0] === 'start' && testStatus === -1) { // start new test
     testStatus = 0
@@ -137,7 +142,7 @@ this.addEventListener('message', function (e) {
     runNextTest=null;
     if (interval) clearInterval(interval) // clear timer if present
     if (settings.telemetry_level > 1) sendTelemetry()
-	  testStatus = 5; dlStatus = ''; ulStatus = ''; pingStatus = ''; jitterStatus = '' // set test as aborted
+    testStatus = 5; maxValues.dl = ''; maxValues.ul = ''; maxValues.ping = ''; maxValues.jitter = '' // set test as aborted
   }
 })
 // stops all XHR activity, aggressively
@@ -239,6 +244,9 @@ function dlTest (done) {
     }else{
       var speed = totLoaded / (t / 1000.0)
       dlStatus = ((speed * 8 * settings.overheadCompensationFactor)/(settings.useMebibits?1048576:1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+      if (dlStatus > maxValues.dl) {
+        maxValues.dl = dlStatus;
+      }
       if (((t / 1000.0) > settings.time_dl && dlStatus > 0) || failed) { // test is over, stop streams and timer
         if (failed || isNaN(dlStatus)) dlStatus = 'Fail'
         clearRequests()
@@ -358,6 +366,9 @@ function ulTest (done) {
     }else{
       var speed = totLoaded / (t / 1000.0)
       ulStatus = ((speed * 8 * settings.overheadCompensationFactor)/(settings.useMebibits?1048576:1000000)).toFixed(2) // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+      if (ulStatus > maxValues.ul) {
+        maxValues.ul = ulStatus;
+      }
       if (((t / 1000.0) > settings.time_ul && ulStatus > 0) || failed) { // test is over, stop streams and timer
         if (failed || isNaN(ulStatus)) ulStatus = 'Fail'
         clearRequests()
@@ -416,6 +427,12 @@ function pingTest (done) {
       }
       pingStatus = ping.toFixed(2)
       jitterStatus = jitter.toFixed(2)
+      if (Number(pingStatus) !== 0 && pingStatus < maxValues.ping) {
+        maxValues.ping = pingStatus;
+      }
+      if (jitterStatus > maxValues.jitter) {
+        maxValues.jitter = jitterStatus;
+      }
       i++
       tlog('PING: '+pingStatus+' JITTER: '+jitterStatus)
       if (i < settings.count_ping) doPing(); else {pingProgress = 1; done()} // more pings to do?
@@ -450,14 +467,14 @@ function sendTelemetry(){
   xhr.open('POST', settings.url_telemetry+"?r="+Math.random(), true);
   try{
     var fd = new FormData()
-    fd.append('dl', dlStatus)
-    fd.append('ul', ulStatus)
-    fd.append('ping', pingStatus)
-    fd.append('jitter', jitterStatus)
+    fd.append('dl', maxValues.dl)
+    fd.append('ul', maxValues.ul)
+    fd.append('ping', maxValues.ping)
+    fd.append('jitter', maxValues.jitter)
     fd.append('log', settings.telemetry_level>1?log:"")
     xhr.send(fd)
   }catch(ex){
-    var postData = 'dl='+encodeURIComponent(dlStatus)+'&ul='+encodeURIComponent(ulStatus)+'&ping='+encodeURIComponent(pingStatus)+'&jitter='+encodeURIComponent(jitterStatus)+'&log='+encodeURIComponent(settings.telemetry_level>1?log:'')
+    var postData = 'dl='+encodeURIComponent(maxValues.dl)+'&ul='+encodeURIComponent(maxValues.ul)+'&ping='+encodeURIComponent(maxValues.ping)+'&jitter='+encodeURIComponent(maxValues.jitter)+'&log='+encodeURIComponent(settings.telemetry_level>1?log:'')
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     xhr.send(postData)
   }
