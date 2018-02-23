@@ -285,7 +285,9 @@ Things may change and I don't want to break your project, so do yourself a favor
 You have been warned.
 
 ## Using the test without PHP
-If your server does not support PHP, or you're using something newer like Node.js, you can still use this test by replacing `garbage.php`, `empty.php` and `getIP.php` with equivalents.
+If your server **does not support PHP**, maybe you have only **nginx** for static files, or you're using something newer like **Node.js**, you can still use this test by replacing `garbage.php`, `empty.php` and `getIP.php` with equivalents.
+
+For **nginx** see comments below and [example 9](example9_no_backend.html#L115)
 
 ### Replacements
 
@@ -298,12 +300,34 @@ If you're using Node.js or some other server, your replacement should accept the
 It is important here to turn off compression, and generate incompressible data.
 A symlink to `/dev/urandom` is also ok.
 
+**nginx**
+Use tool above to generate static known file size. Upload to server so it is available something like `/speedtest/20MB.file`
+
+
 #### Replacement for `empty.php`
 Your replacement must simply respond with a HTTP code 200 and send nothing else. You may want to send additional headers to disable caching. The test assumes that Connection:keep-alive is sent by the server.
+
+**nginx**
+1. Increase allowed POST body size
+2. Create empty text file `empty.file`
+3. Allow HTTP POST method to static/empty file and return HTTP 200 even nothing is saved or processed by server
+```nginx
+location /speedtest/empty.file {
+	client_max_body_size 30M;
+	error_page 405 =200 $uri;
+}
+```
 
 #### Replacement for `getIP.php`
 Your replacement must simply respond with the client's IP as plaintext. Nothing fancy.  
 If you want, you can also accept the `isp=true` parameter and also include the ISP info.
+
+**nginx**
+```nginx
+location /speedtest/getip {
+	return 200 $remote_addr;
+}
+```
 
 #### JS
 You need to start the test with your replacements like this:
