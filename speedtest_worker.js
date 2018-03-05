@@ -448,7 +448,7 @@ function sendTelemetry(){
   xhr = new XMLHttpRequest()
   xhr.onload = function () { console.log('TELEMETRY OL '+xhr.responseText) }
   xhr.onerror = function () { console.log('TELEMETRY ERROR '+xhr) }
-  xhr.open('POST', settings.url_telemetry+"?r="+Math.random(), true);
+  xhr.open('POST', settings.url_telemetry+url_sep(settings.url_telemetry)+"r="+Math.random(), true);
   try{
     var fd = new FormData()
     fd.append('dl', dlStatus)
