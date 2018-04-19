@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<title>HTML5 Speedtest</title>
+<title>BlueJeans Network Test Toolkit</title>
 <style type="text/css">
 	html,body{
 		border:none; padding:0; margin:0;
 		background:#FFFFFF;
 		color:#202020;
 	}
+    .bg-company-red {
+        background-color: #327cbc;
+    }
 	body{
 		text-align:center;
 		font-family:"Roboto",sans-serif;
@@ -177,39 +182,79 @@ function initUI(){
 </script>
 </head>
 <body>
-<h1>HTML5 Speedtest</h1>
-<div id="startStopBtn" onclick="startStop()"></div>
-<div id="test">
-	<div id="progressBar"><div id="progress"></div></div>
-	<div class="testGroup">
-		<div class="testArea">
-			<div class="testName">Download</div>
-			<div id="dlText" class="meterText"></div>
-			<div class="unit">Mbps</div>
-		</div>
-		<div class="testArea">
-			<div class="testName">Upload</div>
-			<div id="ulText" class="meterText"></div>
-			<div class="unit">Mbps</div>
-		</div>
-	</div>
-	<div class="testGroup">
-		<div class="testArea">
-			<div class="testName">Ping</div>
-			<div id="pingText" class="meterText"></div>
-			<div class="unit">ms</div>
-		</div>
-		<div class="testArea">
-			<div class="testName">Jitter</div>
-			<div id="jitText" class="meterText"></div>
-			<div class="unit">ms</div>
-		</div>
-	</div>
-	<div id="ipArea">
-		IP Address: <span id="ip"></span>
-	</div>
-</div>
-<a href="https://github.com/adolfintel/speedtest">Source code</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="https://bluejeans.com">Bluejeans Professional Services</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="index.html">Speedtest </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="testcall.html">Test Call <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Proxy Test</a>
+            </li>
+        </ul>
+        <span class="navbar-text">
+      <a href="mailto:support@bluejeans.com">support@bluejeans.com</a>
+    </span>
+    </div>
+</nav>
+<div></div>
+
+<ul class="list-group">
+    <li class="list-group-item">Cras justo odio</li>
+    <li class="list-group-item">Dapibus ac facilisis in</li>
+    <li class="list-group-item">Morbi leo risus</li>
+    <li class="list-group-item">Porta ac consectetur ac</li>
+    <li class="list-group-item">Vestibulum at eros</li>
+</ul>
+
+
+
+<!--<nav class="navbar navbar-light bg-light">-->
+    <!--<a class="navbar-brand" href="#">Navbar</a>-->
+<!--</nav>-->
+
+<!--<div id="startStopBtn" onclick="startStop()"></div>-->
+<!--<div id="test">-->
+	<!--<div id="progressBar"><div id="progress"></div></div>-->
+	<!--<div class="testGroup">-->
+		<!--<div class="testArea">-->
+			<!--<div class="testName">Download</div>-->
+			<!--<div id="dlText" class="meterText"></div>-->
+			<!--<div class="unit">Mbps</div>-->
+		<!--</div>-->
+		<!--<div class="testArea">-->
+			<!--<div class="testName">Upload</div>-->
+			<!--<div id="ulText" class="meterText"></div>-->
+			<!--<div class="unit">Mbps</div>-->
+		<!--</div>-->
+	<!--</div>-->
+	<!--<div class="testGroup">-->
+		<!--<div class="testArea">-->
+			<!--<div class="testName">Ping</div>-->
+			<!--<div id="pingText" class="meterText"></div>-->
+			<!--<div class="unit">ms</div>-->
+		<!--</div>-->
+		<!--<div class="testArea">-->
+			<!--<div class="testName">Jitter</div>-->
+			<!--<div id="jitText" class="meterText"></div>-->
+			<!--<div class="unit">ms</div>-->
+		<!--</div>-->
+	<!--</div>-->
+	<!--<div id="ipArea">-->
+		<!--IP Address: <span id="ip"></span>-->
+	<!--</div>-->
+<!--</div>-->
+<!--<a href="https://github.com/adolfintel/speedtest">Source code</a>-->
 <script type="text/javascript">initUI();</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 </body>
 </html>
