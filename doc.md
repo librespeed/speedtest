@@ -319,7 +319,7 @@ w.postMessage('start {"url_dl": "newGarbageURL", "url_ul": "newEmptyURL", "url_p
 Telemetry currently requires PHP and either MySQL, PostgreSQL or SQLite.
 To set up the telemetry, we need to do 4 things:
 * copy `telemetry.php` and `telemetry_settings.php`
-* edit `telemetry_settings.php` to add your database settings
+* edit `telemetry_settings.php` to add your database settings or the csv filename and date timezone if CSV is used instead of database storage.
 * create the database
 * enable telemetry
 
@@ -350,6 +350,12 @@ $PostgreSql_username="USERNAME"; //your database username
 $PostgreSql_password="PASSWORD"; //your database password
 $PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
 $PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_postgresql.sql
+```
+
+If you choose to use CSV file, you must set the Csv_File and timezone variables.
+```php
+$Csv_File="myReportFile.csv";
+$timezone='Europe/Paris';
 ```
 
 ### Enabling telemetry
