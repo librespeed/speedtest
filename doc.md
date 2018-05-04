@@ -1,7 +1,7 @@
 # HTML5 Speedtest
 
 > by Federico Dossena  
-> Version 4.5.3, February 23, 2018
+> Version 4.5.5, April 25, 2018
 > [https://github.com/adolfintel/speedtest/](https://github.com/adolfintel/speedtest/)
 
 
@@ -237,6 +237,10 @@ w.postMessage('start '+JSON.stringify(params))
     * Default: `3`
     * Recommended: `>=1`
     * Default override: 1 on Firefox if enable_quirks is true
+* __xhr_ul_blob_megabytes__: size in megabytes of the blobs sent during the upload test
+	* Default: `20`
+	* Default override: 4 on Chromium-based mobile browsers (limitation introduced around version 65). This will be forced
+	* Default override: IE11 and Edge currently use a different method for the upload test. This parameter is ignored
 * __xhr_multistreamDelay__: how long should the multiple streams be delayed (in ms)
     * Default: `300`
     * Recommended: `>=100`, `<=700`
@@ -312,21 +316,21 @@ You need to start the test with your replacements like this:
 w.postMessage('start {"url_dl": "newGarbageURL", "url_ul": "newEmptyURL", "url_ping": "newEmptyURL", "url_getIp": "newIpURL"}')
 ```
 ## Telemetry
-Telemetry currently requires PHP and either MySQL, PostgreSQL or SQLite.
+Telemetry currently requires PHP and either MySQL, PostgreSQL or SQLite. Alternatively, it is possible to save to a CSV file.
 To set up the telemetry, we need to do 4 things:
 * copy `telemetry.php` and `telemetry_settings.php`
-* edit `telemetry_settings.php` to add your database settings
+* edit `telemetry_settings.php` to add your database or CSV settings
 * create the database
 * enable telemetry
 
 ### Creating the database
-This step is only for MySQL and PostgreSQL. Skip this if you want to use SQLite.
+This step is only for MySQL and PostgreSQL.  
 Log into your database using phpMyAdmin or a similar software and import the appropriate sql file into an empty database. For MySQL databases use `telemetry_mysql.sql` and for PostgreSQL databases use `telemetry_postgesql.sql`.
 If you see a table called `speedtest_users`, empty, you did it right.
 
 ### Configuring `telemetry.php`
 Open telemetry_settings.php with notepad or a similar text editor.
-Set your preferred database, ``$db_type="mysql";``, ``$db_type="sqlite";`` or ``$db_type="postgresql";``
+Set your preferred database, ``$db_type="mysql";``, ``$db_type="sqlite";``, ``$db_type="postgresql";`` or or ``$db_type="csv";``
 If you choose to use Sqlite3, you must set the path to your database file:
 ```php
 $Sqlite_db_file = "../telemetry.sql";
@@ -348,6 +352,13 @@ $PostgreSql_hostname="DB_HOSTNAME"; //database address, usually localhost
 $PostgreSql_databasename="DB_NAME"; //the name of the database where you loaded telemetry_postgresql.sql
 ```
 
+If you choose to use a CSV file, you must set the Csv_File and timezone variables.
+```php
+$Csv_File="myReportFile.csv";
+$timezone='Europe/Paris';
+```
+__Note__: CSV currently only supports basic telemetry, the log will not be saved
+
 ### Enabling telemetry
 Edit your test page; where you start the worker, you need to specify the `telemetry_level`.  
 There are 3 levels:
@@ -366,7 +377,7 @@ Also, see example-telemetry.html
 At the moment there is no front-end to see the telemetry data; you can connect to the database and see the collected results in the `speedtest_users` table.
 
 ## Troubleshooting
-These are the most common issues reported by users, and how to fix them. If you still need help, contact me at [dosse91@paranoici.org](mailto:dosse91@paranoici.org).
+These are the most common issues reported by users, and how to fix them. If you still need help, contact me at [info@fdossena.com](mailto:info@fdossena.com).
 
 #### Download test gives very low result
 Are garbage.php and empty.php (or your replacements) reachable?  
@@ -393,7 +404,7 @@ Make sure your server is sending the ```Connection:keep-alive``` header
 * On IE11, a same origin policy error is erroneously triggered under unknown conditions. Seems to be related to running the test from unusual URLs like a top level domain (for instance http://abc/speedtest). These are bugs in IE11's implementation of the same origin policy, not in the speedtest itself.
 * On IE11, under unknown circumstances, on some systems the test can only be run once, after which speedtest_worker.js will not be loaded by IE until the browser is restarted. This is a rare bug in IE11.
 ### Firefox-Specific
-* On some Linux systems with hardware acceleration turned off, the page rendering makes the browser lag, reducing the accuracy of the ping/jitter test
+* On some Linux systems with hardware acceleration turned off, the page rendering makes the browser lag, reducing the accuracy of the ping/jitter test, and potentially even the download and upload tests on very fast connections.
 
 ## Making changes
 Since this is an open source project, you can modify it.
@@ -406,7 +417,7 @@ To create the minified version, use UglifyJS like this:
 uglifyjs -c speedtest_worker.js > speedtest_worker.min.js
 ```
 
-Pull requests are very appreciated. If you don't use github (or git), simply contact me at [dosse91@paranoici.org](mailto:dosse91@paranoici.org).
+Pull requests are very appreciated. If you don't use github (or git), simply contact me at [info@fdossena.com](mailto:info@fdossena.com).
 
 __Important:__ please add your name to modified versions to distinguish them from the main project.
 
@@ -417,4 +428,4 @@ This software is under the GNU LGPL license, Version 3 or newer.
 To put it short: you are free to use, study, modify, and redistribute this software and modified versions of it, for free or for money.
 You can also use it in proprietary software but all changes to this software must remain under the same GNU LGPL license.
 
-Contact me at [dosse91@paranoici.org](mailto:dosse91@paranoici.org) for other licensing models.
+Contact me at [info@fdossena.com](mailto:info@fdossena.com) for other licensing models.

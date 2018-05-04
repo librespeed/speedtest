@@ -1,5 +1,5 @@
 /*
-	HTML5 Speedtest v4.5.3
+	HTML5 Speedtest v4.5.4
 	by Federico Dossena
 	https://github.com/adolfintel/speedtest/
 	GNU LGPLv3 License
@@ -39,6 +39,7 @@ var settings = {
   xhr_multistreamDelay: 300, //how much concurrent requests should be delayed
   xhr_ignoreErrors: 1, // 0=fail on errors, 1=attempt to restart a stream if it fails, 2=ignore all errors
   xhr_dlUseBlob: false, // if set to true, it reduces ram usage but uses the hard drive (useful with large garbagePhp_chunkSize and/or high xhr_dlMultistream)
+  xhr_ul_blob_megabytes: 20, //size in megabytes of the upload blobs sent in the upload test (forced to 4 on chrome mobile)
   garbagePhp_chunkSize: 20, // size of chunks sent by garbage.php (can be different if enable_quirks is active)
   enable_quirks: true, // enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
   ping_allowPerformanceApi: true, // if enabled, the ping test will attempt to calculate the ping more precisely using the Performance API. Currently works perfectly in Chrome, badly in Edge, and not at all in Firefox. If Performance API is not supported or the result is obviously wrong, a fallback is provided.
@@ -109,6 +110,10 @@ this.addEventListener('message', function (e) {
         //Edge 15 introduced a bug that causes onprogress events to not get fired, we have to use the "small chunks" workaround that reduces accuracy
         settings.forceIE11Workaround = true
       }
+	  if (/Chrome.(\d+)/i.test(ua)&&/Android|iPhone|iPad|iPod|Windows Phone/i.test(ua)){ //cheap af
+		//Chrome mobile introduced a limitation somewhere around version 65, we have to limit XHR upload size to 4 megabytes
+		settings.xhr_ul_blob_megabytes=4;
+	  }
       //telemetry_level has to be parsed and not just copied
       if(typeof s.telemetry_level !== 'undefined') settings.telemetry_level = s.telemetry_level === 'basic' ? 1 : s.telemetry_level === 'full' ? 2 : 0; // telemetry level
       //transform test_order to uppercase, just in case
@@ -252,22 +257,22 @@ function dlTest (done) {
   }.bind(this), 200)
 }
 // upload test, calls done function whent it's over
-// garbage data for upload test
-var r = new ArrayBuffer(1048576)
-try { r = new Float32Array(r); for (var i = 0; i < r.length; i++)r[i] = Math.random() } catch (e) { }
-var req = []
-var reqsmall = []
-for (var i = 0; i < 20; i++) req.push(r)
-req = new Blob(req)
-r = new ArrayBuffer(262144)
-try { r = new Float32Array(r); for (var i = 0; i < r.length; i++)r[i] = Math.random() } catch (e) { }
-reqsmall.push(r)
-reqsmall = new Blob(reqsmall)
 
 var ulCalled = false // used to prevent multiple accidental calls to ulTest
 function ulTest (done) {
   tlog('ulTest')
   if (ulCalled) return; else ulCalled = true // ulTest already called?
+// garbage data for upload test
+  var r = new ArrayBuffer(1048576)
+  try { r = new Float32Array(r); for (var i = 0; i < r.length; i++)r[i] = Math.random() } catch (e) { }
+  var req = []
+  var reqsmall = []
+  for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r)
+  req = new Blob(req)
+  r = new ArrayBuffer(262144)
+  try { r = new Float32Array(r); for (var i = 0; i < r.length; i++)r[i] = Math.random() } catch (e) { }
+  reqsmall.push(r)
+  reqsmall = new Blob(reqsmall)
   var totLoaded = 0.0, // total number of transmitted bytes
     startT = new Date().getTime(), // timestamp when test was started
     graceTimeDone = false, //set to true after the grace time is past

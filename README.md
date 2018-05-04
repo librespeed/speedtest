@@ -26,17 +26,25 @@ Only modern browsers are supported (IE11, latest Edge, latest Chrome, latest Fir
 ## Quick installation videos
 * [Debian 9.0 with Apache](https://fdossena.com/?p=speedtest/quickstart_deb.frag)
 * [Windows Server 2016 with IIS](https://fdossena.com/?p=speedtest/quickstart_win.frag)
+* [Ubuntu (External)](https://freedif.org/how-to-install-selfhosted-speedtest)
 
 Also, here's an [example config on Ubuntu 16 LTS](https://github.com/adolfintel/speedtest/issues/50)
 
 ## How to use in your site
-See the examples or doc.md
+* See the examples
+* [Read the wiki](https://github.com/adolfintel/speedtest/wiki)
+* Read doc.md
 
 ## Docker
 Please see the ```docker``` branch
 
+## Node.js backend
+A Node.js implementation is available in the ```node``` branch, maintained by [dunklesToast](https://github.com/dunklesToast).
+
 ## Donate
-If you want to support this project, you can [send a donation via PayPal](https://www.paypal.me/sineisochronic).
+[![Donate with Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/fdossena/donate)  
+[Donate with PayPal](https://www.paypal.me/sineisochronic)  
+Send ETH at this address: ```0x8A5273d4e2618c4cff2C62d8EB731701FceEd8E3```
 
 ## License
 Copyright (C) 2016-2018 Federico Dossena
