@@ -70,7 +70,7 @@ if($db_type=="mysql"){
 	$dl=$row["dl"];
 	$ul=$row["ul"];
 	$ping=$row["ping"];
-	$jitter=$row["jitter"];
+	$jit=$row["jitter"];
 	$conn=null;
 }else if($db_type=="postgresql"){
     $conn_host = "host=$PostgreSql_hostname";
@@ -85,7 +85,7 @@ if($db_type=="mysql"){
 	$dl=$row["dl"];
 	$ul=$row["ul"];
 	$ping=$row["ping"];
-	$jitter=$row["jitter"];
+	$jit=$row["jitter"];
 	$conn=null;
 }else die();
 
