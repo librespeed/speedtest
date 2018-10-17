@@ -91,6 +91,7 @@ if($stats_password=="PASSWORD"){
 				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users where id=?");
 				$q->bind_param("i",$_POST["id"]);
 				$q->execute();
+				$q->store_result();
 				$q->bind_result($id,$timestamp,$ip,$ispinfo,$ua,$lang,$dl,$ul,$ping,$jitter,$log,$extra);
 			} else if($db_type=="sqlite"||$db_type=="postgresql"){
 				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users where id=?");
@@ -100,6 +101,7 @@ if($stats_password=="PASSWORD"){
 			if($db_type=="mysql"){
 				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
 				$q->execute();
+				$q->store_result();
 				$q->bind_result($id,$timestamp,$ip,$ispinfo,$ua,$lang,$dl,$ul,$ping,$jitter,$log,$extra);
 			} else if($db_type=="sqlite"||$db_type=="postgresql"){
 				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
