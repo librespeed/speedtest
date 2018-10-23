@@ -1,5 +1,8 @@
 # HTML5 Speedtest
 
+![banner](https://user-images.githubusercontent.com/40510200/47362686-8faca780-d707-11e8-9206-77b783156f0e.png)
+
+
 No Flash, No Java, No Websocket, No Bullshit.
 
 This is a very lightweight Speedtest implemented in Javascript, using XMLHttpRequest and Web Workers.
