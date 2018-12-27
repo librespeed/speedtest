@@ -20,11 +20,11 @@ if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
 
 $ip = preg_replace("/^::ffff:/", "", $ip);
 
-if (strpos($ip, '::1') !== false) {
+if ($ip == "::1") { // ::1/128 is the only localhost ipv6 address. there are no others, no need to strpos this
     echo json_encode(['processedString' => $ip . " - localhost ipv6 access", 'rawIspInfo' => ""]);
     die();
 }
-if (strpos($ip, '127.0.0') !== false) {
+if (strpos($ip, '127.') === 0) { //anything within the 127/8 range is localhost ipv4, the ip must start with 127.0
     echo json_encode(['processedString' => $ip . " - localhost ipv4 access", 'rawIspInfo' => ""]);
     die();
 }
