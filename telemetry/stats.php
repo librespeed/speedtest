@@ -38,47 +38,93 @@ header("Pragma: no-cache");
 	h1{
 		text-align:center;
 	}
-	table{
-		margin:2em 0;
-		width:100%;
+	div.blueTable {
+		border: 1px solid #1C6EA4;
+		background-color: #EEEEEE;
+		width: 100%;
+		text-align: left;
+		border-collapse: collapse;
 	}
-	table, tr, th, td {
+	.divTable.blueTable .divTableCell, .divTable.blueTable .divTableHead {
 		border: 1px solid #AAAAAA;
+		padding: 3px 2px;
 	}
-	th {
-		width: 6em;
+	.divTable.blueTable .divTableBody .divTableCell {
+		font-size: 13px;
 	}
-	td {
-		word-break: break-all;
+	.divTable.blueTable .divTableRow:nth-child(even) {
+		background: #D0E4F5;
 	}
+	.divTable.blueTable .divTableHeading {
+		background: #1C6EA4;
+		background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+		border-bottom: 2px solid #444444;
+	}
+	.divTable.blueTable .divTableHeading .divTableHead {
+		font-size: 15px;
+		font-weight: bold;
+		color: #FFFFFF;
+		border-left: 2px solid #D0E4F5;
+	}
+	.divTable.blueTable .divTableHeading .divTableHead:first-child {
+		border-left: none;
+	}
+
+	.blueTable .tableFootStyle {
+		font-size: 14px;
+		font-weight: bold;
+		color: #FFFFFF;
+		background: #D0E4F5;
+		background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+		background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+		background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+		border-top: 2px solid #444444;
+	}
+	.blueTable .tableFootStyle {
+		font-size: 14px;
+	}
+	.blueTable .tableFootStyle .links {
+		text-align: right;
+	}
+	.blueTable .tableFootStyle .links a{
+		display: inline-block;
+		background: #1C6EA4;
+		color: #FFFFFF;
+		padding: 2px 8px;
+		border-radius: 5px;
+	}
+	.blueTable.outerTableFooter {
+		border-top: none;
+	}
+	.blueTable.outerTableFooter .tableFootStyle {
+		padding: 3px 5px; 
+	}
+	.divTable{ display: table; }
+	.divTableRow { display: table-row; }
+	.divTableHeading { display: table-header-group;}
+	.divTableCell, .divTableHead { display: table-cell;}
+	.divTableHeading { display: table-header-group;}
+	.divTableFoot { display: table-footer-group;}
+	.divTableBody { display: table-row-group;}
 </style>
 </head>
 <body>
 <h1>HTML5 Speedtest - Stats</h1>
 <?php
-include_once("telemetry_settings.php");
+include_once('telemetryEntry.php');
 require "idObfuscation.php";
+
 if($stats_password=="PASSWORD"){
 	?>
 		Please set $stats_password in telemetry_settings.php to enable access.
 	<?php
-}else if($_SESSION["logged"]===true){
-	if($_GET["op"]=="logout"){
+} else if ($_SESSION["logged"]===true){
+	if ($_GET["op"]=="logout"){
 		$_SESSION["logged"]=false;
 		?><script type="text/javascript">window.location=location.protocol+"//"+location.host+location.pathname;</script><?php
-	}else{
-		$conn=null;
-		if($db_type=="mysql"){
-			$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename);
-		}else if($db_type=="sqlite"){
-			$conn = new PDO("sqlite:$Sqlite_db_file");
-		} else if($db_type=="postgresql"){
-			$conn_host = "host=$PostgreSql_hostname";
-			$conn_db = "dbname=$PostgreSql_databasename";
-			$conn_user = "user=$PostgreSql_username";
-			$conn_password = "password=$PostgreSql_password";
-			$conn = new PDO("pgsql:$conn_host;$conn_db;$conn_user;$conn_password");
-		}else die();
+	} else {
 ?>
 	<form action="stats.php" method="GET"><input type="hidden" name="op" value="logout" /><input type="submit" value="Logout" /></form>
 	<form action="stats.php" method="GET">
@@ -88,74 +134,58 @@ if($stats_password=="PASSWORD"){
 		<input type="submit" value="Find" />
 		<input type="submit" onclick="document.getElementById('id').value=''" value="Show last 100 tests" />
 	</form>
+	<div class="divTable blueTable">
+		<div class="divTableHeading">
+			<div class="divTableRow">
+				<div class="divTableHead">Test ID</div>
+				<div class="divTableHead">Date and time</div>
+				<div class="divTableHead">IP and ISP Info</div>
+				<div class="divTableHead">User agent and locale</div>
+				<div class="divTableHead">Download speed</div>
+				<div class="divTableHead">Upload speed</div>
+				<div class="divTableHead">Ping</div>
+				<div class="divTableHead">Jitter</div>
+				<div class="divTableHead">Log</div>
+				<div class="divTableHead">Extra info</div>
+			</div>
+		</div>
+		<div class="divTableBody">
 	<?php
-		$q=null;
+		$entries = null;
 		if($_GET["op"]=="id"&&!empty($_GET["id"])){
 			$id=$_GET["id"];
-			if($enable_id_obfuscation) $id=deobfuscateId($id);
-			if($db_type=="mysql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users where id=?");
-				$q->bind_param("i",$id);
-				$q->execute();
-				$q->store_result();
-				$q->bind_result($id,$timestamp,$ip,$ispinfo,$ua,$lang,$dl,$ul,$ping,$jitter,$log,$extra);
-			} else if($db_type=="sqlite"||$db_type=="postgresql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users where id=?");
-				$q->execute(array($id));
-			} else die();
+			if ($enable_id_obfuscation) $id = deobfuscateId($id);
+			$entries = array($repository->find($id));
 		}else{
-			if($db_type=="mysql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
-				$q->execute();
-				$q->store_result();
-				$q->bind_result($id,$timestamp,$ip,$ispinfo,$ua,$lang,$dl,$ul,$ping,$jitter,$log,$extra);
-			} else if($db_type=="sqlite"||$db_type=="postgresql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
-				$q->execute();
-			}else die();
+			$entries = $repository->findAll();
 		}
-		while(true){
-			$id=null; $timestamp=null; $ip=null; $ispinfo=null; $ua=null; $lang=null; $dl=null; $ul=null; $ping=null; $jitter=null; $log=null; $extra=null;
-			if($db_type=="mysql"){
-				if(!$q->fetch()) break;
-			} else if($db_type=="sqlite"||$db_type=="postgresql"){
-				if(!($row=$q->fetch())) break;
-				$id=$row["id"];
-				$timestamp=$row["timestamp"];
-				$ip=$row["ip"];
-				$ispinfo=$row["ispinfo"];
-				$ua=$row["ua"];
-				$lang=$row["lang"];
-				$dl=$row["dl"];
-				$ul=$row["ul"];
-				$ping=$row["ping"];
-				$jitter=$row["jitter"];
-				$log=$row["log"];
-				$extra=$row["extra"];
-			}else die();
-	?>
-		<table>
-			<tr><th>Test ID</th><td><?=htmlspecialchars(($enable_id_obfuscation?obfuscateId($id):$id), ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Date and time</th><td><?=htmlspecialchars($timestamp, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>IP and ISP Info</th><td><?=$ip ?><br/><?=htmlspecialchars($ispinfo, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>User agent and locale</th><td><?=$ua ?><br/><?=htmlspecialchars($lang, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Download speed</th><td><?=htmlspecialchars($dl, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Upload speed</th><td><?=htmlspecialchars($ul, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Ping</th><td><?=htmlspecialchars($ping, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Jitter</th><td><?=htmlspecialchars($jitter, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Log</th><td><?=htmlspecialchars($log, ENT_HTML5, 'UTF-8') ?></td></tr>
-			<tr><th>Extra info</th><td><?=htmlspecialchars($extra, ENT_HTML5, 'UTF-8') ?></td></tr>
-		</table>
-	<?php
-		}
-	?>
+	foreach ($entries as $entry) {
+		$obfuscateId = ($enable_id_obfuscation ? obfuscateId($entry->id) : $entry->id);
+	 ?>
+	 	<div class="divTableRow">
+	 		<div class="divTableCell"><a href="/results?id=<?=htmlspecialchars($obfuscateId, ENT_HTML5, 'UTF-8') ?>"><?=htmlspecialchars($obfuscateId, ENT_HTML5, 'UTF-8') ?></a></div>
+	 		<div class="divTableCell" style="white-space:nowrap"><?=htmlspecialchars($entry->datetime, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=$entry->ip ?><br/><?=htmlspecialchars($entry->ispinfo, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=$entry->useragent ?><br/><?=htmlspecialchars($entry->locale, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->downloadspeed, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->uploadspeed, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->ping, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->jitter, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->log, ENT_HTML5, 'UTF-8') ?></div>
+	 		<div class="divTableCell"><?=htmlspecialchars($entry->extra, ENT_HTML5, 'UTF-8') ?></div>
+	 	</div>
+	 <?php
+	 	}
+	 ?>
+		</div>
+</div>
 <?php
 	}
-}else{
+} else {
 	if($_GET["op"]=="login"&&$_POST["password"]===$stats_password){
 		$_SESSION["logged"]=true;
 		?><script type="text/javascript">window.location=location.protocol+"//"+location.host+location.pathname;</script><?php
-	}else{
+	} else {
 ?>
 	<form action="stats.php?op=login" method="POST">
 		<h3>Login</h3>
