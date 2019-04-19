@@ -5,10 +5,7 @@ const path = require('path');
 const request = require('request');
 const helpers = require('./Helpers');
 
-let cache = {
-    size: 0,
-    random: null
-};
+let cache;
 
 Server.get('/empty', function (req, res) {
     res.sendStatus(200);
@@ -30,18 +27,20 @@ Server.get('/garbage', function (req, res) {
     res.set('Cache-Control', 'post-check=0, pre-check=0', false);
     res.set('Pragma', 'no-cache');
     const requestedSize = (req.query.ckSize || 100);
-    if (cache.size === requestedSize) {
-        res.end(cache.random);
+    
+    const send = () => {
+        for (let i = 0; i < requestedSize; i++)
+            res.write(cache);
+        res.end();
+    }
+    
+    if (cache) {
+        send();
     } else {
-        const size = 1048576 * requestedSize;
-        randomBytes(size, (error, bytes) => {
-            if (error) res.sendStatus(500);
-            else {
-                cache.random = bytes;
-                cache.size = requestedSize;
-                res.end(bytes);
-            }
-        })
+        randomBytes(1048576, (error, bytes) => {
+            cache = bytes;
+            send();
+        });
     }
 
 });
