@@ -86,7 +86,7 @@ if($stats_password=="PASSWORD"){
 		<input type="hidden" name="op" value="id" />
 		<input type="text" name="id" id="id" placeholder="Test ID" value=""/>
 		<input type="submit" value="Find" />
-		<input type="submit" onclick="document.getElementById('id').value=''" value="Show last 100 tests" />
+		<input type="submit" onclick="document.getElementById('id').value=''" value="Show last <?= $last_test_count ?> tests" />
 	</form>
 	<?php
 		$q=null;
@@ -105,12 +105,12 @@ if($stats_password=="PASSWORD"){
 			} else die();
 		}else{
 			if($db_type=="mysql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
+				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,{$last_test_count}");
 				$q->execute();
 				$q->store_result();
 				$q->bind_result($id,$timestamp,$ip,$ispinfo,$ua,$lang,$dl,$ul,$ping,$jitter,$log,$extra);
 			} else if($db_type=="sqlite"||$db_type=="postgresql"){
-				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,100");
+				$q=$conn->prepare("select id,timestamp,ip,ispinfo,ua,lang,dl,ul,ping,jitter,log,extra from speedtest_users order by timestamp desc limit 0,{$last_test_count}");
 				$q->execute();
 			}else die();
 		}
