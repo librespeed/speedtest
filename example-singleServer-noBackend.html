@@ -19,7 +19,7 @@ s.setParameter("test_order", "P_D_U");
 
 // path to a large static file, used for download test.
 //    to create this file, execute the following command:
-//    dd if=/dev/zero of=10mb.dat bs=10485760 count=1
+//    dd if=/dev/urandom of=10mb.dat bs=10485760 count=1
 s.setParameter("url_dl", "10mb.dat");
 
 // path to an empty static file, used for upload and ping test.
