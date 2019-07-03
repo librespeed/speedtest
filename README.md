@@ -25,6 +25,14 @@ Works with mobile versions too.
 
 ![Screenshot](https://speedtest.fdossena.com/mpot_v5.gif)
 
+## Docker Hub
+```
+Utlize the docker-compose.yml provided
+
+$ docker-compose up
+```
+
+
 ## Docker + Docker Compose
 
 The project includes a basic `docker-compose.yml` for development.  To run, execute the following:
