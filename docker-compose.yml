@@ -6,5 +6,6 @@ services:
     image: adolfintel/speedtest:${TAG:-latest}
     ports:
       - "8888:80"
-    volumes:
-      - .:/var/www/html
+    # Should only be declared if you have a custom configuration. 404 errors thrown if misconfigured
+    #volumes:
+      #- .:/var/www/html
