@@ -8,10 +8,31 @@ const helpers = require('./Helpers');
 let cache;
 
 Server.get('/empty', function (req, res) {
+    if (req.query.cors){
+    	res.header("Access-Control-Allow-Origin", "*");
+    	res.header("Access-Control-Allow-Methods","GET");
+    }
+    res.send();
+});
+
+Server.options('/empty', function (req, res) {
+    if (req.query.cors){
+    	res.header("Access-Control-Allow-Origin", "*");
+    	res.header("Access-Control-Allow-Methods","OPTIONS");
+	res.header("Access-Control-Allow-Headers","Content-Encoding, Content-Type");
+    }
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    res.set("Cache-Control", "post-check=0, pre-check=0");
+    res.set("Pragma", "no-cache");
     res.sendStatus(200);
 });
 
+
 Server.post('/empty', function (req, res) {
+    if (req.query.cors){
+    	res.header("Access-Control-Allow-Origin", "*");
+    	res.header("Access-Control-Allow-Methods","POST");
+    }
     res.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
     res.set("Cache-Control", "post-check=0, pre-check=0");
     res.set("Pragma", "no-cache");
@@ -19,6 +40,10 @@ Server.post('/empty', function (req, res) {
 });
 
 Server.get('/garbage', function (req, res) {
+    if (req.query.cors){
+    	res.header("Access-Control-Allow-Origin", "*");
+    	res.header("Access-Control-Allow-Methods","GET");
+    }
     res.set('Content-Description', 'File Transfer');
     res.set('Content-Type', 'application/octet-stream');
     res.set('Content-Disposition', 'attachment; filename=random.dat');
@@ -46,6 +71,10 @@ Server.get('/garbage', function (req, res) {
 });
 
 Server.get('/getIP', function (req, res) {
+    if (req.query.cors){
+    	res.header("Access-Control-Allow-Origin", "*");
+    	res.header("Access-Control-Allow-Methods","GET");
+    }
     let requestIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.headers['HTTP_CLIENT_IP'] || req.headers['X-Real-IP'] || req.headers['HTTP_X_FORWARDED_FOR'];
     if (requestIP.substr(0, 7) === "::ffff:") {
         requestIP = requestIP.substr(7)
