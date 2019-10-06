@@ -1,0 +1,25 @@
+FROM alpine:latest
+
+RUN apk add --no-cache php7-apache2 php7-openssl php7-json && \
+    rm -rf /var/www/localhost/htdocs/* /var/cache/apk/* && \
+    adduser -u 82 -D -S -G www-data www-data && \
+    mkdir -p /run/apache2 && \
+    chown -R www-data:www-data /run/apache2 && \
+    sed -i 's/max_execution_time = [0-9]\+/max_execution_time = 90/' /etc/php7/php.ini && \
+    sed -i 's/max_input_time = [0-9]\+/max_input_time = 90/' /etc/php7/php.ini && \
+    sed -i 's/memory_limit = [0-9]\+M/memory_limit = 128M/' /etc/php7/php.ini && \
+    sed -i 's/post_max_size = [0-9]\+M/post_max_size = 50M/' /etc/php7/php.ini && \
+    sed -i 's/upload_max_filesize = [0-9]\+M/upload_max_filesize = 50M/' /etc/php7/php.ini && \
+    sed -i 's/ErrorLog logs\/error.log/ErrorLog \/dev\/stdout/' /etc/apache2/httpd.conf && \
+    sed -i 's/CustomLog/#CustomLog/' /etc/apache2/httpd.conf && \
+    sed -i 's/Listen 80/Listen 8080/' /etc/apache2/httpd.conf
+
+COPY backend results LICENSE favicon.ico index.html speedtest.js speedtest_worker.js /var/www/localhost/htdocs/
+
+RUN chown -hR www-data:www-data /var/www/
+
+USER www-data
+
+EXPOSE 8080
+
+CMD ["/usr/sbin/httpd", "-k", "start", "-D", "FOREGROUND", "-c", "ServerName localhost"]
