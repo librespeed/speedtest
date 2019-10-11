@@ -1,0 +1,19 @@
+
+[
+	{
+		"name": "Speedtest Demo Server (Helsinki)",
+		"server" :"//fi.openspeed.org/",
+		"dlURL" :"garbage.php",
+		"ulURL" :"empty.php",
+		"pingURL" :"empty.php",
+		"getIpURL" :"getIP.php"
+	},
+	{
+		"name": "Old Speedtest Demo Server",
+		"server": "//mpotdemo.fdossena.com/",
+		"dlURL": "garbage.php",
+		"ulURL": "empty.php",
+		"pingURL": "empty.php",
+		"getIpURL": "getIP.php"
+	}
+]

@@ -1,58 +1,10 @@
 ![LibreSpeed Logo](https://github.com/librespeed/speedtest/blob/master/.logo/logo3.png?raw=true)
 
-# LibreSpeed
+# LibreSpeed - Docker Version
 
-No Flash, No Java, No Websocket, No Bullshit.
+This is the Docker version of LibreSpeed.
 
-This is a very lightweight Speedtest implemented in Javascript, using XMLHttpRequest and Web Workers.
-
-## Try it
-[Take a Speedtest](https://speedtest.fdossena.com)
-
-## Compatibility
-All modern browsers are supported: IE11, latest Edge, latest Chrome, latest Firefox, latest Safari.  
-Works with mobile versions too.
-
-## Features
-* Download
-* Upload
-* Ping
-* Jitter
-* IP Address, ISP, distance from server (optional)
-* Telemetry (optional)
-* Results sharing (optional)
-* Multiple Points of Test (optional)
-
-![Screenshot](https://speedtest.fdossena.com/mpot_v6.gif)
-
-## Docker Hub
-```
-Utlize the docker-compose.yml provided
-
-$ docker-compose up
-```
-
-## Docker + Docker Compose
-The project includes a basic `docker-compose.yml` for development.  To run, execute the following:
-
-```
-$ docker-compose build
-
-$ docker-compose up
-```
-
-Speedtest will be available at [http://0.0.0.0:8888/](http://0.0.0.0:8888/).
-
-To run via Docker directly:
-
-```
-$ docker build -t adolfintel/speedtest:latest .
-
-$ docker run -d --name  speedtest -p 0.0.0.0:80:80 adolfintel/speedtest:latest
-```
-
-## Android app
-A template to build an Android client for your LibreSpeed installation is available [here](https://github.com/librespeed/speedtest-android).
+See the included `doc.md` or the wiki for instructions on how to use it.
 
 ## Donate
 [![Donate with Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/fdossena/donate)  
@@ -73,4 +25,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/lgpl>.
-
