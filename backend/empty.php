@@ -1,4 +1,5 @@
 <?php
+set_time_limit (15); // prevent PHP from leaving sockets open with client
 header( "HTTP/1.1 200 OK" );
 if(isset($_GET["cors"])){
     header('Access-Control-Allow-Origin: *');
