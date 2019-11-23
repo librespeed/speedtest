@@ -41,11 +41,11 @@ if [[ "$TELEMETRY" == "true" && ( "$MODE" == "frontend" || "$MODE" == "standalon
   sed -i s/\$stats_password=\".*\"/\$stats_password=\"$PASSWORD\"/g /var/www/html/results/telemetry_settings.php
 
   if [ "$ENABLE_ID_OBFUSCATION" == "true" ]; then
-    sed -i s/\$enable_id_obfuscation=\".*\"/\$enable_id_obfuscation=\"true\"/g /var/www/html/results/telemetry_settings.php
+    sed -i s/\$enable_id_obfuscation=.*\;/\$enable_id_obfuscation=true\;/g /var/www/html/results/telemetry_settings.php
   fi
 
   if [ "$REDACT_IP_ADDRESSES" == "true" ]; then
-    sed -i s/\$redact_ip_addresses=\".*\"/\$redact_ip_addresses=\"true\"/g /var/www/html/results/telemetry_settings.php
+    sed -i s/\$redact_ip_addresses=.*\;/\$redact_ip_addresses=true\;/g /var/www/html/results/telemetry_settings.php
   fi
 
   mkdir -p /database/
