@@ -55,6 +55,10 @@ if (strpos($ip, '169.254.') === 0) { // IPv4 link-local
     echo json_encode(['processedString' => $ip . " - link-local IPv4 access", 'rawIspInfo' => ""]);
     die();
 }
+if (preg_match('/^100\.([6-9][0-9]|1[0-2][0-7])\./', $ip) === 1) { // 100.64/10 CGNAT IPv4
+    echo json_encode(['processedString' => $ip . " - CGNAT IPv4 access", 'rawIspInfo' => ""]);
+    die();
+}
 
 /**
  * Optimized algorithm from http://www.codexworld.com
