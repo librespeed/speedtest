@@ -8,6 +8,7 @@
   "private": false,
   "dependencies": {
     "express": "^4.16.3",
+    "cors": "^2.8.5",
     "gps-distance": "^0.0.4",
     "random-bytes": "^1.0.0",
     "request": "^2.85.0"
