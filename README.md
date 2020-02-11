@@ -4,6 +4,11 @@ This is a nodeJS Port from the original PHP-based [LibreSpeed](https://github.co
 ## Installation
 For any instructions and support please check out the [Wiki](https://github.com/librespeed/speedtest/wiki)
 
+##Multiple test points (Node.js port)
+You can use any combinations of php and node.js backends, read more at [Wiki](https://github.com/librespeed/speedtest/wiki/Multiple-test-points-(PHP\))
+
+Rename src/public/example-multipleServers-pretty.html to src/public/index.html if you want to use multiple test points mode.
+
 ## Support
 If you like this project and want to support our work you can either do pull requests or donate via [PayPal](https://paypal.me/dunklesToast) 
 
