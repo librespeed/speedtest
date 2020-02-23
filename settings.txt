@@ -1,0 +1,22 @@
+# backend listen port
+listen_port=8989
+# download test chunks
+download_chunks=4
+# ipinfo.io API key, if applicable
+ipinfo_api_key=
+# distance unit used in frontend, available options: M (miles), K (kilometers), N (nautical miles)
+distance_unit=K
+# enable CORS
+enable_cors=false
+
+# password for logging into statistics page
+statistics_password=PASSWORD
+# redact IP addresses
+redact_ip_addresses=false
+
+# database type for statistics data, currently supports: mysql, postgresql
+database_type=postgresql
+database_hostname=localhost
+database_name=speedtest
+database_username=postgres
+database_password=
