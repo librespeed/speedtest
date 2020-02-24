@@ -50,7 +50,7 @@ func ListenAndServe(conf *config.Config) error {
 	r.Get("/results/", results.DrawPNG)
 	r.Post("/results/telemetry", results.Record)
 	r.HandleFunc("/stats", results.Stats)
-	return http.ListenAndServe(":"+conf.Port, r)
+	return http.ListenAndServe(net.JoinHostPort(conf.BindAddress, conf.Port), r)
 }
 
 func pages(w http.ResponseWriter, r *http.Request) {

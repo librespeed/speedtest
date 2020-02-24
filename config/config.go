@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	BindAddress    string `mapstructure:"bind_address"`
 	Port           string `mapstructure:"listen_port"`
 	DownloadChunks int    `mapstructure:"download_chunks"`
 	IPInfoAPIKey   string `mapstructure:"ipinfo_api_key"`
