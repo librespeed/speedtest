@@ -103,8 +103,6 @@ func garbage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-
 	var ret results.Result
 
 	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)

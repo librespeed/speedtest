@@ -87,10 +87,6 @@ You need Go 1.13+ to compile the binary.
 - Test IDs are generated ULID, there is no option to change them to plain ID
 - API endpoints have the same names, except the `.php` extension (e.g `empty`, `garbage`, `getIP`)
 - You can use the same HTML template from the PHP implementation
-- There's a slight change in `speedtest_worker.js#L706`
-   - Original: `rawIspInfo: typeof ispInfo === "object" ? ispInfo : ""`
-   - Now: `rawIspInfo: typeof ispInfo === "object" || typeof ispInfo === "string" ? ispInfo : ""`
-   - Somehow `ispInfo` is not of type `object` in my environment, changed to this to avoid problems
 - There might be a slight delay on program start if your Internet connection is slow. That's because the program will
 attempt to fetch your current network's ISP info for distance calculation between your network and the speed test client's.
 This action will only be done once, and cached for later use.
