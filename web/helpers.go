@@ -151,5 +151,10 @@ func calculateDistance(clientLocation string, unit string) string {
 		unitString = " NM"
 	}
 
-	return strconv.FormatFloat(dist, 'f', 2, 64) + unitString
+	return fmt.Sprintf("%d%s", round(dist), unitString)
+}
+
+func round(v float64) int {
+	r := int(math.Round(v))
+	return 10 * ((r + 9) / 10)
 }
