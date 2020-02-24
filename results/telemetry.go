@@ -26,6 +26,13 @@ import (
 
 const (
 	watermark = "LibreSpeed"
+
+	labelMS       = " ms"
+	labelMbps     = "Mbps"
+	labelPing     = "Ping"
+	labelJitter   = "Jitter"
+	labelDownload = "Download"
+	labelUpload   = "Upload"
 )
 
 var (
@@ -229,39 +236,39 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	drawer.Src = colorLabel
 
 	// labels
-	p := drawer.MeasureString("Ping")
+	p := drawer.MeasureString(labelPing)
 	x := canvasWidth/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight/10)
-	drawer.DrawString("Ping")
+	drawer.DrawString(labelPing)
 
-	p = drawer.MeasureString("Jitter")
+	p = drawer.MeasureString(labelJitter)
 	x = canvasWidth*3/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight/10)
-	drawer.DrawString("Jitter")
+	drawer.DrawString(labelJitter)
 
-	p = drawer.MeasureString("Download")
+	p = drawer.MeasureString(labelDownload)
 	x = canvasWidth/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight/2)
-	drawer.DrawString("Download")
+	drawer.DrawString(labelDownload)
 
-	p = drawer.MeasureString("Upload")
+	p = drawer.MeasureString(labelUpload)
 	x = canvasWidth*3/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight/2)
-	drawer.DrawString("Upload")
+	drawer.DrawString(labelUpload)
 
 	drawer.Face = smallLabelFace
 	drawer.Src = colorMeasure
-	p = drawer.MeasureString("Mbps")
+	p = drawer.MeasureString(labelMbps)
 	x = canvasWidth/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight*8/10)
-	drawer.DrawString("Mbps")
+	drawer.DrawString(labelMbps)
 
-	p = drawer.MeasureString("Mbps")
+	p = drawer.MeasureString(labelMbps)
 	x = canvasWidth*3/4 - p.Round()/2
 	drawer.Dot = freetype.Pt(x, canvasHeight*8/10)
-	drawer.DrawString("Mbps")
+	drawer.DrawString(labelMbps)
 
-	msLength := drawer.MeasureString(" ms")
+	msLength := drawer.MeasureString(labelMS)
 
 	// ping value
 	drawer.Face = valueFace
@@ -276,7 +283,7 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	drawer.Dot = freetype.Pt(x, canvasHeight*11/40)
 	drawer.Src = colorMeasure
 	drawer.Face = smallLabelFace
-	drawer.DrawString(" ms")
+	drawer.DrawString(labelMS)
 
 	// jitter value
 	drawer.Face = valueFace
@@ -290,7 +297,7 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	x = x + p.Round()
 	drawer.Dot = freetype.Pt(x, canvasHeight*11/40)
 	drawer.Src = colorMeasure
-	drawer.DrawString(" ms")
+	drawer.DrawString(labelMS)
 
 	// download value
 	drawer.Face = valueFace
