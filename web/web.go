@@ -39,8 +39,7 @@ func ListenAndServe(conf *config.Config) error {
 
 	log.Infof("Starting backend server on port %s", conf.Port)
 	r.Get("/*", pages)
-	r.Get("/empty", empty)
-	r.Post("/empty", empty)
+	r.HandleFunc("/empty", empty)
 	r.Get("/garbage", garbage)
 	r.Get("/getIP", getIP)
 	r.Get("/results/", results.DrawPNG)
@@ -101,7 +100,12 @@ func garbage(w http.ResponseWriter, r *http.Request) {
 func getIP(w http.ResponseWriter, r *http.Request) {
 	var ret results.Result
 
-	clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+	clientIP := r.RemoteAddr
+	if strings.Contains(clientIP, ":") {
+		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+		clientIP = ip
+	}
+
 	strings.ReplaceAll(clientIP, "::ffff:", "")
 
 	isSpecialIP := true
