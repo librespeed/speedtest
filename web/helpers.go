@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -13,6 +12,8 @@ import (
 
 	"backend/config"
 	"backend/results"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -52,19 +53,19 @@ func getIPInfo(addr string) (string, results.IPInfoResponse) {
 	var ret results.IPInfoResponse
 	resp, err := http.DefaultClient.Get(getIPInfoURL(addr))
 	if err != nil {
-		fmt.Printf("Error getting response from ipinfo.io: %s\n", err)
+		log.Errorf("Error getting response from ipinfo.io: %s", err)
 		return "", ret
 	}
 
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading response from ipinfo.io: %s\n", err)
+		log.Errorf("Error reading response from ipinfo.io: %s", err)
 		return "", ret
 	}
 	defer resp.Body.Close()
 
 	if err := json.Unmarshal(raw, &ret); err != nil {
-		fmt.Printf("Error parsing response from ipinfo.io: %s\n", err)
+		log.Errorf("Error parsing response from ipinfo.io: %s", err)
 	}
 
 	return string(raw), ret
@@ -74,18 +75,18 @@ func getServerLocation() (float64, float64) {
 	var ret results.IPInfoResponse
 	resp, err := http.DefaultClient.Get(getIPInfoURL(""))
 	if err != nil {
-		fmt.Printf("Error getting repsonse from ipinfo.io: %s\n", err)
+		log.Errorf("Error getting repsonse from ipinfo.io: %s", err)
 		return 0, 0
 	}
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("Error reading response from ipinfo.io: %s\n", err)
+		log.Errorf("Error reading response from ipinfo.io: %s", err)
 		return 0, 0
 	}
 	defer resp.Body.Close()
 
 	if err := json.Unmarshal(raw, &ret); err != nil {
-		fmt.Printf("Error parsing response from ipinfo.io: %s\n", err)
+		log.Errorf("Error parsing response from ipinfo.io: %s", err)
 		return 0, 0
 	}
 
@@ -94,7 +95,7 @@ func getServerLocation() (float64, float64) {
 		lat, lng = parseLocationString(ret.Location)
 	}
 
-	fmt.Printf("Fetched server coordinates: %.6f, %.6f\n", lat, lng)
+	log.Infof("Fetched server coordinates: %.6f, %.6f", lat, lng)
 
 	return lat, lng
 }
@@ -102,19 +103,19 @@ func getServerLocation() (float64, float64) {
 func parseLocationString(location string) (float64, float64) {
 	parts := strings.Split(location, ",")
 	if len(parts) != 2 {
-		fmt.Printf("Unknown location format: %s\n", location)
+		log.Errorf("Unknown location format: %s", location)
 		return 0, 0
 	}
 
 	lat, err := strconv.ParseFloat(parts[0], 64)
 	if err != nil {
-		fmt.Printf("Error parsing latitude: %s\n", parts[0])
+		log.Errorf("Error parsing latitude: %s", parts[0])
 		return 0, 0
 	}
 
 	lng, err := strconv.ParseFloat(parts[1], 64)
 	if err != nil {
-		fmt.Printf("Error parsing longitude: %s\n", parts[0])
+		log.Errorf("Error parsing longitude: %s", parts[0])
 		return 0, 0
 	}
 

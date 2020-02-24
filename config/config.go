@@ -54,7 +54,7 @@ func Load() Config {
 	}
 
 	if err := viper.Unmarshal(&conf); err != nil {
-		log.Fatalf("Error parsing config: %+v\n", err)
+		log.Fatalf("Error parsing config: %s", err)
 	}
 
 	loadedConfig = &conf

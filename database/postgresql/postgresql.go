@@ -3,11 +3,11 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
-	"os"
-
-	_ "github.com/lib/pq"
 
 	"backend/database/schema"
+
+	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -22,8 +22,7 @@ func Open(hostname, username, password, database string) *PostgreSQL {
 	connStr := fmt.Sprintf(connectionStringTemplate, username, password, hostname, database)
 	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
-		fmt.Printf("Cannot open PostgreSQL database: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("Cannot open PostgreSQL database: %s", err)
 	}
 	return &PostgreSQL{db: conn}
 }

@@ -2,7 +2,6 @@ package results
 
 import (
 	"encoding/json"
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -15,13 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"backend/database"
+	"backend/database/schema"
+
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"github.com/oklog/ulid/v2"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/image/font"
-
-	"backend/database"
-	"backend/database/schema"
 )
 
 const (
@@ -119,13 +119,13 @@ func Record(w http.ResponseWriter, r *http.Request) {
 
 	_, err := database.DB.Insert(&record)
 	if err != nil {
-		fmt.Printf("Error inserting into database: %s\n", err)
+		log.Errorf("Error inserting into database: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if _, err := w.Write([]byte("id " + uuid.String())); err != nil {
-		fmt.Printf("Error writing ID to telemetry request: %s\n", err)
+		log.Errorf("Error writing ID to telemetry request: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -134,21 +134,21 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	uuid := r.FormValue("id")
 	record, err := database.DB.FetchByUUID(uuid)
 	if err != nil {
-		fmt.Printf("Error querying database: %s\n", err)
+		log.Errorf("Error querying database: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	var result Result
 	if err := json.Unmarshal([]byte(record.ISPInfo), &result); err != nil {
-		fmt.Printf("Error parsing ISP info: %s\n", err)
+		log.Errorf("Error parsing ISP info: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	ispInfo, err := result.GetISPInfo()
 	if err != nil {
-		fmt.Printf("Error parsing ISP info: %s\n", err)
+		log.Errorf("Error parsing ISP info: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -167,13 +167,13 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	// https://github.com/golang/freetype/issues/8
 	var fontLight, fontBold *truetype.Font
 	if b, err := ioutil.ReadFile("assets/NotoSansDisplay-Light.ttf"); err != nil {
-		fmt.Printf("Error opening NotoSansDisplay-Light font: %s\n", err)
+		log.Errorf("Error opening NotoSansDisplay-Light font: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else {
 		font, err := freetype.ParseFont(b)
 		if err != nil {
-			fmt.Printf("Error parsing NotoSansDisplay-Light font: %s\n", err)
+			log.Errorf("Error parsing NotoSansDisplay-Light font: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -181,13 +181,13 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if b, err := ioutil.ReadFile("assets/NotoSansDisplay-Medium.ttf"); err != nil {
-		fmt.Printf("Error opening NotoSansDisplay-Medium font: %s\n", err)
+		log.Errorf("Error opening NotoSansDisplay-Medium font: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	} else {
 		font, err := freetype.ParseFont(b)
 		if err != nil {
-			fmt.Printf("Error parsing NotoSansDisplay-Medium font: %s\n", err)
+			log.Errorf("Error parsing NotoSansDisplay-Medium font: %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

@@ -3,11 +3,11 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"os"
-
-	_ "github.com/go-sql-driver/mysql"
 
 	"backend/database/schema"
+
+	_ "github.com/go-sql-driver/mysql"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -22,8 +22,7 @@ func Open(hostname, username, password, database string) *MySQL {
 	connStr := fmt.Sprintf(connectionStringTemplate, username, password, hostname, database)
 	conn, err := sql.Open("mysql", connStr)
 	if err != nil {
-		fmt.Printf("Cannot open MySQL database: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("Cannot open MySQL database: %s", err)
 	}
 	return &MySQL{db: conn}
 }

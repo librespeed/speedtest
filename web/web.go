@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -41,7 +40,7 @@ func ListenAndServe(conf *config.Config) error {
 		r.Use(c.Handler)
 	}
 
-	log.Infof("Starting backend server on port %s\n", conf.Port)
+	log.Infof("Starting backend server on port %s", conf.Port)
 	r.Get("/*", pages)
 	r.Get("/empty", empty)
 	r.Post("/empty", empty)
@@ -133,7 +132,7 @@ func getIP(w http.ResponseWriter, r *http.Request) {
 	if isSpecialIP {
 		b, _ := json.Marshal(&ret)
 		if _, err := w.Write(b); err != nil {
-			fmt.Printf("Error writing to client: %s\n", err)
+			log.Errorf("Error writing to client: %s", err)
 		}
 		return
 	}
