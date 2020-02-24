@@ -160,7 +160,7 @@ func getIP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ispInfo.Location != "" {
-		isp += ", (" + calculateDistance(ispInfo.Location, config.LoadedConfig().DistanceUnit) + ")"
+		isp += " (" + calculateDistance(ispInfo.Location, config.LoadedConfig().DistanceUnit) + ")"
 	}
 
 	ret.ProcessedString = clientIP + " - " + isp
