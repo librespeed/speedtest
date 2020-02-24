@@ -11,7 +11,6 @@ type Config struct {
 	DownloadChunks int    `mapstructure:"download_chunks"`
 	IPInfoAPIKey   string `mapstructure:"ipinfo_api_key"`
 	DistanceUnit   string `mapstructure:"distance_unit"`
-	EnableCORS     bool   `mapstructure:"enable_cors"`
 
 	StatsPassword string `mapstructure:"statistics_password"`
 	RedactIP      bool   `mapstructure:"redact_ip_addresses"`

@@ -33,12 +33,9 @@ var (
 func ListenAndServe(conf *config.Config) error {
 	r := chi.NewMux()
 	r.Use(middleware.RealIP)
+	r.Use(cors.Default().Handler)
 	r.Use(middleware.NoCache)
 	r.Use(middleware.Logger)
-	if conf.EnableCORS {
-		c := cors.Default()
-		r.Use(c.Handler)
-	}
 
 	log.Infof("Starting backend server on port %s", conf.Port)
 	r.Get("/*", pages)
