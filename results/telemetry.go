@@ -82,11 +82,6 @@ func Record(w http.ResponseWriter, r *http.Request) {
 	userAgent := r.UserAgent()
 	language := r.Header.Get("Accept-Language")
 
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	ispInfo := r.FormValue("ispinfo")
 	download := r.FormValue("dl")
 	upload := r.FormValue("ul")
