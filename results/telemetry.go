@@ -345,5 +345,7 @@ func DrawPNG(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Disposition", "inline; filename="+uuid+".png")
 	w.Header().Set("Content-Type", "image/png")
-	png.Encode(w, canvas)
+	if err := png.Encode(w, canvas); err != nil {
+		log.Errorf("Failed to output image to HTTP client: %s", err)
+	}
 }
