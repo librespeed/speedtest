@@ -17,9 +17,9 @@ import (
 
 var (
 	// get server location from ipinfo.io from start to minimize API access
-	// serverLat, serverLng = getServerLocation()
+	serverLat, serverLng = getServerLocation()
 	// for testing
-	serverLat, serverLng = 22.7702, 112.9578
+	// serverLat, serverLng = 22.7702, 112.9578
 	// serverLat, serverLng = 23.018, 113.7487
 )
 

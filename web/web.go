@@ -42,7 +42,6 @@ func ListenAndServe(conf *config.Config) error {
 	}
 
 	log.Infof("Starting backend server on port %s\n", conf.Port)
-	// TODO: security
 	r.Get("/*", pages)
 	r.Get("/empty", empty)
 	r.Post("/empty", empty)
@@ -55,6 +54,10 @@ func ListenAndServe(conf *config.Config) error {
 }
 
 func pages(w http.ResponseWriter, r *http.Request) {
+	if r.RequestURI == "/" {
+		r.RequestURI = "/index.html"
+	}
+
 	uri := strings.Split(r.RequestURI, "?")[0]
 	if strings.HasSuffix(uri, ".html") || strings.HasSuffix(uri, ".js") {
 		http.FileServer(http.Dir("assets")).ServeHTTP(w, r)
