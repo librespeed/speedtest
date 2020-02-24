@@ -56,6 +56,8 @@ You need Go 1.13+ to compile the binary.
 4. Change `settings.toml` according to your environment:
 
     ```toml
+    # bind address
+    bind_address="127.0.0.1"
     # backend listen port, default is 8989
     listen_port=8989
     # download test chunks, default is 4
@@ -94,6 +96,7 @@ attempt to fetch your current network's ISP info for distance calculation betwee
 This action will only be done once, and cached for later use.
 
 ## License
+Copyright (C) 2016-2019 Federico Dossena
 Copyright (C) 2020 Maddie Zhan
 
 This program is free software: you can redistribute it and/or modify
