@@ -33,7 +33,14 @@ var (
 func ListenAndServe(conf *config.Config) error {
 	r := chi.NewMux()
 	r.Use(middleware.RealIP)
-	r.Use(cors.Default().Handler)
+
+	cs := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"*"},
+	})
+
+	r.Use(cs.Handler)
 	r.Use(middleware.NoCache)
 	r.Use(middleware.Logger)
 
