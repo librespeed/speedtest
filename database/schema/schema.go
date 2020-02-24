@@ -1,6 +1,11 @@
 package schema
 
+import (
+	"time"
+)
+
 type TelemetryData struct {
+	Timestamp time.Time
 	IPAddress string
 	ISPInfo   string
 	Extra     string

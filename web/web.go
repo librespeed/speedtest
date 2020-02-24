@@ -50,7 +50,7 @@ func ListenAndServe(conf *config.Config) error {
 	r.Get("/getIP", getIP)
 	r.Get("/results/", results.DrawPNG)
 	r.Post("/results/telemetry", results.Record)
-	r.Get("/stats", results.Stats)
+	r.HandleFunc("/stats", results.Stats)
 	return http.ListenAndServe(":"+conf.Port, r)
 }
 
@@ -84,7 +84,6 @@ func garbage(w http.ResponseWriter, r *http.Request) {
 	if ckSize != "" {
 		i, err := strconv.ParseInt(ckSize, 10, 64)
 		if err == nil && i > 0 && i < 1024 {
-			log.Infof("Chunk size set to %d", i)
 			chunks = int(i)
 		} else {
 			log.Errorf("Invalid chunk size: %s", ckSize)

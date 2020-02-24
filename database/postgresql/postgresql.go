@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
 
 	_ "github.com/lib/pq"
 
@@ -39,10 +38,29 @@ func (p *PostgreSQL) FetchByUUID(uuid string) (*schema.TelemetryData, error) {
 	row := p.db.QueryRow(`SELECT * FROM speedtest_users WHERE uuid = $1`, uuid)
 	if row != nil {
 		var id string
-		var timestamp time.Time
-		if err := row.Scan(&id, &timestamp, &record.IPAddress, &record.ISPInfo, &record.Extra, &record.UserAgent, &record.Language, &record.Download, &record.Upload, &record.Ping, &record.Jitter, &record.Log, &record.UUID); err != nil {
+		if err := row.Scan(&id, &record.Timestamp, &record.IPAddress, &record.ISPInfo, &record.Extra, &record.UserAgent, &record.Language, &record.Download, &record.Upload, &record.Ping, &record.Jitter, &record.Log, &record.UUID); err != nil {
 			return nil, err
 		}
 	}
 	return &record, nil
+}
+
+func (p *PostgreSQL) FetchLast100() ([]schema.TelemetryData, error) {
+	var records []schema.TelemetryData
+	rows, err := p.db.Query(`SELECT * FROM speedtest_users ORDER BY "timestamp" DESC LIMIT 100;`)
+	if err != nil {
+		return nil, err
+	}
+	if rows != nil {
+		var id string
+
+		for rows.Next() {
+			var record schema.TelemetryData
+			if err := rows.Scan(&id, &record.Timestamp, &record.IPAddress, &record.ISPInfo, &record.Extra, &record.UserAgent, &record.Language, &record.Download, &record.Upload, &record.Ping, &record.Jitter, &record.Log, &record.UUID); err != nil {
+				return nil, err
+			}
+			records = append(records, record)
+		}
+	}
+	return records, nil
 }
