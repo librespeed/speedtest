@@ -77,7 +77,7 @@ type IPInfoResponse struct {
 }
 
 func init() {
-	// changed to use Clear Sans instead of OpenSans, due to issue:
+	// changed to use Noto Sans instead of OpenSans, due to issue:
 	// https://github.com/golang/freetype/issues/8
 	if b, err := ioutil.ReadFile("assets/NotoSansDisplay-Light.ttf"); err != nil {
 		log.Fatalf("Error opening NotoSansDisplay-Light font: %s", err)
