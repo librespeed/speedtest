@@ -1,9 +1,8 @@
 package database
 
 import (
-	"database/sql"
-
 	"backend/config"
+	"backend/database/bolt"
 	"backend/database/mysql"
 	"backend/database/postgresql"
 	"backend/database/schema"
@@ -14,7 +13,7 @@ var (
 )
 
 type DataAccess interface {
-	Insert(*schema.TelemetryData) (sql.Result, error)
+	Insert(*schema.TelemetryData) error
 	FetchByUUID(string) (*schema.TelemetryData, error)
 	FetchLast100() ([]schema.TelemetryData, error)
 }
@@ -25,5 +24,7 @@ func SetDBInfo(conf *config.Config) {
 		DB = postgresql.Open(conf.DatabaseHostname, conf.DatabaseUsername, conf.DatabasePassword, conf.DatabaseName)
 	case "mysql":
 		DB = mysql.Open(conf.DatabaseHostname, conf.DatabaseUsername, conf.DatabasePassword, conf.DatabaseName)
+	case "bolt":
+		DB = bolt.Open(conf.DatabaseFile)
 	}
 }

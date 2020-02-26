@@ -14,9 +14,12 @@ statistics_password="PASSWORD"
 # redact IP addresses
 redact_ip_addresses=false
 
-# database type for statistics data, currently supports: mysql, postgresql
-database_type="postgresql"
-database_hostname="localhost"
-database_name="speedtest"
-database_username="postgres"
+# database type for statistics data, currently supports: bolt, mysql, postgresql
+database_type="bolt"
+database_hostname=""
+database_name=""
+database_username=""
 database_password=""
+
+# if you use `bolt` as database, set database_file to database file location
+database_file="speedtest.db"

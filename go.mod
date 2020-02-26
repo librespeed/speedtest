@@ -12,6 +12,6 @@ require (
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.6.2
+	go.etcd.io/bbolt v1.3.3
 	golang.org/x/image v0.0.0-20200119044424-58c23975cae1
-	gopkg.in/yaml.v2 v2.2.4
 )

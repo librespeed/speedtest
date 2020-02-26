@@ -20,6 +20,8 @@ type Config struct {
 	DatabaseName     string `mapstructure:"database_name"`
 	DatabaseUsername string `mapstructure:"database_username"`
 	DatabasePassword string `mapstructure:"database_password"`
+
+	DatabaseFile string `mapstructure:"database_file"`
 }
 
 var (

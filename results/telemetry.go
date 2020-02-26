@@ -181,7 +181,7 @@ func Record(w http.ResponseWriter, r *http.Request) {
 	uuid := ulid.MustNew(ulid.Timestamp(t), entropy)
 	record.UUID = uuid.String()
 
-	_, err := database.DB.Insert(&record)
+	err := database.DB.Insert(&record)
 	if err != nil {
 		log.Errorf("Error inserting into database: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

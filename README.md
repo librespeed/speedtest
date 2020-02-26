@@ -27,7 +27,7 @@ Works with mobile versions too.
 
 ## Server requirements
 * Any [Go supported platforms](https://github.com/golang/go/wiki/MinimumRequirements)
-* PostgreSQL or MySQL database to store test results (optional)
+* BoltDB, PostgreSQL or MySQL database to store test results (optional)
 * A fast! Internet connection
 
 ## Installation
@@ -40,12 +40,19 @@ You need Go 1.13+ to compile the binary.
     $ go get github.com/librespeed/speedtest@go
     ```
 
-2. If you're using telemetry function, create database and import the corresponding `.sql` file under `database/{mysql,postgresql}`
+2. If you have telemetry enabled,
+    - For PostgreSQL/MySQL, create database and import the corresponding `.sql` file under `database/{postgresql,mysql}`
 
-    ```
-    # assume you have already created a database named `speedtest` under current user
-    $ psql speedtest < database/postgresql/telemetry_postgresql.sql
-    ```
+        ```
+        # assume you have already created a database named `speedtest` under current user
+        $ psql speedtest < database/postgresql/telemetry_postgresql.sql
+        ```
+     
+    - For embedded BoltDB, make sure to define the `database_file` path in `settings.toml`:
+    
+        ```
+        database_file="speedtest.db"
+        ```
 
 3. Put `assets` folder under the same directory as your compiled binary.
     - Make sure the font files and JavaScripts are in the `assets` directory
@@ -74,16 +81,21 @@ You need Go 1.13+ to compile the binary.
     # redact IP addresses
     redact_ip_addresses=false
     
-    # database type for statistics data, currently supports: mysql, postgresql
+    # database type for statistics data, currently supports: bolt, mysql, postgresql
     database_type="postgresql"
     database_hostname="localhost"
     database_name="speedtest"
     database_username="postgres"
     database_password=""
+   
+    # if you use `bolt` as database, set database_file to database file location
+    database_file="speedtest.db"
     ```
 
 ## Differences between Go and PHP implementation and caveats
 
+- Since there is no CGo-free SQLite implementation available, I've opted to use [BoltDB](https://github.com/etcd-io/bbolt)
+  instead, as an embedded database alternative to SQLite
 - Test IDs are generated ULID, there is no option to change them to plain ID
 - API endpoints have the same names, except the `.php` extension (e.g `empty`, `garbage`, `getIP`)
 - You can use the same HTML template from the PHP implementation

@@ -27,9 +27,10 @@ func Open(hostname, username, password, database string) *PostgreSQL {
 	return &PostgreSQL{db: conn}
 }
 
-func (p *PostgreSQL) Insert(data *schema.TelemetryData) (sql.Result, error) {
+func (p *PostgreSQL) Insert(data *schema.TelemetryData) error {
 	stmt := `INSERT INTO speedtest_users (ip, ispinfo, extra, ua, lang, dl, ul, ping, jitter, log, uuid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id;`
-	return p.db.Exec(stmt, data.IPAddress, data.ISPInfo, data.Extra, data.UserAgent, data.Language, data.Download, data.Upload, data.Ping, data.Jitter, data.Log, data.UUID)
+	_, err := p.db.Exec(stmt, data.IPAddress, data.ISPInfo, data.Extra, data.UserAgent, data.Language, data.Download, data.Upload, data.Ping, data.Jitter, data.Log, data.UUID)
+	return err
 }
 
 func (p *PostgreSQL) FetchByUUID(uuid string) (*schema.TelemetryData, error) {

@@ -27,9 +27,10 @@ func Open(hostname, username, password, database string) *MySQL {
 	return &MySQL{db: conn}
 }
 
-func (p *MySQL) Insert(data *schema.TelemetryData) (sql.Result, error) {
+func (p *MySQL) Insert(data *schema.TelemetryData) error {
 	stmt := `INSERT INTO speedtest_users (ip, ispinfo, extra, ua, lang, dl, ul, ping, jitter, log, uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
-	return p.db.Exec(stmt, data.IPAddress, data.ISPInfo, data.Extra, data.UserAgent, data.Language, data.Download, data.Upload, data.Ping, data.Jitter, data.Log, data.UUID)
+	_, err := p.db.Exec(stmt, data.IPAddress, data.ISPInfo, data.Extra, data.UserAgent, data.Language, data.Download, data.Upload, data.Ping, data.Jitter, data.Log, data.UUID)
+	return err
 }
 
 func (p *MySQL) FetchByUUID(uuid string) (*schema.TelemetryData, error) {
