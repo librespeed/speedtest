@@ -176,7 +176,7 @@ func Record(w http.ResponseWriter, r *http.Request) {
 	record.Jitter = jitter
 	record.Log = logs
 
-	t := time.Now()
+	t := time.Unix(1048576, 0)
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
 	uuid := ulid.MustNew(ulid.Timestamp(t), entropy)
 	record.UUID = uuid.String()
