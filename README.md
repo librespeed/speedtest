@@ -89,10 +89,10 @@ You need Go 1.13+ to compile the binary.
 - You can use the same HTML template from the PHP implementation
 - There might be a slight delay on program start if your Internet connection is slow. That's because the program will
 attempt to fetch your current network's ISP info for distance calculation between your network and the speed test client's.
-This action will only be done once, and cached for later use.
+This action will only be taken once, and cached for later use.
 
 ## License
-Copyright (C) 2016-2019 Federico Dossena
+Copyright (C) 2016-2019 Federico Dossena  
 Copyright (C) 2020 Maddie Zhan
 
 This program is free software: you can redistribute it and/or modify
