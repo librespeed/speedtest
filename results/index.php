@@ -35,6 +35,10 @@ $FONT_MEASURE_SIZE=12*$SCALE;
 $FONT_MEASURE_SIZE_BIG=12*$SCALE;
 $FONT_ISP=tryFont("OpenSans-Semibold");
 $FONT_ISP_SIZE=9*$SCALE;
+$FONT_SERVER=tryFont("OpenSans-Semibold");
+$FONT_SERVER_SIZE=9*$SCALE;
+$FONT_TIMESTAMP=tryFont("OpenSans-Light");
+$FONT_TIMESTAMP_SIZE=8*$SCALE;
 $FONT_WATERMARK=tryFont("OpenSans-Light");
 $FONT_WATERMARK_SIZE=8*$SCALE;
 $TEXT_COLOR_LABEL=imagecolorallocate($im,40,40,40);
@@ -44,6 +48,8 @@ $TEXT_COLOR_PING_METER=imagecolorallocate($im,170,96,96);
 $TEXT_COLOR_JIT_METER=imagecolorallocate($im,170,96,96);
 $TEXT_COLOR_MEASURE=imagecolorallocate($im,40,40,40);
 $TEXT_COLOR_ISP=imagecolorallocate($im,40,40,40);
+$TEXT_COLOR_SERVER=imagecolorallocate($im,40,40,40);
+$TEXT_COLOR_TIMESTAMP=imagecolorallocate($im,160,160,160);
 $TEXT_COLOR_WATERMARK=imagecolorallocate($im,160,160,160);
 $POSITION_Y_DL_LABEL=105*$SCALE;
 $POSITION_Y_UL_LABEL=105*$SCALE;
@@ -58,14 +64,17 @@ $POSITION_Y_UL_MEASURE=169*$SCALE;
 $POSITION_Y_PING_MEASURE=60*$SCALE;
 $POSITION_Y_JIT_MEASURE=60*$SCALE;
 $POSITION_Y_ISP=205*$SCALE;
+$POSITION_Y_SERVER=205*$SCALE;
 $POSITION_X_DL=120*$SCALE;
 $POSITION_X_UL=280*$SCALE;
 $POSITION_X_PING=125*$SCALE;
 $POSITION_X_JIT=275*$SCALE;
 $POSITION_X_ISP=4*$SCALE;
+$POSITION_X_TIMESTAMP=4*$SCALE;
 $SMALL_SEP=8*$SCALE;
 $SEPARATOR_Y=211*$SCALE;
 $SEPARATOR_COLOR=imagecolorallocate($im,192,192,192);
+$POSITION_Y_TIMESTAMP=223*$SCALE;
 $POSITION_Y_WATERMARK=223*$SCALE;
 $DL_TEXT="Download";
 $UL_TEXT="Upload";
@@ -79,17 +88,17 @@ include_once('telemetry_settings.php');
 require 'idObfuscation.php';
 if($enable_id_obfuscation) $id=deobfuscateId($id);
 $conn=null; $q=null;
-$ispinfo=null; $dl=null; $ul=null; $ping=null; $jit=null;
+$ispinfo=null; $dl=null; $ul=null; $ping=null; $jit=null; $server=null; $timestamp=null;
 if($db_type=="mysql"){
 	$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename);
-	$q = $conn->prepare("select ispinfo,dl,ul,ping,jitter from speedtest_users where id=?");
+	$q = $conn->prepare("select ispinfo,dl,ul,ping,jitter,extra,timestamp from speedtest_users where id=?");
 	$q->bind_param("i",$id);
 	$q->execute();
-	$q->bind_result($ispinfo,$dl,$ul,$ping,$jit);
+	$q->bind_result($ispinfo,$dl,$ul,$ping,$jit,$server,$timestamp);
 	$q->fetch();
 }else if($db_type=="sqlite"){
 	$conn = new PDO("sqlite:$Sqlite_db_file") or die();
-	$q=$conn->prepare("select ispinfo,dl,ul,ping,jitter from speedtest_users where id=?") or die();
+	$q=$conn->prepare("select ispinfo,dl,ul,ping,jitter,extra,timestamp from speedtest_users where id=?") or die();
 	$q->execute(array($id)) or die();
 	$row=$q->fetch() or die();
 	$ispinfo=$row["ispinfo"];
@@ -97,6 +106,8 @@ if($db_type=="mysql"){
 	$ul=$row["ul"];
 	$ping=$row["ping"];
 	$jit=$row["jitter"];
+	$server=$row["extra"];
+	$timestamp=$row["timestamp"];
 	$conn=null;
 }else if($db_type=="postgresql"){
     $conn_host = "host=$PostgreSql_hostname";
@@ -104,7 +115,7 @@ if($db_type=="mysql"){
     $conn_user = "user=$PostgreSql_username";
     $conn_password = "password=$PostgreSql_password";
     $conn = new PDO("pgsql:$conn_host;$conn_db;$conn_user;$conn_password") or die();
-	$q=$conn->prepare("select ispinfo,dl,ul,ping,jitter from speedtest_users where id=?") or die();
+	$q=$conn->prepare("select ispinfo,dl,ul,ping,jitter,extra,timestamp from speedtest_users where id=?") or die();
 	$q->execute(array($id)) or die();
 	$row=$q->fetch() or die();
 	$ispinfo=$row["ispinfo"];
@@ -112,6 +123,8 @@ if($db_type=="mysql"){
 	$ul=$row["ul"];
 	$ping=$row["ping"];
 	$jit=$row["jitter"];
+	$server=$row["extra"];
+	$timestamp=$row["timestamp"];
 	$conn=null;
 }else die();
 
@@ -119,11 +132,12 @@ $dl=format($dl);
 $ul=format($ul);
 $ping=format($ping);
 $jit=format($jit);
+$server="Host: " . json_decode($server,true)["server"];
 
 $ispinfo=json_decode($ispinfo,true)["processedString"];
 $dash=strpos($ispinfo,"-");
 if(!($dash===FALSE)){
-	$ispinfo=substr($ispinfo,$dash+2);
+	$ispinfo="ISP: " . substr($ispinfo,$dash+2);
 	$par=strrpos($ispinfo,"(");
 	if(!($par===FALSE)) $ispinfo=substr($ispinfo,0,$par);
 }else $ispinfo="";
@@ -138,6 +152,8 @@ $pingMeterBbox=imageftbbox($FONT_METER_SIZE,0,$FONT_METER,$ping);
 $jitMeterBbox=imageftbbox($FONT_METER_SIZE,0,$FONT_METER,$jit);
 $mbpsBbox=imageftbbox($FONT_MEASURE_SIZE_BIG,0,$FONT_MEASURE,$MBPS_TEXT);
 $msBbox=imageftbbox($FONT_MEASURE_SIZE,0,$FONT_MEASURE,$MS_TEXT);
+$serverBbox=imageftbbox($FONT_SERVER_SIZE,0,$FONT_SERVER,$server);
+$POSITION_X_SERVER=$WIDTH-$serverBbox[4]-4*$SCALE;
 $watermarkBbox=imageftbbox($FONT_WATERMARK_SIZE,0,$FONT_WATERMARK,$WATERMARK_TEXT);
 $POSITION_X_WATERMARK=$WIDTH-$watermarkBbox[4]-4*$SCALE;
 
@@ -155,6 +171,8 @@ imagefttext($im,$FONT_MEASURE_SIZE_BIG,0,$POSITION_X_UL-$mbpsBbox[4]/2,$POSITION
 imagefttext($im,$FONT_MEASURE_SIZE,0,$POSITION_X_PING+$pingMeterBbox[4]/2+$SMALL_SEP/2-$msBbox[4]/2,$POSITION_Y_PING_MEASURE,$TEXT_COLOR_MEASURE,$FONT_MEASURE,$MS_TEXT);
 imagefttext($im,$FONT_MEASURE_SIZE,0,$POSITION_X_JIT+$jitMeterBbox[4]/2+$SMALL_SEP/2-$msBbox[4]/2,$POSITION_Y_JIT_MEASURE,$TEXT_COLOR_MEASURE,$FONT_MEASURE,$MS_TEXT);
 imagefttext($im,$FONT_ISP_SIZE,0,$POSITION_X_ISP,$POSITION_Y_ISP,$TEXT_COLOR_ISP,$FONT_ISP,$ispinfo);
+imagefttext($im,$FONT_SERVER_SIZE,0,$POSITION_X_SERVER,$POSITION_Y_SERVER,$TEXT_COLOR_SERVER,$FONT_SERVER,$server);
+imagefttext($im,$FONT_TIMESTAMP_SIZE,0,$POSITION_X_TIMESTAMP,$POSITION_Y_TIMESTAMP,$TEXT_COLOR_TIMESTAMP,$FONT_TIMESTAMP,$timestamp);
 imagefttext($im,$FONT_WATERMARK_SIZE,0,$POSITION_X_WATERMARK,$POSITION_Y_WATERMARK,$TEXT_COLOR_WATERMARK,$FONT_WATERMARK,$WATERMARK_TEXT);
 imagefilledrectangle($im, 0, $SEPARATOR_Y, $WIDTH, $SEPARATOR_Y, $SEPARATOR_COLOR);
 header('Content-Type: image/png');
