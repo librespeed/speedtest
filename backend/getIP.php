@@ -87,7 +87,7 @@ if (isset($_GET["isp"])) {
     $isp = "";
 	$rawIspInfo=null;
     try {
-        $json = file_get_contents("https://ipinfo.io/" . $ip . "/json".getIpInfoTokenString(), False, $IPINFO_HTTPPROXY););
+        $json = file_get_contents("https://ipinfo.io/" . $ip . "/json".getIpInfoTokenString(), False, $IPINFO_HTTPPROXY);
         $details = json_decode($json, true);
 		$rawIspInfo=$details;
         if (array_key_exists("org", $details)){
@@ -111,7 +111,7 @@ if (isset($_GET["isp"])) {
 				if(file_exists($locFile)){
 					require $locFile;
 				}else{
-					$json = file_get_contents("https://ipinfo.io/json".getIpInfoTokenString(), False, $IPINFO_HTTPPROXY););
+					$json = file_get_contents("https://ipinfo.io/json".getIpInfoTokenString(), False, $IPINFO_HTTPPROXY);
 					$details = json_decode($json, true);
 					if (array_key_exists("loc", $details)){
 						$serverLoc = $details["loc"];
