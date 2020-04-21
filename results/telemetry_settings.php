@@ -19,7 +19,3 @@ $PostgreSql_username="USERNAME";
 $PostgreSql_password="PASSWORD";
 $PostgreSql_hostname="DB_HOSTNAME";
 $PostgreSql_databasename="DB_NAME";
-
-
-//IMPORTANT: DO NOT ADD ANYTHING BELOW THIS PHP CLOSING TAG, NOT EVEN EMPTY LINES!
-?>

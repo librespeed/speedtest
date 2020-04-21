@@ -160,5 +160,3 @@ imagefilledrectangle($im, 0, $SEPARATOR_Y, $WIDTH, $SEPARATOR_Y, $SEPARATOR_COLO
 header('Content-Type: image/png');
 imagepng($im);
 imagedestroy($im);
-
-?>

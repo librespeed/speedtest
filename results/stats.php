@@ -82,7 +82,7 @@ if($stats_password=="PASSWORD"){
 ?>
 	<form action="stats.php" method="GET"><input type="hidden" name="op" value="logout" /><input type="submit" value="Logout" /></form>
 	<form action="stats.php" method="GET">
-		<h3>Search test results</h6>
+		<h6>Search test results</h6>
 		<input type="hidden" name="op" value="id" />
 		<input type="text" name="id" id="id" placeholder="Test ID" value=""/>
 		<input type="submit" value="Find" />
