@@ -20,6 +20,7 @@ Here's a list of additional environment variables available in this mode:
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
+* __`ENABLE_PRIVACY_NOTICE`__: When set to true with telemetry enabled, the privacy notice popup will be displayed when a client connects.
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
 * __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you expect to serve a large number of tests
 * __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
@@ -199,6 +200,7 @@ Here's a list of additional environment variables available in this mode:
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`REDACT_IP_ADDRESSES`__: When set to true with telemetry enabled, IP addresses and hostnames are redacted from the collected telemetry, for better privacy. Default value: `false`
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
+* __`ENABLE_PRIVACY_NOTICE`__: When set to true with telemetry enabled, the privacy notice popup will be displayed when a client connects.
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
 * __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Default value: `km`
