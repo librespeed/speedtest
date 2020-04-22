@@ -51,6 +51,11 @@ if [[ "$TELEMETRY" == "true" && ( "$MODE" == "frontend" || "$MODE" == "standalon
   chown www-data /database/
 fi
 
+# Show the privacy notice message when enabled
+if [ "$ENABLE_PRIVACY_NOTICE" == "true" ]; then
+  sed -i '/^.*div id="privacyPolicy"/s/none//' /var/www/html/index.php
+fi
+
 # Allow selection of Apache port for network_mode: host
 if [ "$WEBPORT" != "80" ]; then
   sed -i "s/80/$WEBPORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
