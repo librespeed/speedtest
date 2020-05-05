@@ -1,4 +1,5 @@
 <?php
+if(!file_exists('./telemetry_settings.php')) copy('./telemetry_settings.default.php', './telemetry_settings.php');
 include_once('telemetry_settings.php');
 require 'idObfuscation.php';
 

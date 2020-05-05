@@ -72,6 +72,7 @@ This step is only required for MySQL and PostgreSQL. If you want to use SQLite, 
 Log into your database using phpMyAdmin or a similar software and create a new database. Inside the `results` folder you will find `telemetry_mysql.sql` and `telemetry_postgresql.sql`, which are templates for MySQL and PostgreSQL respectively. Import the one you need, and you will see a `speedtest_users` table in the database. You can delete the templates afterwards.
 
 ##### Configuring telemetry
+If it does not exist already, copy `results/telemetry_settings.default.php` to `results/telemetry_settings.php`.
 Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql` or `sqlite`.
 
 If you chose to use SQLite, you might want to change `$Sqlite_db_file` to another path where you want the database to be stored. Just make sure that the file cannot be downloaded by users. Sqlite doesn't require any additional configuration, you can skip the rest of this section.
