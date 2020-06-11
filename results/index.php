@@ -81,7 +81,7 @@ if($enable_id_obfuscation) $id=deobfuscateId($id);
 $conn=null; $q=null;
 $ispinfo=null; $dl=null; $ul=null; $ping=null; $jit=null;
 if($db_type=="mysql"){
-	$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename);
+	$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename, $MySql_port);
 	$q = $conn->prepare("select ispinfo,dl,ul,ping,jitter from speedtest_users where id=?");
 	$q->bind_param("i",$id);
 	$q->execute();

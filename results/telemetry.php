@@ -31,7 +31,7 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
 if($db_type=="mysql"){
-    $conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename) or die("1");
+    $conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename, $MySql_port) or die("1");
     $stmt = $conn->prepare("INSERT INTO speedtest_users (ip,ispinfo,extra,ua,lang,dl,ul,ping,jitter,log) VALUES (?,?,?,?,?,?,?,?,?,?)") or die("2");
     $stmt->bind_param("ssssssssss",$ip,$ispinfo,$extra,$ua,$lang,$dl,$ul,$ping,$jitter,$log) or die("3");
 	$stmt->execute() or die("4");
