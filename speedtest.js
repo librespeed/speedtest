@@ -62,6 +62,18 @@ Speedtest.prototype = {
     return this._state;
   },
   /**
+   * Used internally to set the state.
+   * The onStateUpdate(state) callback function will be called with the new state.
+   */
+  _updateState: function(state) {
+      this._state = state;
+      try {
+        if (this.onStateUpdate) this.onStateUpdate(state);
+      } catch (e) {
+        console.error("Speedtest onStateUpdate event threw exception: " + e);
+      }
+  },
+  /**
    * Change one of the test settings from their defaults.
    * - parameter: string with the name of the parameter that you want to set
    * - value: new value for the parameter
@@ -116,7 +128,7 @@ Speedtest.prototype = {
    */
   addTestPoint: function(server) {
     this._checkServerDefinition(server);
-    if (this._state == 0) this._state = 1;
+    if (this._state == 0) this._updateState(1);
     if (this._state != 1) throw "You can't add a server after server selection";
     this._settings.mpot = true;
     this._serverList.push(server);
@@ -141,7 +153,7 @@ Speedtest.prototype = {
    * result: callback to be called when the list is loaded correctly. An array with the loaded servers will be passed to this function, or null if it failed
    */
   loadServerList: function(url,result) {
-    if (this._state == 0) this._state = 1;
+    if (this._state == 0) tthis._updateState(1);
     if (this._state != 1) throw "You can't add a server after server selection";
     this._settings.mpot = true;
     var xhr = new XMLHttpRequest();
@@ -177,7 +189,7 @@ Speedtest.prototype = {
     if (this._state == 3)
       throw "You can't select a server while the test is running";
     this._selectedServer = server;
-    this._state = 2;
+    this._updateState(2);
   },
   /**
    * Automatically selects a server from the list of added test points. The server with the lowest ping will be chosen. (multiple points of test)
@@ -305,7 +317,7 @@ Speedtest.prototype = {
           completed++;
           if (completed == CONCURRENCY) {
             this._selectedServer = bestServer;
-            this._state = 2;
+            this._updateState(2);
             if (result) result(bestServer);
           }
         }.bind(this)
@@ -336,7 +348,7 @@ Speedtest.prototype = {
           console.error("Speedtest onend event threw exception: " + e);
         }
         clearInterval(this.updater);
-        this._state = 4;
+        this._updateState(4);
       }
     }.bind(this);
     this.updater = setInterval(
@@ -366,7 +378,7 @@ Speedtest.prototype = {
           server: this._selectedServer.name
         });
     }
-    this._state = 3;
+    this._updateState(3);
     this.worker.postMessage("start " + JSON.stringify(this._settings));
   },
   /**
