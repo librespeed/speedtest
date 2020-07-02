@@ -24,6 +24,11 @@ Here's a list of additional environment variables available in this mode:
 * __`IPINFO_APIKEY`__: API key for ipinfo.io. Optional, but required if you expect to serve a large number of tests
 * __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Default value: `km`
+* __`DB_TYPE`__: To use your own database, specify `postgresql` or `mysql` here. Any other value will default to using a local sqlite database.
+* __`DB_HOSTNAME`__: URL of database server
+* __`DB_DATABASENAME`__: name of database
+* __`DB_USERNAME`__: username for database access
+* __`DB_PASSWORD`__: password for for database access
 
 If telemetry is enabled, a stats page will be available at `http://your.server/results/stats.php`, but a password must be specified.
 
@@ -202,6 +207,11 @@ Here's a list of additional environment variables available in this mode:
 * __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
 * __`DISABLE_IPINFO`__: If set to true, ISP info and distance will not be fetched from ipinfo.io. Default: value: `false`
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Default value: `km`
+* __`DB_TYPE`__: To use your own database, specify `postgresql` or `mysql` here. Any other value will default to using a local sqlite database.
+* __`DB_HOSTNAME`__: URL of database server
+* __`DB_DATABASENAME`__: name of database
+* __`DB_USERNAME`__: username for database access
+* __`DB_PASSWORD`__: password for for database access
 
 ###### Example
 This command starts LibreSpeed in frontend mode, with a given `servers.json` file, and with telemetry, ID obfuscation, and a stats password:
