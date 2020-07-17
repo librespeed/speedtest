@@ -69,7 +69,7 @@ if($stats_password=="PASSWORD"){
 	}else{
 		$conn=null;
 		if($db_type=="mysql"){
-			$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename);
+			$conn = new mysqli($MySql_hostname, $MySql_username, $MySql_password, $MySql_databasename, $MySql_port);
 		}else if($db_type=="sqlite"){
 			$conn = new PDO("sqlite:$Sqlite_db_file");
 		} else if($db_type=="postgresql"){

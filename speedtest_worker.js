@@ -523,7 +523,7 @@ function ulTest(done) {
 						xhr[i].send(req);
 					}
 				}.bind(this),
-				1
+				delay
 			);
 		}.bind(this);
 		// open streams

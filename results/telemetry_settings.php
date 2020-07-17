@@ -13,6 +13,7 @@ $MySql_username="USERNAME";
 $MySql_password="PASSWORD";
 $MySql_hostname="DB_HOSTNAME";
 $MySql_databasename="DB_NAME";
+$MySql_port="3306";
 
 // Postgresql settings
 $PostgreSql_username="USERNAME";
