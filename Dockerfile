@@ -1,13 +1,18 @@
 FROM php:7.2-apache
 
-# Install extensions
+# Install extensions, including PHP PDO support for Postgres
+# NOTE: MYSQL SUPPORT NOT INCLUDED
 RUN apt-get update && apt-get install -y \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
+        libpq-dev \
     && docker-php-ext-install -j$(nproc) iconv \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install -j$(nproc) pdo_pgsql pgsql
+    
 
 # Prepare files and folders
 
