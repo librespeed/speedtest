@@ -330,13 +330,13 @@ Speedtest.prototype = {
         console.error("Speedtest onupdate event threw exception: " + e);
       }
       if (data.testState >= 4) {
+	clearInterval(this.updater);
+        this._state = 4;
         try {
           if (this.onend) this.onend(data.testState == 5);
         } catch (e) {
           console.error("Speedtest onend event threw exception: " + e);
         }
-        clearInterval(this.updater);
-        this._state = 4;
       }
     }.bind(this);
     this.updater = setInterval(
