@@ -38,6 +38,3 @@ function obfuscateId($id){
 function deobfuscateId($id){
 	return obfdeobf(base_convert($id,36,10),true)-1;
 }
-
-//IMPORTANT: DO NOT ADD ANYTHING BELOW THE PHP CLOSING TAG, NOT EVEN EMPTY LINES!
-?>

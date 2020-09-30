@@ -1,8 +1,8 @@
 <?php
 /*
-	This script detects the client's IP address and fetches ISP info from ipinfo.io/
-	Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Contry and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (will be empty if isp detection is disabled).
-	Client side, the output of this script can be treated as JSON or as regular text. If the output is regular text, it will be shown to the user as is.
+    This script detects the client's IP address and fetches ISP info from ipinfo.io/
+    Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Contry and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (will be empty if isp detection is disabled).
+    Client side, the output of this script can be treated as JSON or as regular text. If the output is regular text, it will be shown to the user as is.
 */
 error_reporting(0);
 $ip = "";
@@ -73,54 +73,54 @@ function distance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo) {
     return acos($dist) / $rad * 60 * 1.853;
 }
 function getIpInfoTokenString(){
-	$apikeyFile="getIP_ipInfo_apikey.php";
-	if(!file_exists($apikeyFile)) return "";
-	require $apikeyFile;
-	if(empty($IPINFO_APIKEY)) return "";
-	return "?token=".$IPINFO_APIKEY;
+    $apikeyFile="getIP_ipInfo_apikey.php";
+    if(!file_exists($apikeyFile)) return "";
+    require $apikeyFile;
+    if(empty($IPINFO_APIKEY)) return "";
+    return "?token=".$IPINFO_APIKEY;
 }
 if (isset($_GET["isp"])) {
     $isp = "";
-	$rawIspInfo=null;
+    $rawIspInfo=null;
     try {
         $json = file_get_contents("https://ipinfo.io/" . $ip . "/json".getIpInfoTokenString());
         $details = json_decode($json, true);
-		$rawIspInfo=$details;
+        $rawIspInfo=$details;
         if (array_key_exists("org", $details)){
             $isp .= $details["org"];
-			$isp=preg_replace("/AS\d{1,}\s/","",$isp); //Remove AS##### from ISP name, if present
-		}else{
+            $isp=preg_replace("/AS\d{1,}\s/","",$isp); //Remove AS##### from ISP name, if present
+        }else{
             $isp .= "Unknown ISP";
-		}
-		if (array_key_exists("country", $details)){
-			$isp .= ", " . $details["country"];
-		}
+        }
+        if (array_key_exists("country", $details)){
+            $isp .= ", " . $details["country"];
+        }
         $clientLoc = NULL;
         $serverLoc = NULL;
         if (array_key_exists("loc", $details)){
             $clientLoc = $details["loc"];
-		}
+        }
         if (isset($_GET["distance"])) {
             if ($clientLoc) {
-				$locFile="getIP_serverLocation.php";
-				$serverLoc=null;
-				if(file_exists($locFile)){
-					require $locFile;
-				}else{
-					$json = file_get_contents("https://ipinfo.io/json".getIpInfoTokenString());
-					$details = json_decode($json, true);
-					if (array_key_exists("loc", $details)){
-						$serverLoc = $details["loc"];
-					}
-					if($serverLoc){
-						$lf=fopen($locFile,"w");
-						fwrite($lf,chr(60)."?php\n");
-						fwrite($lf,'$serverLoc="'.addslashes($serverLoc).'";');
-						fwrite($lf,"\n");
-						fwrite($lf,"?".chr(62));
-						fclose($lf);
-					}
-				}
+                $locFile="getIP_serverLocation.php";
+                $serverLoc=null;
+                if(file_exists($locFile)){
+                    require $locFile;
+                }else{
+                    $json = file_get_contents("https://ipinfo.io/json".getIpInfoTokenString());
+                    $details = json_decode($json, true);
+                    if (array_key_exists("loc", $details)){
+                        $serverLoc = $details["loc"];
+                    }
+                    if($serverLoc){
+                        $lf=fopen($locFile,"w");
+                        fwrite($lf,chr(60)."?php\n");
+                        fwrite($lf,'$serverLoc="'.addslashes($serverLoc).'";');
+                        fwrite($lf,"\n");
+                        fwrite($lf,"?".chr(62));
+                        fclose($lf);
+                    }
+                }
                 if ($serverLoc) {
                     try {
                         $clientLoc = explode(",", $clientLoc);
@@ -151,4 +151,3 @@ if (isset($_GET["isp"])) {
 } else {
     echo json_encode(['processedString' => $ip, 'rawIspInfo' => ""]);
 }
-?>

@@ -28,4 +28,3 @@ for($i=0;$i<$chunks;$i++){
     echo $data;
     flush();
 }
-?>
