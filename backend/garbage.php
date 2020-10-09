@@ -5,7 +5,8 @@
 @ini_set('output_handler', '');
 // Headers
 header('HTTP/1.1 200 OK');
-if(isset($_GET["cors"])){
+
+if (isset($_GET['cors'])) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST');
 }
