@@ -101,6 +101,9 @@ function getIpInfoTokenString()
 function getIspInfo($ip)
 {
     $json = file_get_contents('https://ipinfo.io/'.$ip.'/json'.getIpInfoTokenString());
+    if (!is_string($json)) {
+        return null;
+    }
 
     $data = json_decode($json, true);
     if (!is_array($data)) {
@@ -144,6 +147,10 @@ function getServerLocation()
     }
 
     $json = file_get_contents('https://ipinfo.io/json'.getIpInfoTokenString());
+    if (!is_string($json)) {
+        return null;
+    }
+
     $details = json_decode($json, true);
     if (
         !is_array($details)
