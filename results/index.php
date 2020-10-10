@@ -13,15 +13,16 @@ putenv('GDFONTPATH='.realpath('.'));
  */
 function tryFont($name)
 {
-	$rp = realpath('.');
-	if (imageftbbox(12, 0, $name, "M")[5] == 0) {
-		$name = $rp."/".$name.".ttf";
-		if (imageftbbox(12, 0, $name, "M")[5] == 0) {
-			return null;
-		}
-	}
+    if (is_array(imageftbbox(12, 0, $name, "M"))) {
+        return $name;
+    }
 
-	return $name;
+    $fullPathToFont = realpath('.').'/'.$name.'.ttf';
+	if (is_array(imageftbbox(12, 0, $fullPathToFont, "M"))) {
+        return $fullPathToFont;
+    }
+
+	return null;
 }
 
 /**
