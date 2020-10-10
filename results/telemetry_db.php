@@ -76,9 +76,9 @@ function getPdo()
 
             $dsn = 'pgsql:'
                 .'host='.$PostgreSql_hostname
-                .'dbname='.$PostgreSql_databasename
-                .'user='.$PostgreSql_username
-                .'password='.$PostgreSql_password;
+                .';dbname='.$PostgreSql_databasename
+                .';user='.$PostgreSql_username
+                .';password='.$PostgreSql_password;
 
             return new PDO($dsn, null, null, $pdoOptions);
         }
