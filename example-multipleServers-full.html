@@ -352,7 +352,15 @@ function initUI(){
         text-align:center;
         font-size:0.8em;
         color:#808080;
+        padding: 0 3em;
 	}
+    div.closePrivacyPolicy {
+        width: 100%;
+        text-align: center;
+    }
+    div.closePrivacyPolicy a.privacy {
+        padding: 1em 3em;
+    }
 	@media all and (max-width:40em){
 		body{
 			font-size:0.8em;
@@ -473,7 +481,10 @@ function initUI(){
         Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
     </p>
     <br/><br/>
-    <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a><br/>
+    <div class="closePrivacyPolicy">
+        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+    </div>
+    <br/>
 </div>
 </body>
 </html>
