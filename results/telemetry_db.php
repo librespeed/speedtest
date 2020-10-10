@@ -186,7 +186,7 @@ function getLatestSpeedtestUsers()
             id, timestamp, ip, ispinfo, ua, lang, dl, ul, ping, jitter, log, extra
             FROM speedtest_users
             ORDER BY timestamp DESC
-            LIMIT 0, 100'
+            LIMIT 100'
         );
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
