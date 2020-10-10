@@ -88,7 +88,7 @@ header('Pragma: no-cache');
                     <table>
                         <tr>
                             <th>Test ID</th>
-                            <td><?= htmlspecialchars($speedtest['id'], ENT_HTML5, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($speedtest['id_formatted'], ENT_HTML5, 'UTF-8') ?></td>
                         </tr>
                         <tr>
                             <th>Date and time</th>
