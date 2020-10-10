@@ -79,9 +79,17 @@ header('Pragma: no-cache');
                 </form>
                 <?php
                 if ($_GET["op"] === "id" && !empty($_GET["id"])) {
-                    $speedtests = [getSpeedtestUserById($_GET['id'])];
+                    $speedtest = getSpeedtestUserById($_GET['id']);
+                    if (!is_array($speedtest)) {
+                        exit(1);
+                    }
+
+                    $speedtests = [$speedtest];
                 } else {
                     $speedtests = getLatestSpeedtestUsers();
+                    if (!is_array($speedtests)) {
+                        exit(1);
+                    }
                 }
                 foreach ($speedtests as $speedtest) {
                     ?>

@@ -186,7 +186,7 @@ function drawImage($speedtest)
 }
 
 $speedtest = getSpeedtestUserById($_GET['id']);
-if (false === $speedtest) {
+if (!is_array($speedtest)) {
 	exit(1);
 }
 
