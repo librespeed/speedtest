@@ -132,6 +132,11 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
     return $id;
 }
 
+/**
+ * @param int|string $id
+ *
+ * @return array|false
+ */
 function getSpeedtestUserById($id)
 {
     $pdo = getPdo();
@@ -165,6 +170,9 @@ function getSpeedtestUserById($id)
     return $row;
 }
 
+/**
+ * @return array|false
+ */
 function getLatestSpeedtestUsers()
 {
     $pdo = getPdo();

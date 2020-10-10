@@ -6,6 +6,11 @@ require_once 'telemetry_db.php';
 error_reporting(0);
 putenv('GDFONTPATH='.realpath('.'));
 
+/**
+ * @param string $name
+ *
+ * @return string|null
+ */
 function tryFont($name)
 {
 	$rp = realpath('.');
@@ -19,6 +24,11 @@ function tryFont($name)
 	return $name;
 }
 
+/**
+ * @param int|float $d
+ *
+ * @return string
+ */
 function format($d)
 {
 	if ($d < 10) {
@@ -31,6 +41,11 @@ function format($d)
 	return number_format($d, 0, ".", "");
 }
 
+/**
+ * @param array $speedtest
+ *
+ * @return array
+ */
 function formatSpeedtestDataForImage($speedtest)
 {
     // format values for the image
@@ -56,6 +71,11 @@ function formatSpeedtestDataForImage($speedtest)
     return $speedtest;
 }
 
+/**
+ * @param array $speedtest
+ *
+ * @return void
+ */
 function drawImage($speedtest)
 {
     // format values for the image
