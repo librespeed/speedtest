@@ -1,6 +1,6 @@
 <?php
 
-require_once 'telemetry_settings.php';
+require 'telemetry_settings.php';
 require_once 'telemetry_db.php';
 
 $ip = $_SERVER['REMOTE_ADDR'];
