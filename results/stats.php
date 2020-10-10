@@ -1,6 +1,10 @@
 <?php
 session_start();
 error_reporting(0);
+
+require 'telemetry_settings.php';
+require_once 'telemetry_db.php';
+
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
@@ -56,9 +60,6 @@ header('Pragma: no-cache');
     <body>
         <h1>LibreSpeed - Stats</h1>
         <?php
-        require 'telemetry_settings.php';
-        require_once 'telemetry_db.php';
-
         if (!isset($stats_password) || $stats_password === 'PASSWORD') {
             ?>
                 Please set $stats_password in telemetry_settings.php to enable access.
@@ -143,7 +144,7 @@ header('Pragma: no-cache');
                     <?php
                 }
             }
-        } else if ($_GET["op"] === "login" && $_POST["password"] === $stats_password) {
+        } elseif ($_GET["op"] === "login" && $_POST["password"] === $stats_password) {
             $_SESSION["logged"] = true;
             ?><script type="text/javascript">window.location=location.protocol+"//"+location.host+location.pathname;</script><?php
         } else {
