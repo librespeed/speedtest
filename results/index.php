@@ -1,6 +1,5 @@
 <?php
 
-include_once 'telemetry_settings.php';
 require_once 'telemetry_db.php';
 
 error_reporting(0);
