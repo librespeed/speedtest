@@ -142,36 +142,43 @@ function drawImage($speedtest)
     $WATERMARK_TEXT = "LibreSpeed";
 
     // create text boxes for each part of the image
-    $dlBbox = imageftbbox($FONT_LABEL_SIZE_BIG, 0, $FONT_LABEL, $DL_TEXT);
-    $ulBbox = imageftbbox($FONT_LABEL_SIZE_BIG, 0, $FONT_LABEL, $UL_TEXT);
-    $pingBbox = imageftbbox($FONT_LABEL_SIZE, 0, $FONT_LABEL, $PING_TEXT);
-    $jitBbox = imageftbbox($FONT_LABEL_SIZE, 0, $FONT_LABEL, $JIT_TEXT);
-    $dlMeterBbox = imageftbbox($FONT_METER_SIZE_BIG, 0, $FONT_METER, $dl);
-    $ulMeterBbox = imageftbbox($FONT_METER_SIZE_BIG, 0, $FONT_METER, $ul);
-    $pingMeterBbox = imageftbbox($FONT_METER_SIZE, 0, $FONT_METER, $ping);
-    $jitMeterBbox = imageftbbox($FONT_METER_SIZE, 0, $FONT_METER, $jit);
     $mbpsBbox = imageftbbox($FONT_MEASURE_SIZE_BIG, 0, $FONT_MEASURE, $MBPS_TEXT);
     $msBbox = imageftbbox($FONT_MEASURE_SIZE, 0, $FONT_MEASURE, $MS_TEXT);
+    $pingBbox = imageftbbox($FONT_LABEL_SIZE, 0, $FONT_LABEL, $PING_TEXT);
+    $pingMeterBbox = imageftbbox($FONT_METER_SIZE, 0, $FONT_METER, $ping);
+    $jitBbox = imageftbbox($FONT_LABEL_SIZE, 0, $FONT_LABEL, $JIT_TEXT);
+    $jitMeterBbox = imageftbbox($FONT_METER_SIZE, 0, $FONT_METER, $jit);
+    $dlBbox = imageftbbox($FONT_LABEL_SIZE_BIG, 0, $FONT_LABEL, $DL_TEXT);
+    $dlMeterBbox = imageftbbox($FONT_METER_SIZE_BIG, 0, $FONT_METER, $dl);
+    $ulBbox = imageftbbox($FONT_LABEL_SIZE_BIG, 0, $FONT_LABEL, $UL_TEXT);
+    $ulMeterBbox = imageftbbox($FONT_METER_SIZE_BIG, 0, $FONT_METER, $ul);
     $watermarkBbox = imageftbbox($FONT_WATERMARK_SIZE, 0, $FONT_WATERMARK, $WATERMARK_TEXT);
     $POSITION_X_WATERMARK = $WIDTH - $watermarkBbox[4] - 4 * $SCALE;
 
     // put the parts together to draw the image
     imagefilledrectangle($im, 0, 0, $WIDTH, $HEIGHT, $BACKGROUND_COLOR);
-    imagefttext($im, $FONT_LABEL_SIZE_BIG, 0, $POSITION_X_DL - $dlBbox[4] / 2, $POSITION_Y_DL_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $DL_TEXT);
-    imagefttext($im, $FONT_LABEL_SIZE_BIG, 0, $POSITION_X_UL - $ulBbox[4] / 2, $POSITION_Y_UL_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $UL_TEXT);
+    // ping
     imagefttext($im, $FONT_LABEL_SIZE, 0, $POSITION_X_PING - $pingBbox[4] / 2, $POSITION_Y_PING_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $PING_TEXT);
-    imagefttext($im, $FONT_LABEL_SIZE, 0, $POSITION_X_JIT - $jitBbox[4] / 2, $POSITION_Y_JIT_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $JIT_TEXT);
-    imagefttext($im, $FONT_METER_SIZE_BIG, 0, $POSITION_X_DL - $dlMeterBbox[4] / 2, $POSITION_Y_DL_METER, $TEXT_COLOR_DL_METER, $FONT_METER, $dl);
-    imagefttext($im, $FONT_METER_SIZE_BIG, 0, $POSITION_X_UL - $ulMeterBbox[4] / 2, $POSITION_Y_UL_METER, $TEXT_COLOR_UL_METER, $FONT_METER, $ul);
     imagefttext($im, $FONT_METER_SIZE, 0, $POSITION_X_PING - $pingMeterBbox[4] / 2 - $msBbox[4] / 2 - $SMALL_SEP / 2, $POSITION_Y_PING_METER, $TEXT_COLOR_PING_METER, $FONT_METER, $ping);
-    imagefttext($im, $FONT_METER_SIZE, 0, $POSITION_X_JIT - $jitMeterBbox[4] / 2 - $msBbox[4] / 2 - $SMALL_SEP / 2, $POSITION_Y_JIT_METER, $TEXT_COLOR_JIT_METER, $FONT_METER, $jit);
-    imagefttext($im, $FONT_MEASURE_SIZE_BIG, 0, $POSITION_X_DL - $mbpsBbox[4] / 2, $POSITION_Y_DL_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MBPS_TEXT);
-    imagefttext($im, $FONT_MEASURE_SIZE_BIG, 0, $POSITION_X_UL - $mbpsBbox[4] / 2, $POSITION_Y_UL_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MBPS_TEXT);
     imagefttext($im, $FONT_MEASURE_SIZE, 0, $POSITION_X_PING + $pingMeterBbox[4] / 2 + $SMALL_SEP / 2 - $msBbox[4] / 2, $POSITION_Y_PING_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MS_TEXT);
+    // jitter
+    imagefttext($im, $FONT_LABEL_SIZE, 0, $POSITION_X_JIT - $jitBbox[4] / 2, $POSITION_Y_JIT_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $JIT_TEXT);
+    imagefttext($im, $FONT_METER_SIZE, 0, $POSITION_X_JIT - $jitMeterBbox[4] / 2 - $msBbox[4] / 2 - $SMALL_SEP / 2, $POSITION_Y_JIT_METER, $TEXT_COLOR_JIT_METER, $FONT_METER, $jit);
     imagefttext($im, $FONT_MEASURE_SIZE, 0, $POSITION_X_JIT + $jitMeterBbox[4] / 2 + $SMALL_SEP / 2 - $msBbox[4] / 2, $POSITION_Y_JIT_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MS_TEXT);
+    // dl
+    imagefttext($im, $FONT_LABEL_SIZE_BIG, 0, $POSITION_X_DL - $dlBbox[4] / 2, $POSITION_Y_DL_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $DL_TEXT);
+    imagefttext($im, $FONT_METER_SIZE_BIG, 0, $POSITION_X_DL - $dlMeterBbox[4] / 2, $POSITION_Y_DL_METER, $TEXT_COLOR_DL_METER, $FONT_METER, $dl);
+    imagefttext($im, $FONT_MEASURE_SIZE_BIG, 0, $POSITION_X_DL - $mbpsBbox[4] / 2, $POSITION_Y_DL_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MBPS_TEXT);
+    // ul
+    imagefttext($im, $FONT_LABEL_SIZE_BIG, 0, $POSITION_X_UL - $ulBbox[4] / 2, $POSITION_Y_UL_LABEL, $TEXT_COLOR_LABEL, $FONT_LABEL, $UL_TEXT);
+    imagefttext($im, $FONT_METER_SIZE_BIG, 0, $POSITION_X_UL - $ulMeterBbox[4] / 2, $POSITION_Y_UL_METER, $TEXT_COLOR_UL_METER, $FONT_METER, $ul);
+    imagefttext($im, $FONT_MEASURE_SIZE_BIG, 0, $POSITION_X_UL - $mbpsBbox[4] / 2, $POSITION_Y_UL_MEASURE, $TEXT_COLOR_MEASURE, $FONT_MEASURE, $MBPS_TEXT);
+    // isp
     imagefttext($im, $FONT_ISP_SIZE, 0, $POSITION_X_ISP, $POSITION_Y_ISP, $TEXT_COLOR_ISP, $FONT_ISP, $ispinfo);
-    imagefttext($im, $FONT_WATERMARK_SIZE, 0, $POSITION_X_WATERMARK, $POSITION_Y_WATERMARK, $TEXT_COLOR_WATERMARK, $FONT_WATERMARK, $WATERMARK_TEXT);
+    // separator
     imagefilledrectangle($im, 0, $SEPARATOR_Y, $WIDTH, $SEPARATOR_Y, $SEPARATOR_COLOR);
+    // watermark
+    imagefttext($im, $FONT_WATERMARK_SIZE, 0, $POSITION_X_WATERMARK, $POSITION_Y_WATERMARK, $TEXT_COLOR_WATERMARK, $FONT_WATERMARK, $WATERMARK_TEXT);
 
     // send the image to the browser
     header('Content-Type: image/png');
