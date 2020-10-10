@@ -80,7 +80,10 @@ function getLocalOrPrivateIpInfo($ip)
  */
 function getIpInfoTokenString()
 {
-    if (!file_exists(API_KEY_FILE)) {
+    if (
+        !file_exists(API_KEY_FILE)
+        || !is_readable(API_KEY_FILE)
+    ) {
         return '';
     }
 
@@ -139,7 +142,10 @@ function getIsp($rawIspInfo)
 function getServerLocation()
 {
     $serverLoc = null;
-    if (file_exists(SERVER_LOCATION_CACHE_FILE)) {
+    if (
+        file_exists(SERVER_LOCATION_CACHE_FILE)
+        && is_readable(SERVER_LOCATION_CACHE_FILE)
+    ) {
         require SERVER_LOCATION_CACHE_FILE;
     }
     if (is_string($serverLoc) && !empty($serverLoc)) {

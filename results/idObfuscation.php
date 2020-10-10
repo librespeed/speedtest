@@ -10,11 +10,16 @@ function getObfuscationSalt()
     if (!file_exists(ID_OBFUSCATION_SALT_FILE)) {
         $bytes = openssl_random_pseudo_bytes(4);
 
-        $saltData = "<?php\n\n\$OBFUSCATION_SALT=0x".bin2hex($bytes).";\n";
-        file_put_contents(SERVER_LOCATION_CACHE_FILE, $saltData);
+        $saltData = "<?php\n\n\$OBFUSCATION_SALT = 0x".bin2hex($bytes).";\n";
+        file_put_contents(ID_OBFUSCATION_SALT_FILE, $saltData);
     }
 
-    require ID_OBFUSCATION_SALT_FILE;
+    if (
+        file_exists(ID_OBFUSCATION_SALT_FILE)
+        && is_readable(ID_OBFUSCATION_SALT_FILE)
+    ) {
+        require ID_OBFUSCATION_SALT_FILE;
+    }
 
     return isset($OBFUSCATION_SALT) ? $OBFUSCATION_SALT : 0;
 }
