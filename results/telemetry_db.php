@@ -144,7 +144,11 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
 /**
  * @param int|string $id
  *
- * @return array|false
+ * @return array|null|false returns the speedtest data as array, null
+ *                          if no data is found for the given id or
+ *                          false if there was an error
+ *
+ * @throws RuntimeException
  */
 function getSpeedtestUserById($id)
 {
@@ -169,6 +173,10 @@ function getSpeedtestUserById($id)
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         return false;
+    }
+
+    if (!is_array($row)) {
+        return null;
     }
 
     $row['id_formatted'] = $row['id'];

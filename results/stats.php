@@ -55,6 +55,9 @@ header('Pragma: no-cache');
             td {
                 word-break: break-all;
             }
+            div {
+                margin: 1em 0;
+            }
         </style>
     </head>
     <body>
@@ -81,15 +84,20 @@ header('Pragma: no-cache');
                 <?php
                 if ($_GET["op"] === "id" && !empty($_GET["id"])) {
                     $speedtest = getSpeedtestUserById($_GET['id']);
-                    if (!is_array($speedtest)) {
-                        exit(1);
+                    $speedtests = [];
+                    if (false === $speedtest) {
+                        echo '<div>There was an error trying to fetch the speedtest result for ID "'.$_GET['id'].'".</div>';
+                    } elseif (null === $speedtest) {
+                        echo '<div>Could not find a speedtest result for ID "'.$_GET['id'].'".</div>';
+                    } else {
+                        $speedtests = [$speedtest];
                     }
-
-                    $speedtests = [$speedtest];
                 } else {
                     $speedtests = getLatestSpeedtestUsers();
-                    if (!is_array($speedtests)) {
-                        exit(1);
+                    if (false === $speedtests) {
+                        echo '<div>There was an error trying to fetch latest speedtest results.</div>';
+                    } elseif (empty($speedtests)) {
+                        echo '<div>Could not find any speedtest results in database.</div>';
                     }
                 }
                 foreach ($speedtests as $speedtest) {
