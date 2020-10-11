@@ -2,12 +2,21 @@
 
 require_once 'idObfuscation.php';
 
+define('TELEMETRY_SETTINGS_FILE', 'telemetry_settings.php');
+
 /**
  * @return PDO|false
  */
 function getPdo()
 {
-    require 'telemetry_settings.php';
+    if (
+        !file_exists(TELEMETRY_SETTINGS_FILE)
+        || !is_readable(TELEMETRY_SETTINGS_FILE)
+    ) {
+        return false;
+    }
+
+    require TELEMETRY_SETTINGS_FILE;
 
     if (!isset($db_type)) {
         return false;
