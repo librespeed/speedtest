@@ -103,7 +103,7 @@ function getPdo()
  */
 function isObfuscationEnabled()
 {
-    require 'telemetry_settings.php';
+    require TELEMETRY_SETTINGS_FILE;
 
     return
         isset($enable_id_obfuscation)
