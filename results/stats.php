@@ -82,7 +82,7 @@ header('Pragma: no-cache');
                     <input type="submit" onclick="document.getElementById('id').value=''" value="Show last 100 tests" />
                 </form>
                 <?php
-                if ($_GET["op"] === "id" && !empty($_GET["id"])) {
+                if ($_GET['op'] === 'id' && !empty($_GET['id'])) {
                     $speedtest = getSpeedtestUserById($_GET['id']);
                     $speedtests = [];
                     if (false === $speedtest) {
@@ -152,8 +152,8 @@ header('Pragma: no-cache');
                     <?php
                 }
             }
-        } elseif ($_GET["op"] === "login" && $_POST["password"] === $stats_password) {
-            $_SESSION["logged"] = true;
+        } elseif ($_GET['op'] === 'login' && $_POST['password'] === $stats_password) {
+            $_SESSION['logged'] = true;
             ?><script type="text/javascript">window.location=location.protocol+"//"+location.host+location.pathname;</script><?php
         } else {
             ?>

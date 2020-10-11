@@ -12,12 +12,12 @@ putenv('GDFONTPATH='.realpath('.'));
  */
 function tryFont($name)
 {
-    if (is_array(imageftbbox(12, 0, $name, "M"))) {
+    if (is_array(imageftbbox(12, 0, $name, 'M'))) {
         return $name;
     }
 
     $fullPathToFont = realpath('.').'/'.$name.'.ttf';
-	if (is_array(imageftbbox(12, 0, $fullPathToFont, "M"))) {
+	if (is_array(imageftbbox(12, 0, $fullPathToFont, 'M'))) {
         return $fullPathToFont;
     }
 
@@ -32,13 +32,13 @@ function tryFont($name)
 function format($d)
 {
 	if ($d < 10) {
-		return number_format($d, 2, ".", "");
+		return number_format($d, 2, '.', '');
 	}
 	if ($d < 100) {
-		return number_format($d, 1, ".", "");
+		return number_format($d, 1, '.', '');
 	}
 
-	return number_format($d, 0, ".", "");
+	return number_format($d, 0, '.', '');
 }
 
 /**
@@ -58,12 +58,12 @@ function formatSpeedtestDataForImage($speedtest)
     $dash = strpos($ispinfo, '-');
     if ($dash !== false) {
         $ispinfo = substr($ispinfo, $dash + 2);
-        $par = strrpos($ispinfo, "(");
+        $par = strrpos($ispinfo, '(');
         if ($par !== false) {
             $ispinfo = substr($ispinfo, 0, $par);
         }
     } else {
-        $ispinfo = "";
+        $ispinfo = '';
     }
 
     $speedtest['ispinfo'] = $ispinfo;
@@ -95,22 +95,22 @@ function drawImage($speedtest)
     $BACKGROUND_COLOR = imagecolorallocate($im, 255, 255, 255);
 
     // configure fonts
-    $FONT_LABEL = tryFont("OpenSans-Semibold");
+    $FONT_LABEL = tryFont('OpenSans-Semibold');
     $FONT_LABEL_SIZE = 14 * $SCALE;
     $FONT_LABEL_SIZE_BIG = 16 * $SCALE;
 
-    $FONT_METER = tryFont("OpenSans-Light");
+    $FONT_METER = tryFont('OpenSans-Light');
     $FONT_METER_SIZE = 20 * $SCALE;
     $FONT_METER_SIZE_BIG = 22 * $SCALE;
 
-    $FONT_MEASURE = tryFont("OpenSans-Semibold");
+    $FONT_MEASURE = tryFont('OpenSans-Semibold');
     $FONT_MEASURE_SIZE = 12 * $SCALE;
     $FONT_MEASURE_SIZE_BIG = 12 * $SCALE;
 
-    $FONT_ISP = tryFont("OpenSans-Semibold");
+    $FONT_ISP = tryFont('OpenSans-Semibold');
     $FONT_ISP_SIZE = 9 * $SCALE;
 
-    $FONT_WATERMARK = tryFont("OpenSans-Light");
+    $FONT_WATERMARK = tryFont('OpenSans-Light');
     $FONT_WATERMARK_SIZE = 8 * $SCALE;
 
     // configure text colors
@@ -153,13 +153,13 @@ function drawImage($speedtest)
     $POSITION_Y_WATERMARK = 223 * $SCALE;
 
     // configure labels
-    $MBPS_TEXT = "Mbps";
-    $MS_TEXT = "ms";
-    $PING_TEXT = "Ping";
-    $JIT_TEXT = "Jitter";
-    $DL_TEXT = "Download";
-    $UL_TEXT = "Upload";
-    $WATERMARK_TEXT = "LibreSpeed";
+    $MBPS_TEXT = 'Mbps';
+    $MS_TEXT = 'ms';
+    $PING_TEXT = 'Ping';
+    $JIT_TEXT = 'Jitter';
+    $DL_TEXT = 'Download';
+    $UL_TEXT = 'Upload';
+    $WATERMARK_TEXT = 'LibreSpeed';
 
     // create text boxes for each part of the image
     $mbpsBbox = imageftbbox($FONT_MEASURE_SIZE_BIG, 0, $FONT_MEASURE, $MBPS_TEXT);

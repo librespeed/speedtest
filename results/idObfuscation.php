@@ -1,6 +1,6 @@
 <?php
 
-define('ID_OBFUSCATION_SALT_FILE', __DIR__."/idObfuscation_salt.php");
+define('ID_OBFUSCATION_SALT_FILE', __DIR__.'/idObfuscation_salt.php');
 
 /**
  * @return string|int

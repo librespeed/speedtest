@@ -27,7 +27,7 @@ function getPdo()
     ];
 
     try {
-        if ("mysql" === $db_type) {
+        if ('mysql' === $db_type) {
             if (!isset(
                 $MySql_hostname,
                 $MySql_port,
@@ -46,12 +46,12 @@ function getPdo()
             return new PDO($dsn, $MySql_username, $MySql_password, $pdoOptions);
         }
 
-        if ("sqlite" === $db_type) {
+        if ('sqlite' === $db_type) {
             if (!isset($Sqlite_db_file)) {
                 return false;
             }
 
-            $pdo = new PDO("sqlite:$Sqlite_db_file", null, null, $pdoOptions);
+            $pdo = new PDO('sqlite:'.$Sqlite_db_file, null, null, $pdoOptions);
 
             $pdo->exec('
                 CREATE TABLE IF NOT EXISTS `speedtest_users` (
@@ -73,7 +73,7 @@ function getPdo()
             return $pdo;
         }
 
-        if ("postgresql" === $db_type) {
+        if ('postgresql' === $db_type) {
             if (!isset(
                 $PostgreSql_hostname,
                 $PostgreSql_databasename,
@@ -181,7 +181,7 @@ function getSpeedtestUserById($id)
 
     $row['id_formatted'] = $row['id'];
     if (isObfuscationEnabled()) {
-        $row['id_formatted'] = obfuscateId($row['id'])." (deobfuscated: ".$row['id'].")";
+        $row['id_formatted'] = obfuscateId($row['id']).' (deobfuscated: '.$row['id'].')';
     }
 
     return $row;
@@ -211,7 +211,7 @@ function getLatestSpeedtestUsers()
         foreach ($rows as $i => $row) {
             $rows[$i]['id_formatted'] = $row['id'];
             if (isObfuscationEnabled()) {
-                $rows[$i]['id_formatted'] = obfuscateId($row['id'])." (deobfuscated: ".$row['id'].")";
+                $rows[$i]['id_formatted'] = obfuscateId($row['id']).' (deobfuscated: '.$row['id'].')';
             }
         }
     } catch (Exception $e) {
