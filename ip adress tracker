@@ -1,0 +1,98 @@
+<html>
+<head><meta charset="utf-8">
+</head>
+<body></body>
+</html>
+<title>Technoindia1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><script type="text/javascript">
+function togglemenu()
+{
+document.getElementById('sidebar').classList.toggle('active');
+}
+</script>
+</head>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+body
+{
+background-size:cover;
+background-repeat: no repeat;
+background-position:center center;
+background-image:url("3.png");
+}
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  
+  <a href="mobhome.html">Home</a>
+  <a href="hlogin.html">Login</a>
+<a class="active" href="hstudy.html">Study</a>
+  <a href="happ.html">App</a>
+  <a href="habout.html">About</a>
+</div>
+<br>
+<br>
+<center>
+<table border="1">
+<tr>
+<td>
+<head>
+    
+            <script type="text/javascript" src="//100widgets.com/js_data.php?id=202"></script>
+        </td>
+        <tr>
+        <td>
+            <script type="text/javascript" src="//100widgets.com/js_data.php?id=125"></script>
+        </td></tr>
+    </tr>
+</table>
+</center>
+<br>
+<br>
+<br>
+<br>
+<br>
+<center>
+<table border="2">
+    <tr>
+        <td>
+       
+                        <script type="text/javascript" src="//100widgets.com/js_data.php?id=234"></script>     
+        </td>
+    </tr>
+</table>
+</center>
+  
+       
+      
+      
+
+</body></html>
