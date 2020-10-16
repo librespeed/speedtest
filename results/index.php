@@ -17,11 +17,11 @@ function tryFont($name)
     }
 
     $fullPathToFont = realpath('.').'/'.$name.'.ttf';
-	if (is_array(imageftbbox(12, 0, $fullPathToFont, 'M'))) {
+    if (is_array(imageftbbox(12, 0, $fullPathToFont, 'M'))) {
         return $fullPathToFont;
     }
 
-	return null;
+    return null;
 }
 
 /**
@@ -31,14 +31,14 @@ function tryFont($name)
  */
 function format($d)
 {
-	if ($d < 10) {
-		return number_format($d, 2, '.', '');
-	}
-	if ($d < 100) {
-		return number_format($d, 1, '.', '');
-	}
+    if ($d < 10) {
+        return number_format($d, 2, '.', '');
+    }
+    if ($d < 100) {
+        return number_format($d, 1, '.', '');
+    }
 
-	return number_format($d, 0, '.', '');
+    return number_format($d, 0, '.', '');
 }
 
 /**
@@ -207,7 +207,7 @@ function drawImage($speedtest)
 
 $speedtest = getSpeedtestUserById($_GET['id']);
 if (!is_array($speedtest)) {
-	exit(1);
+    exit(1);
 }
 
 drawImage($speedtest);
