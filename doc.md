@@ -44,7 +44,7 @@ Server side, you'll need:
 * PHP 5.4 or newer, a 64-bit version is strongly recommended
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 * If you want to store test results (telemetry), one of the following:
-    - MySQL/MariaDB and the mysqli PHP module
+    - MySQL/MariaDB and its PHP PDO module
     - PostgreSQL and its PHP PDO module
     - SQLite 3 and its PHP PDO module
 * If you want to enable results sharing:
@@ -137,7 +137,7 @@ Requirements:
 * Apache 2 (nginx and IIS also supported). A fast connection is not mandatory, but is still recommended
 * PHP 5.4 or newer
 * If you want to store test results (telemetry), one of the following:
-    - MySQL/MariaDB and the mysqli PHP module
+    - MySQL/MariaDB and its PHP PDO module
     - PostgreSQL and its PHP PDO module
     - SQLite 3 and its PHP PDO module
 * If you want to enable results sharing:
