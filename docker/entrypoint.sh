@@ -9,6 +9,9 @@ rm -rf /var/www/html/*
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
 
+# Copy favicon
+cp /speedtest/favicon.ico /var/www/html/
+
 # Set up backend side for standlone modes
 if [ "$MODE" == "standalone" ]; then
   cp -r /speedtest/backend/ /var/www/html/backend
