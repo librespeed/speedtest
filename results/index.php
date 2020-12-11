@@ -53,6 +53,7 @@ function formatSpeedtestDataForImage($speedtest)
     $speedtest['ul'] = format($speedtest['ul']);
     $speedtest['ping'] = format($speedtest['ping']);
     $speedtest['jit'] = format($speedtest['jitter']);
+    $speedtest['timestamp'] = format($speedtest['timestamp']);
 
     $ispinfo = json_decode($speedtest['ispinfo'], true)['processedString'];
     $dash = strpos($ispinfo, '-');
@@ -85,6 +86,7 @@ function drawImage($speedtest)
     $ping = $data['ping'];
     $jit = $data['jitter'];
     $ispinfo = $data['ispinfo'];
+    $timestamp = $data['timestamp'];
 
     // initialize the image
     $SCALE = 1.25;
@@ -110,6 +112,9 @@ function drawImage($speedtest)
     $FONT_ISP = tryFont('OpenSans-Semibold');
     $FONT_ISP_SIZE = 9 * $SCALE;
 
+    $FONT_TIMESTAMP = tryFont("OpenSans-Light");
+    $FONT_TIMESTAMP_SIZE = 8 * $SCALE;
+
     $FONT_WATERMARK = tryFont('OpenSans-Light');
     $FONT_WATERMARK_SIZE = 8 * $SCALE;
 
@@ -122,6 +127,7 @@ function drawImage($speedtest)
     $TEXT_COLOR_MEASURE = imagecolorallocate($im, 40, 40, 40);
     $TEXT_COLOR_ISP = imagecolorallocate($im, 40, 40, 40);
     $SEPARATOR_COLOR = imagecolorallocate($im, 192, 192, 192);
+    $TEXT_COLOR_TIMESTAMP = imagecolorallocate($im, 160, 160, 160);
     $TEXT_COLOR_WATERMARK = imagecolorallocate($im, 160, 160, 160);
 
     // configure positioning or the different parts on the image
@@ -149,6 +155,9 @@ function drawImage($speedtest)
     $POSITION_Y_ISP = 205 * $SCALE;
 
     $SEPARATOR_Y = 211 * $SCALE;
+
+    $POSITION_X_TIMESTAMP= 4 * $SCALE;
+    $POSITION_Y_TIMESTAMP = 223 * $SCALE;
 
     $POSITION_Y_WATERMARK = 223 * $SCALE;
 
@@ -197,6 +206,8 @@ function drawImage($speedtest)
     imagefttext($im, $FONT_ISP_SIZE, 0, $POSITION_X_ISP, $POSITION_Y_ISP, $TEXT_COLOR_ISP, $FONT_ISP, $ispinfo);
     // separator
     imagefilledrectangle($im, 0, $SEPARATOR_Y, $WIDTH, $SEPARATOR_Y, $SEPARATOR_COLOR);
+    // timestamp
+    imagefttext($im, $FONT_TIMESTAMP_SIZE, 0, $POSITION_X_TIMESTAMP, $POSITION_Y_TIMESTAMP, $TEXT_COLOR_TIMESTAMP, $FONT_TIMESTAMP, $timestamp);
     // watermark
     imagefttext($im, $FONT_WATERMARK_SIZE, 0, $POSITION_X_WATERMARK, $POSITION_Y_WATERMARK, $TEXT_COLOR_WATERMARK, $FONT_WATERMARK, $WATERMARK_TEXT);
 
