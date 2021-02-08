@@ -399,8 +399,8 @@ function dlTest(done) {
 				const speed = totLoaded / (t / 1000.0);
 				if (settings.time_auto) {
 					// decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-					const bonus = 6.4 * speed / 100000;
-					bonusT += bonus > 800 ? 800 : bonus;
+					const bonus = 5.0 * speed / 100000;
+					bonusT += bonus > 400 ? 400 : bonus;
 				}
 				// update status
 				dlStatus = Number((speed * 8 * settings.overheadCompensationFactor / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2)); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
@@ -557,8 +557,8 @@ function ulTest(done) {
 					const speed = totLoaded / (t / 1000.0);
 					if (settings.time_auto) {
 						// decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-						const bonus = 6.4 * speed / 100000;
-						bonusT += bonus > 800 ? 800 : bonus;
+						const bonus = 5.0 * speed / 100000;
+						bonusT += bonus > 400 ? 400 : bonus;
 					}
 					// update status
 					ulStatus = Number((speed * 8 * settings.overheadCompensationFactor / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2)); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits

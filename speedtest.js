@@ -82,8 +82,8 @@ class Speedtest {
    * @param value - new value for the parameter
    */
   setParameter(parameter, value) {
-    if (this._state !== 0)
-      throw new Error("You cannot change the test settings after adding server or starting the test");
+    if (this._state === 3)
+      throw new Error("You cannot change the test settings while running the test");
     this._settings[parameter] = value;
     if (parameter === "telemetry_extra") {
       this._originalExtra = this._settings.telemetry_extra;
