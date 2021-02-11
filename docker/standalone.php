@@ -2,6 +2,8 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
+<link rel="apple-touch-icon" href="favicon.ico">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta charset="UTF-8" />
 <link rel="shortcut icon" href="favicon.ico">
 <script type="text/javascript" src="speedtest.js"></script>
