@@ -21,7 +21,7 @@ s.setParameter("getIp_ispInfo_distance","<?=getenv("DISTANCE") ?>");
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
 var dlColor="#6060AA",
-	ulColor="#616161";
+	ulColor="#AA6060";
 var progColor=meterBk;
 
 //CODE FOR GAUGES
