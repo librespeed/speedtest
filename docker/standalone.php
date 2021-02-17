@@ -247,6 +247,12 @@ function initUI(){
 		height:auto;
 		margin: 0.25em 0;
 	}
+	#shareArea input{
+		background-color:#2C2F33;
+		color: #c5c5c5;
+		padding: 0.5em;
+		margin-bottom: 2em;
+	}
 	#privacyPolicy{
         position:fixed;
         top:2em;
