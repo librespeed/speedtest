@@ -174,7 +174,7 @@ function initUI(){
 	}
 	#test{
 		margin-top:2em;
-		margin-bottom:12em;
+		margin-bottom:2em;
 	}
 	div.testArea{
 		display:inline-block;
@@ -320,7 +320,7 @@ function initUI(){
 			<img src="" id="resultsImg" />
 		</div>
 	</div>
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
+	<a class="privacy" href="https://github.com/librespeed/speedtest">Source code</a>
 </div>
 <div id="privacyPolicy" style="display:none">
     <h2>Privacy Policy</h2>
