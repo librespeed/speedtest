@@ -134,15 +134,15 @@ function initUI(){
 <style type="text/css">
 	html,body{
 		border:none; padding:0; margin:0;
-		background:#FFFFFF;
-		color:#202020;
+		background:#23272A;
+		color:#c5c5c5;
 	}
 	body{
 		text-align:center;
 		font-family:"Roboto",sans-serif;
 	}
 	h1{
-		color:#404040;
+		color:#e4e4e4;
 	}
 	#startStopBtn{
 		display:inline-block;
@@ -256,10 +256,10 @@ function initUI(){
         overflow-y:auto;
         width:auto;
         height:auto;
-        box-shadow:0 0 3em 1em #000000;
+        box-shadow:0 0 1em 0.1em #000000;
         z-index:999999;
         text-align:left;
-        background-color:#FFFFFF;
+        background-color:#2C2F33;
         padding:1em;
 	}
 	a.privacy{
