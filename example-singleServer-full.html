@@ -60,17 +60,16 @@ function startStop(){
 		//speedtest is running, abort
 		s.abort();
 		data=null;
-		I("startStopBtn").className="";
 		initUI();
 	}else{
 		//test is not running, begin
-		I("startStopBtn").className="running";
+		updateStartStopButton(true);
 		I("shareArea").style.display="none";
 		s.onupdate=function(data){
             uiData=data;
 		};
 		s.onend=function(aborted){
-            I("startStopBtn").className="";
+            updateStartStopButton(false);
             updateUI(true);
             if(!aborted){
                 //if testId is present, show sharing panel, otherwise do nothing
@@ -87,6 +86,16 @@ function startStop(){
             }
 		};
 		s.start();
+	}
+}
+function updateStartStopButton(running) {
+	var btn=I("startStopBtn");
+	if(running){
+		btn.className="running";
+		btn.textContent="Abort";
+	}else{
+		btn.className="";
+		btn.textContent="Start";
 	}
 }
 //this function reads the data sent back by the test and updates the UI
@@ -137,7 +146,6 @@ function initUI(){
 		color:#404040;
 	}
 	#startStopBtn{
-		display:inline-block;
 		margin:0 auto;
 		color:#6060AA;
 		background-color:rgba(0,0,0,0);
@@ -147,7 +155,6 @@ function initUI(){
 		box-sizing:border-box;
 		width:8em; height:3em;
 		line-height:2.7em;
-		cursor:pointer;
 		box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
 	}
 	#startStopBtn:hover{
@@ -157,12 +164,6 @@ function initUI(){
 		background-color:#FF3030;
 		border-color:#FF6060;
 		color:#FFFFFF;
-	}
-	#startStopBtn:before{
-		content:"Start";
-	}
-	#startStopBtn.running:before{
-		content:"Abort";
 	}
 	#test{
 		margin-top:2em;
@@ -278,7 +279,7 @@ function initUI(){
 <body>
 <h1>LibreSpeed Example</h1>
 <div id="testWrapper">
-	<div id="startStopBtn" onclick="startStop()"></div><br/>
+	<div><button type="button" id="startStopBtn" onclick="startStop()">Start</button></div>
 	<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
 	<div id="test">
 		<div class="testGroup">
