@@ -21,7 +21,7 @@ s.setParameter("getIp_ispInfo_distance","<?=getenv("DISTANCE") ?>");
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
 var dlColor="#6060AA",
-	ulColor="#616161";
+	ulColor="#AA6060";
 var progColor=meterBk;
 
 //CODE FOR GAUGES
@@ -134,15 +134,15 @@ function initUI(){
 <style type="text/css">
 	html,body{
 		border:none; padding:0; margin:0;
-		background:#FFFFFF;
-		color:#202020;
+		background:#23272A;
+		color:#c5c5c5;
 	}
 	body{
 		text-align:center;
 		font-family:"Roboto",sans-serif;
 	}
 	h1{
-		color:#404040;
+		color:#e4e4e4;
 	}
 	#startStopBtn{
 		display:inline-block;
@@ -174,7 +174,7 @@ function initUI(){
 	}
 	#test{
 		margin-top:2em;
-		margin-bottom:12em;
+		margin-bottom:2em;
 	}
 	div.testArea{
 		display:inline-block;
@@ -247,6 +247,12 @@ function initUI(){
 		height:auto;
 		margin: 0.25em 0;
 	}
+	#shareArea input{
+		background-color:#2C2F33;
+		color: #c5c5c5;
+		padding: 0.5em;
+		margin-bottom: 2em;
+	}
 	#privacyPolicy{
         position:fixed;
         top:2em;
@@ -256,10 +262,10 @@ function initUI(){
         overflow-y:auto;
         width:auto;
         height:auto;
-        box-shadow:0 0 3em 1em #000000;
+        box-shadow:0 0 1em 0.1em #000000;
         z-index:999999;
         text-align:left;
-        background-color:#FFFFFF;
+        background-color:#2C2F33;
         padding:1em;
 	}
 	a.privacy{
@@ -320,7 +326,7 @@ function initUI(){
 			<img src="" id="resultsImg" />
 		</div>
 	</div>
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
+	<a class="privacy" href="https://github.com/librespeed/speedtest">Source code</a>
 </div>
 <div id="privacyPolicy" style="display:none">
     <h2>Privacy Policy</h2>
