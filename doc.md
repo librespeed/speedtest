@@ -282,11 +282,11 @@ The `onupdate` event handler will be called periodically by the test with data c
     * `5` = Test aborted
 * __dlStatus__: either
     * Empty string (not started or aborted)
-    * Download speed in Megabit/s as a number with 2 decimals
+    * Download speed in Mbit/s (or Mibit/s) as a number with 2 decimals
     * The string "Fail" (test failed)
 * __ulStatus__: either
     * Empty string (not started or aborted)
-    * Upload speed in Megabit/s as a number with 2 decimals
+    * Upload speed in Mbit/s (or Mibit/s) as a number with 2 decimals
     * The string "Fail" (test failed)
 * __pingStatus__: either
     * Empty string (not started or aborted)
@@ -406,7 +406,7 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
 * __ping_allowPerformanceApi__: toggles use of Performance API to improve accuracy of Ping/Jitter test on browsers that support it.
 	* Default: `true`
 	* Default override: `false` on Firefox because its performance API implementation is inaccurate
-* __useMebibits__: use mebibits/s instead of megabits/s for the speeds
+* __useMebibits__: use mebibits per second (Mibit/s) instead of megabits per second (Mbit/s) for the speeds
 	* Default: `false`
 * __overheadCompensationFactor__: compensation for HTTP and network overhead. Default value assumes typical MTUs used over the Internet. You might want to change this if you're using this in your internal network with different MTUs, or if you're using IPv6 instead of IPv4.
     * Default: `1.06` probably a decent estimate for all overhead. This was measured empirically by comparing the measured speed and the speed reported by my the network adapter.
@@ -507,8 +507,8 @@ You can think of this as a finite state machine. These are the states (use getSt
     While in state 1, you can only add test points, you cannot change the test settings. When you're done, use selectServer(callback) to select the test point with the lowest ping. This is asynchronous, when it's done, it will call your callback function and move to state 2. Calling setSelectedServer(server) will manually select a server and move to state 2.
 * __2__: test point selected, ready to start the test. Use `start()` to begin, this will move to state 3
 * __3__: test running. Here, your `onupdate` event calback will be called periodically, with data coming from the worker about speed and progress. A data object will be passed to your `onupdate` function, with the following items:
-        - `dlStatus`: download speed in mbps
-        - `ulStatus`: upload speed in mbps
+        - `dlStatus`: download speed in Mbit/s
+        - `ulStatus`: upload speed in Mbit/s
         - `pingStatus`: ping in ms
         - `jitterStatus`: jitter in ms
         - `dlProgress`: progress of the download test as a float 0-1

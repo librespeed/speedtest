@@ -162,7 +162,7 @@ function drawImage($speedtest)
     $POSITION_Y_WATERMARK = 223 * $SCALE;
 
     // configure labels
-    $MBPS_TEXT = 'Mbps';
+    $MBPS_TEXT = 'Mbit/s';
     $MS_TEXT = 'ms';
     $PING_TEXT = 'Ping';
     $JIT_TEXT = 'Jitter';
