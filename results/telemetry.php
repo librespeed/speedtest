@@ -3,7 +3,15 @@
 require 'telemetry_settings.php';
 require_once 'telemetry_db.php';
 
-$ip = $_SERVER['REMOTE_ADDR'];
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $user_ip_address = $_SERVER['HTTP_CLIENT_IP'];
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $user_ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'];
+} else {
+    $user_ip_address = $_SERVER['REMOTE_ADDR'];
+}
+
+$ip = $user_ip_address;
 $ispinfo = $_POST['ispinfo'];
 $extra = $_POST['extra'];
 $ua = $_SERVER['HTTP_USER_AGENT'];
