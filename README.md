@@ -1,4 +1,4 @@
-![LibreSpeed Logo](https://github.com/librespeed/speedtest/blob/master/.logo/logo3.png?raw=true)
+ <img src="/.logo/logo3.png" alt="LibreSpeed Logo" width="200"/>
 
 # LibreSpeed
 
