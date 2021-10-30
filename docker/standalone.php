@@ -279,7 +279,7 @@ function initUI(){
 <body>
 <h1><?= getenv('TITLE') ?: 'LibreSpeed Example' ?></h1>
 <div id="testWrapper">
-	<div id="startStopBtn" onclick="startStop()"></div><br/>
+	<button id="startStopBtn" onclick="startStop()"></button><br/>
 	<?php if(getenv("TELEMETRY")=="true"){ ?>
         <a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
 	<?php } ?>
