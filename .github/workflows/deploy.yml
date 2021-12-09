@@ -1,7 +1,7 @@
 name: Publication Docker image multiarch arm64 v7/arm v6/arm amd64
 on:
   push:
-    branches: [main]
+    branches: [master]
 jobs:
   docker:
     runs-on: ubuntu-latest
