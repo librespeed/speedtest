@@ -1,0 +1,43 @@
+name: Publication Docker image multiarch arm64 v7/arm v6/arm amd64
+on:
+  push:
+    branches: [main]
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+      - name: Setup Docker Buildx php${{ matrix.phpversion }}
+        uses: docker/setup-buildx-action@v1
+        id: buildx
+      - name: Cache Docker Image Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Build and Push Docker Image php${{ matrix.phpversion }}
+        uses: docker/build-push-action@v2
+        id: docker_build
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/librespeed
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      - name: Verify
+        run: echo ${{ steps.docker_build.outputs.digest }}
