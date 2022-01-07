@@ -2,7 +2,7 @@
 
 /*
  * This script detects the client's IP address and fetches ISP info from ipinfo.io/
- * Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Contry and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (will be empty if isp detection is disabled).
+ * Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Country and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (will be empty if isp detection is disabled).
  * Client side, the output of this script can be treated as JSON or as regular text. If the output is regular text, it will be shown to the user as is.
  */
 
@@ -11,24 +11,7 @@ error_reporting(0);
 define('API_KEY_FILE', 'getIP_ipInfo_apikey.php');
 define('SERVER_LOCATION_CACHE_FILE', 'getIP_serverLocation.php');
 
-/**
- * @return string
- */
-function getClientIp()
-{
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
-        $ip = $_SERVER['HTTP_X_REAL_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        $ip = preg_replace('/,.*/', '', $ip); # hosts are comma-separated, client is first
-    } else {
-        $ip = $_SERVER['REMOTE_ADDR'];
-    }
-
-    return preg_replace('/^::ffff:/', '', $ip);
-}
+require_once 'getIP_util.php';
 
 /**
  * @param string $ip
