@@ -53,7 +53,11 @@ function sendHeaders()
 $chunks = getChunkCount();
 
 // Generate data
-$data = openssl_random_pseudo_bytes(1048576);
+if (function_exists('random_bytes')) {
+    $data = random_bytes(1048576);
+} else {
+    $data = openssl_random_pseudo_bytes(1048576);
+}
 
 // Deliver chunks of 1048576 bytes
 sendHeaders();
