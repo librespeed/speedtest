@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
+        libapache2-mod-security2 \
     && docker-php-ext-install -j$(nproc) iconv \
     && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd
@@ -16,6 +17,14 @@ RUN mkdir -p /speedtest/
 # Copy sources
 
 COPY backend/ /speedtest/backend
+
+# TLS1.3
+COPY docker/etc/ports.conf /etc/apache2/ports.conf
+COPY docker/etc/default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf
+COPY docker/etc/ssl.conf /etc/apache2/mods-available/ssl.conf
+## Certificate and key
+COPY cert/cert.pem /etc/ssl/certs/cert.pem
+COPY cert/key.pem /etc/ssl/private/key.pem
 
 COPY results/*.php /speedtest/results/
 COPY results/*.ttf /speedtest/results/
@@ -40,5 +49,5 @@ ENV WEBPORT=80
 
 # Final touches
 
-EXPOSE 80
+EXPOSE 443
 CMD ["bash", "/entrypoint.sh"]

@@ -86,6 +86,8 @@ if [ "$WEBPORT" != "80" ]; then
 fi
 
 echo "Done, Starting APACHE"
+# TLS1.3
+a2enmod rewrite ssl security2
 
-# This runs apache
-apache2-foreground
+/etc/init.d/apache2 start
+/usr/bin/tail -f /dev/null
