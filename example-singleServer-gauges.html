@@ -12,7 +12,7 @@ var s=new Speedtest(); //create speedtest object
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
 var dlColor="#6060AA",
-	ulColor="#616161";
+	ulColor="##3c8267";
 var progColor=meterBk;
 
 //CODE FOR GAUGES
@@ -125,7 +125,7 @@ function initUI(){
 		display:inline-block;
 		margin:0 auto;
 		color:#6060AA;
-		background-color:rgba(0,0,0,0);
+		background-color:rgba(0,0,0,0.2);
 		border:0.15em solid #6060FF;
 		border-radius:0.3em;
 		transition:all 0.3s;
@@ -233,7 +233,7 @@ function initUI(){
 			</div>
 			<div class="testArea2">
 				<div class="testName">Jitter</div>
-				<div id="jitText" class="meterText" style="color:#AA6060"></div>
+				<div id="jitText" class="meterText" style="color:#7f8a7d"></div>
 				<div class="unit">ms</div>
 			</div>
 		</div>
@@ -255,7 +255,7 @@ function initUI(){
 			<span id="ip"></span>
 		</div>
 	</div>
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
+	<a href="https://github.com/librespeed/speedtest">Source code</a> 
 </div>
 <script type="text/javascript">setTimeout(function(){initUI()},100);</script>
 </body>
