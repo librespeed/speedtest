@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no"/>
 <title>LibreSpeed Example</title>
 <link rel="shortcut icon" href="favicon.ico">
 <script type="text/javascript" src="speedtest.js"></script>
@@ -28,7 +28,8 @@ function startStop(){ //start/stop button pressed
 	if(s.getState()==3){
 		//speedtest is running, abort
 		s.abort();
-	}else{
+	}
+	else{
 		//test is not running, begin
 		s.start();
 		I("startStopBtn").className="running";
@@ -49,7 +50,9 @@ function I(id){return document.getElementById(id);}
 
 <style type="text/css">
 	html,body{
-		border:none; padding:0; margin:0;
+		border:none; 
+		padding:0; 
+		margin:0;
 		background:#FFFFFF;
 		color:#202020;
 	}
@@ -69,7 +72,8 @@ function I(id){return document.getElementById(id);}
 		border-radius:0.3em;
 		transition:all 0.3s;
 		box-sizing:border-box;
-		width:8em; height:3em;
+		width:8em; 
+		height:3em;
 		line-height:2.7em;
 		cursor:pointer;
 		box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
@@ -101,14 +105,16 @@ function I(id){return document.getElementById(id);}
 	}
 	div.testName{
 		position:absolute;
-		top:0.1em; left:0;
+		top:0.1em; 
+		left:0;
 		width:100%;
 		font-size:1.4em;
 		z-index:9;
 	}
 	div.meterText{
 		position:absolute;
-		bottom:1.5em; left:0;
+		bottom:1.5em; 
+		left:0;
 		width:100%;
 		font-size:2.5em;
 		z-index:9;
@@ -128,7 +134,8 @@ function I(id){return document.getElementById(id);}
 	}
 	div.unit{
 		position:absolute;
-		bottom:2em; left:0;
+		bottom:2em; 
+		left:0;
 		width:100%;
 		z-index:9;
 	}
