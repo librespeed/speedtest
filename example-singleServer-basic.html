@@ -4,23 +4,26 @@
 <head>
     <title>LibreSpeed Example</title>
     <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="./style-singleServerBasic.css">
 </head>
 <script type="text/javascript" src="speedtest.js"></script>
 <body>
-    <h1>LibreSpeed Example</h1>
+    <div class = "content-heading">
+        <h1>LibreSpeed Example</h1>
+    </div> 
+    <div class = "content-body">
+        <h4>IP Address</h4>
+        <p id="ip"></p>
 
-    <h4>IP Address</h4>
-    <p id="ip"></p>
+        <h4> Download </h4>
+        <p id="download"></p>
 
-    <h4>Download</h4>
-    <p id="download"></p>
+        <h4>  Upload  </h4>
+        <p id="upload"></p>
 
-    <h4>Upload</h4>
-    <p id="upload"></p>
-
-    <h4>Latency</h4>
-    <p id="ping"></p>
-
+        <h4> Latency </h4>
+        <p id="ping"></p>
+    </div>
     <script type="text/javascript">
         var s=new Speedtest();
         s.onupdate = function (data) { // when status is received, put the values in the appropriate fields
@@ -32,7 +35,8 @@
         s.start(); // start the speedtest with default settings
     </script>
 
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
-
+	<div class = "source-btn">
+        <a href="https://github.com/librespeed/speedtest">Source code</a>
+    </div>
 </body>
 </html>
