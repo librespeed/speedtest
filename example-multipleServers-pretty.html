@@ -107,6 +107,7 @@ function I(id){return document.getElementById(id);}
 	body{
 		text-align:center;
 		font-family:"Roboto",sans-serif;
+		
 	}
 	h1{
 		color:#404040;
@@ -149,10 +150,12 @@ function I(id){return document.getElementById(id);}
 		height:9em;
 		position:relative;
 		box-sizing:border-box;
+		border: 2px solid black;
 	}
 	div.testName{
 		position:absolute;
-		top:0.1em; left:0;
+		top:0.4em; left:0;
+		
 		width:100%;
 		font-size:1.4em;
 		z-index:9;
@@ -172,6 +175,11 @@ function I(id){return document.getElementById(id);}
 	}
 	#pingText,#jitText{
 		color:#AA6060;
+	}
+	#ipArea {
+		position: relative;
+		top:1em
+		
 	}
 	div.meterText:empty:before{
 		color:#505050 !important;
@@ -232,8 +240,8 @@ function I(id){return document.getElementById(id);}
 			<div class="unit">ms</div>
 		</div>
 	</div>
-	<div id="ipArea">
-		IP Address: <span id="ip"></span>
+	<div id="ipArea"><h4>IP Address:</h4>
+		 <span id="ip"></span>
 	</div>
 </div>
 <a href="https://github.com/librespeed/speedtest">Source code</a>
