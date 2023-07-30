@@ -27,6 +27,44 @@ function getPdo()
     ];
 
     try {
+        if ('mssql' === $db_type) {
+            if (!isset(
+                $MsSql_server,
+                $MsSql_databasename,
+				$MsSql_WindowsAuthentication
+            )) {
+                return false;
+            }
+			
+			if (!$MsSql_WindowsAuthentication and
+			    !isset(
+						$MsSql_username,
+						$MsSql_password,
+						)
+				) {
+				if($returnErrorMessage){
+					return "Required MSSQL database settings missing in '" . TELEMETRY_SETTINGS_FILE . "'";
+				} 
+                return false;
+            }
+            $dsn = 'sqlsrv:'
+                .'server='.$MsSql_server
+                .';Database='.$MsSql_databasename;
+			
+			if($MsSql_TrustServerCertificate === true){
+				$dsn = $dsn . ';TrustServerCertificate=1';
+			}
+			if($MsSql_TrustServerCertificate === false){
+				$dsn = $dsn . ';TrustServerCertificate=0';
+			}
+			
+			if($MsSql_WindowsAuthentication){
+				return new PDO($dsn, "", "", $pdoOptions);
+			} else {
+				return new PDO($dsn, $MySql_username, $MySql_password, $pdoOptions);
+			}
+        }
+
         if ('mysql' === $db_type) {
             if (!isset(
                 $MySql_hostname,
@@ -195,14 +233,20 @@ function getLatestSpeedtestUsers()
         return false;
     }
 
+    require TELEMETRY_SETTINGS_FILE;
+	
     try {
-        $stmt = $pdo->query(
-            'SELECT
-            id, timestamp, ip, ispinfo, ua, lang, dl, ul, ping, jitter, log, extra
+		$sql = 'SELECT ';
+		
+		if('mssql' === $db_type) {$sql .= ' TOP(100) ';}
+		
+		$sql .= ' id, timestamp, ip, ispinfo, ua, lang, dl, ul, ping, jitter, log, extra
             FROM speedtest_users
-            ORDER BY timestamp DESC
-            LIMIT 100'
-        );
+            ORDER BY timestamp DESC ';
+			
+		if('mssql' !== $db_type) {$sql .= ' LIMIT 100 ';}
+		
+        $stmt = $pdo->query($sql);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

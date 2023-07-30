@@ -1,6 +1,6 @@
 <?php
 
-// Type of db: "mysql", "sqlite" or "postgresql"
+// Type of db: "mssql", "mysql", "sqlite" or "postgresql"
 $db_type = 'mysql';
 // Password to login to stats.php. Change this!!!
 $stats_password = 'PASSWORD';
@@ -11,6 +11,15 @@ $redact_ip_addresses = false;
 
 // Sqlite3 settings
 $Sqlite_db_file = '../../speedtest_telemetry.sql';
+
+// mssql settings
+$MsSql_server = 'DB_HOSTNAME';
+$MsSql_databasename = 'DB_NAME';
+$MsSql_WindowsAuthentication = true;   #true or false
+$MsSql_username = 'USERNAME';          #not used if MsSql_WindowsAuthentication is true
+$MsSql_password = 'PASSWORD';          #not used if MsSql_WindowsAuthentication is true
+$MsSql_TrustServerCertificate = true;  #true, false or comment out for driver default
+#Download driver from https://docs.microsoft.com/en-us/sql/connect/php/download-drivers-php-sql-server?view=sql-server-ver16
 
 // Mysql settings
 $MySql_username = 'USERNAME';
