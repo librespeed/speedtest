@@ -7,18 +7,24 @@ define('TELEMETRY_SETTINGS_FILE', 'telemetry_settings.php');
 /**
  * @return PDO|false
  */
-function getPdo()
+function getPdo($returnErrorMessage = false)
 {
     if (
         !file_exists(TELEMETRY_SETTINGS_FILE)
         || !is_readable(TELEMETRY_SETTINGS_FILE)
     ) {
+		if($returnErrorMessage){
+			return 'missing TELEMETRY_SETTINGS_FILE';
+		} 
         return false;
     }
 
     require TELEMETRY_SETTINGS_FILE;
 
     if (!isset($db_type)) {
+		if($returnErrorMessage){
+			return "db_type not set in '" . TELEMETRY_SETTINGS_FILE . "'";
+		} 
         return false;
     }
 
@@ -33,6 +39,9 @@ function getPdo()
                 $MsSql_databasename,
 				$MsSql_WindowsAuthentication
             )) {
+				if($returnErrorMessage){
+					return "Required MSSQL database settings missing in '" . TELEMETRY_SETTINGS_FILE . "'";
+				} 
                 return false;
             }
 			
@@ -73,7 +82,10 @@ function getPdo()
                 $MySql_username,
                 $MySql_password
             )) {
-                return false;
+                if($returnErrorMessage){
+					return "Required mysql database settings missing in '" . TELEMETRY_SETTINGS_FILE . "'";
+				} 
+				return false;
             }
 
             $dsn = 'mysql:'
@@ -86,6 +98,9 @@ function getPdo()
 
         if ('sqlite' === $db_type) {
             if (!isset($Sqlite_db_file)) {
+				if($returnErrorMessage){
+					return "Required sqlite database settings missing in '" . TELEMETRY_SETTINGS_FILE . "'";
+				} 
                 return false;
             }
 
@@ -118,7 +133,10 @@ function getPdo()
                 $PostgreSql_username,
                 $PostgreSql_password
             )) {
-                return false;
+                if($returnErrorMessage){
+					return "Required postgresql database settings missing in '" . TELEMETRY_SETTINGS_FILE . "'";
+				} 
+				return false;
             }
 
             $dsn = 'pgsql:'
@@ -128,9 +146,15 @@ function getPdo()
             return new PDO($dsn, $PostgreSql_username, $PostgreSql_password, $pdoOptions);
         }
     } catch (Exception $e) {
+		if($returnErrorMessage){
+			return $e->getMessage();
+		} 
         return false;
     }
 
+	if($returnErrorMessage){
+		return "db_type '" . $db_type . "' not supported";
+	} 
     return false;
 }
 
@@ -147,12 +171,15 @@ function isObfuscationEnabled()
 }
 
 /**
- * @return string|false returns the id of the inserted column or false on error
+ * @return string|false returns the id of the inserted column or false on error if returnErrorMessage is false or a error message if returnErrorMessage is true
  */
-function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log)
+function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log, $returnExceptionOnError = false)
 {
     $pdo = getPdo();
     if (!($pdo instanceof PDO)) {
+		if($returnExceptionOnError){
+			return new Exception("Failed to get database connection object");
+		} 
         return false;
     }
 
@@ -167,6 +194,9 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
         ]);
         $id = $pdo->lastInsertId();
     } catch (Exception $e) {
+		if($returnExceptionOnError){
+			return $e;
+		} 
         return false;
     }
 
@@ -180,16 +210,19 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
 /**
  * @param int|string $id
  *
- * @return array|null|false returns the speedtest data as array, null
+ * @return array|null|false|exception returns the speedtest data as array, null
  *                          if no data is found for the given id or
- *                          false if there was an error
+ *                          false or an exception if there was an error (based on returnExceptionOnError)
  *
  * @throws RuntimeException
  */
-function getSpeedtestUserById($id)
+function getSpeedtestUserById($id,$returnExceptionOnError = false)
 {
     $pdo = getPdo();
     if (!($pdo instanceof PDO)) {
+		if($returnExceptionOnError){
+			return new Exception("Failed to get database connection object");
+		} 
         return false;
     }
 
@@ -208,6 +241,9 @@ function getSpeedtestUserById($id)
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
+		if($returnExceptionOnError){
+			return $e;
+		} 
         return false;
     }
 
