@@ -96,7 +96,7 @@ if(!isset($db_type) || $db_type != 'postgresql'){
 
 
 <tr><td colspan="3" class='SectionHeading'>Database check</td></tr>
-<td>Connecting to DB</td><td>
+<tr><td>Connecting to DB</td><td>
 <?php
 	$pdo = getPdo(true);
 	if (($pdo instanceof PDO)) {
