@@ -154,9 +154,9 @@ function initUI(){
 		box-shadow: 0 0 2em rgba(0,0,0,0.1), inset 0 0 1em rgba(0,0,0,0.1);
 	}
 	#startStopBtn.running{
-		background-color:#FF3030;
-		border-color:#FF6060;
-		color:#FFFFFF;
+		background-color:#FF3030!important;
+		border-color:#FF6060!important;
+		color:#FFFFFF!important;
 	}
 	#startStopBtn:before{
 		content:"Start";
@@ -272,6 +272,78 @@ function initUI(){
 			font-size:0.8em;
 		}
 	}
+		
+	#darkMode{
+		margin-top:-100px;
+	}
+	.theme-switch-wrapper {
+        margin:5px;
+      }
+
+      .theme-switch {
+        display: inline-block;
+        height: 40px;
+        position: relative;
+        width: 65px;
+      }
+
+      .theme-switch input {
+        display: none;
+      }
+
+      .slider {
+        background: #000;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 13px;
+        transition: 0.4s;
+      }
+
+      .slider p:after {
+        color: #fff;
+        float: right;
+        margin: 0 5px 0 0;
+        content: "OFF";
+        transition: 0.4s;
+      }
+
+      input:checked + .slider p:after {
+        float: left;
+        color: #000;
+        content: "ON";
+        margin: 0 0 0 5px;
+      }
+
+      .slider:before {
+        background: #fff;
+        top: 8px;
+        content: "";
+        height: 26px;
+        left: 4px;
+        position: absolute;
+        transition: 0.4s;
+        width: 26px;
+      }
+
+      input:checked + .slider {
+        background-color: #fff;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(28px);
+        background: #000;
+      }
+
+      .slider.round {
+        border-radius: 34px;
+      }
+
+      .slider.round:before {
+        border-radius: 50%;
+      }
 </style>
 <title>LibreSpeed Example</title>
 </head>
@@ -317,6 +389,15 @@ function initUI(){
 			<img src="" id="resultsImg" />
 		</div>
 	</div>
+	<div id='darkMode'>
+		<h3>DARKMODE</h3>
+		<div class="theme-switch-wrapper">
+		  <label class="theme-switch" for="checkbox">
+			<input type="checkbox" id="checkbox" />
+			<div class="slider round">
+			  <p></p>
+			</div>
+			</div>
 	<a href="https://github.com/librespeed/speedtest">Source code</a>
 </div>
 <div id="privacyPolicy" style="display:none">
@@ -360,6 +441,60 @@ function initUI(){
     </div>
     <br/>
 </div>
-<script type="text/javascript">setTimeout(function(){initUI()},100);</script>
+<script type="text/javascript">
+setTimeout(function(){initUI()},100);
+
+//DARMODE
+const toggleSwitch = document.querySelector(
+        '.theme-switch input[type="checkbox"]'
+      );
+
+      function switchTheme(e) {
+        if (e.target.checked) {
+          toggleDarkMode();
+        } else {
+          toggleDarkMode();
+        }
+      }
+      toggleSwitch.addEventListener("change", switchTheme, true);
+
+      var countToggleDark = 0;
+
+      function toggleDarkMode() {
+        if (countToggleDark == 0) {
+          document.querySelector("html").style.background = "#000";
+          document.querySelector("body").style.background = "#000";
+          document.querySelector("html").style.color = "#fdfdfd";
+          document.querySelector("body").style.color = "#fdfdfd";
+          document.querySelector("#startStopBtn").style.border =
+            "0.15em solid #996cb4";
+          document.querySelector("#startStopBtn").style.color = "#996cb4";
+          document.querySelector("h1").style.color = "#d3cfcf";
+          document.querySelector("#dlText").style.color = "#996cb4";
+          document.querySelector("#pingText").style.color = "#b92323";
+          document.querySelector("#jitText").style.color = "#b92323";
+		  ulColor='#fff';
+		  meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#c7c7c7";
+		  progColor="#fff";
+		  countToggleDark++;
+        } else {
+          document.querySelector("html ").style.background = "#fdfdfd";
+          document.querySelector("body").style.background = "#fdfdfd";
+          document.querySelector("html").style.color = "#202020";
+          document.querySelector("body").style.color = "#202020";
+          document.querySelector("#startStopBtn").style.border =
+            "0.15em solid #6060FF";
+          document.querySelector("#startStopBtn").style.color = "#6060AA";
+          document.querySelector("h1").style.color = "#404040";
+          document.querySelector("#dlText").style.color = "#000";
+          document.querySelector("#pingText").style.color = "#AA6060";
+          document.querySelector("#jitText").style.color = "#AA6060";
+		  ulColor='#616161';
+		   meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
+		   progColor=meterBk;
+          countToggleDark = 0;
+        }
+      }
+</script>
 </body>
 </html>

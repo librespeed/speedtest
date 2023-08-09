@@ -35,11 +35,82 @@
             display: block;
             margin: 0 auto;
         }
+        
+	.theme-switch-wrapper {
+        margin: 20px;
+      }
+
+      .theme-switch {
+        display: inline-block;
+        height: 40px;
+        position: relative;
+        width: 65px;
+      }
+
+      .theme-switch input {
+        display: none;
+      }
+
+      .slider {
+        background: #000;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 13px;
+        transition: 0.4s;
+      }
+
+      .slider p:after {
+        color: #fff;
+        float: right;
+        margin: 0 5px 0 0;
+        content: "OFF";
+        transition: 0.4s;
+      }
+
+      input:checked + .slider p:after {
+        float: left;
+        color: #000;
+        content: "ON";
+        margin: 0 0 0 5px;
+      }
+
+      .slider:before {
+        background: #fff;
+        top: 8px;
+        content: "";
+        height: 26px;
+        left: 4px;
+        position: absolute;
+        transition: 0.4s;
+        width: 26px;
+      }
+
+      input:checked + .slider {
+        background-color: #fff;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(28px);
+        background: #000;
+      }
+
+      .slider.round {
+        border-radius: 34px;
+      }
+
+      .slider.round:before {
+        border-radius: 50%;
+      }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script> <!--THIS LIBRARY SUCKS!-->
     <script src="speedtest.js"></script>
     <script type="text/javascript">
-        var s = null
+        var s = null;
+        var xAxesColor='#000';
+        var yAxesColor='#000';
         function runTest() {
             var chart1ctx = document.getElementById('chart1Area').getContext('2d')
             var chart2ctx = document.getElementById('chart2Area').getContext('2d')
@@ -150,6 +221,11 @@
                             },
                             ticks: {
                                 beginAtZero: true
+                            },
+                            gridLines: {
+                                 display: true ,
+                                color:xAxesColor,
+                                lineWidth:0.1
                             }
                         }],
                         yAxes: [{
@@ -157,6 +233,11 @@
                             scaleLabel: 'Speed',
                             ticks: {
                                 beginAtZero: true
+                            },
+                            gridLines: {
+                                display:true,
+                                color:yAxesColor,
+                                lineWidth:0.1
                             }
                         }]
                     }
@@ -180,6 +261,11 @@
                             },
                             ticks: {
                                 beginAtZero: true
+                            },
+                            gridLines: {
+                                 display: true ,
+                                color:xAxesColor,
+                                lineWidth:0.1
                             }
                         }],
                         yAxes: [{
@@ -187,6 +273,11 @@
                             scaleLabel: 'Latency',
                             ticks: {
                                 beginAtZero: true
+                            },
+                            gridLines: {
+                                display:true,
+                                color:yAxesColor,
+                                lineWidth:0.1
                             }
                         }]
                     }
@@ -251,6 +342,58 @@
         <a href="javascript:abortTest()" id="abortBtn">Abort</a>
     </div>
     <a href="javascript:runTest()" id="startBtn">Run speedtest</a>
+    <div id='darkMode'>
+        <h3>DARKMODE</h3>
+        <div class="theme-switch-wrapper">
+          <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round">
+              <p></p>
+            </div>
+            </div>
     <br/><br/> Charts by <a href="http://www.chartjs.org/">Chart.js</a><br/><br/><a href="https://github.com/librespeed/speedtest">Source code</a>
+<script>
+    //DARMODE
+const toggleSwitch = document.querySelector(
+        '.theme-switch input[type="checkbox"]'
+      );
+
+      function switchTheme(e) {
+        if (e.target.checked) {
+          toggleDarkMode();
+        } else {
+          toggleDarkMode();
+        }
+      }
+      toggleSwitch.addEventListener("change", switchTheme, true);
+
+      var countToggleDark = 0;
+
+      function toggleDarkMode() {
+        if (countToggleDark == 0) {
+          document.querySelector("html").style.background = "#000";
+          document.querySelector("body").style.background = "#000";
+          document.querySelector("html").style.color = "#fdfdfd";
+          document.querySelector("body").style.color = "#fdfdfd";
+          document.querySelector("#startBtn").style.border =
+            "0.15em solid #fff";
+          document.querySelector("#startBtn").style.color = "#fff";
+          xAxesColor="#fff";
+          yAxesColor="#fff";
+		  countToggleDark++;
+        } else {
+          document.querySelector("html ").style.background = "#fdfdfd";
+          document.querySelector("body").style.background = "#fdfdfd";
+          document.querySelector("html").style.color = "#202020";
+          document.querySelector("body").style.color = "#202020";
+          document.querySelector("#startBtn").style.border =
+            "0.15em solid #000";
+          document.querySelector("#startBtn").style.color = "#6060AA";
+          xAxesColor="#000";
+          yAxesColor="#000";
+          countToggleDark = 0;
+        }
+      }
+</script>
 </body>
 </html>

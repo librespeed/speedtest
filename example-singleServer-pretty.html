@@ -1,192 +1,352 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<title>LibreSpeed Example</title>
-<link rel="shortcut icon" href="favicon.ico">
-<script type="text/javascript" src="speedtest.js"></script>
-<script type="text/javascript">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no"
+    />
+    <title>LibreSpeed Example</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <script type="text/javascript" src="speedtest.js"></script>
+    <script type="text/javascript">
+      //INITIALIZE SPEEDTEST
+      var s = new Speedtest(); //create speedtest object
+      s.onupdate = function (data) {
+        //callback to update data in UI
+        I("ip").textContent = data.clientIp;
+        I("dlText").textContent =
+          data.testState == 1 && data.dlStatus == 0 ? "..." : data.dlStatus;
+        I("ulText").textContent =
+          data.testState == 3 && data.ulStatus == 0 ? "..." : data.ulStatus;
+        I("pingText").textContent = data.pingStatus;
+        I("jitText").textContent = data.jitterStatus;
+      };
+      s.onend = function (aborted) {
+        //callback for test ended/aborted
+        I("startStopBtn").className = ""; //show start button again
+        if (aborted) {
+          //if the test was aborted, clear the UI and prepare for new test
+          initUI();
+        }
+      };
 
-//INITIALIZE SPEEDTEST
-var s=new Speedtest(); //create speedtest object
-s.onupdate=function(data){ //callback to update data in UI
-    I("ip").textContent=data.clientIp;
-    I("dlText").textContent=(data.testState==1&&data.dlStatus==0)?"...":data.dlStatus;
-    I("ulText").textContent=(data.testState==3&&data.ulStatus==0)?"...":data.ulStatus;
-    I("pingText").textContent=data.pingStatus;
-    I("jitText").textContent=data.jitterStatus;
-}
-s.onend=function(aborted){ //callback for test ended/aborted
-    I("startStopBtn").className=""; //show start button again
-    if(aborted){ //if the test was aborted, clear the UI and prepare for new test
-		initUI();
-    }
-}
+      function startStop() {
+        //start/stop button pressed
+        if (s.getState() == 3) {
+          //speedtest is running, abort
+          s.abort();
+        } else {
+          //test is not running, begin
+          s.start();
+          I("startStopBtn").className = "running";
+        }
+      }
 
-function startStop(){ //start/stop button pressed
-	if(s.getState()==3){
-		//speedtest is running, abort
-		s.abort();
-	}else{
-		//test is not running, begin
-		s.start();
-		I("startStopBtn").className="running";
-	}
-}
+      //function to (re)initialize UI
+      function initUI() {
+        I("dlText").textContent = "";
+        I("ulText").textContent = "";
+        I("pingText").textContent = "";
+        I("jitText").textContent = "";
+        I("ip").textContent = "";
+      }
 
-//function to (re)initialize UI
-function initUI(){
-	I("dlText").textContent="";
-	I("ulText").textContent="";
-	I("pingText").textContent="";
-	I("jitText").textContent="";
-	I("ip").textContent="";
-}
+      function I(id) {
+        return document.getElementById(id);
+      }
+    </script>
 
-function I(id){return document.getElementById(id);}
-</script>
+    <style type="text/css">
+      html,
+      body {
+        border: none;
+        padding: 0;
+        margin: 0;
+        background: #ffffff;
+        color: #202020;
+      }
 
-<style type="text/css">
-	html,body{
-		border:none; padding:0; margin:0;
-		background:#FFFFFF;
-		color:#202020;
-	}
-	body{
-		text-align:center;
-		font-family:"Roboto",sans-serif;
-	}
-	h1{
-		color:#404040;
-	}
-	#startStopBtn{
-		display:inline-block;
-		margin:0 auto;
-		color:#6060AA;
-		background-color:rgba(0,0,0,0);
-		border:0.15em solid #6060FF;
-		border-radius:0.3em;
-		transition:all 0.3s;
-		box-sizing:border-box;
-		width:8em; height:3em;
-		line-height:2.7em;
-		cursor:pointer;
-		box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
-	}
-	#startStopBtn:hover{
-		box-shadow: 0 0 2em rgba(0,0,0,0.1), inset 0 0 1em rgba(0,0,0,0.1);
-	}
-	#startStopBtn.running{
-		background-color:#FF3030;
-		border-color:#FF6060;
-		color:#FFFFFF;
-	}
-	#startStopBtn:before{
-		content:"Start";
-	}
-	#startStopBtn.running:before{
-		content:"Abort";
-	}
-	#test{
-		margin-top:2em;
-		margin-bottom:12em;
-	}
-	div.testArea{
-		display:inline-block;
-		width:14em;
-		height:9em;
-		position:relative;
-		box-sizing:border-box;
-	}
-	div.testName{
-		position:absolute;
-		top:0.1em; left:0;
-		width:100%;
-		font-size:1.4em;
-		z-index:9;
-	}
-	div.meterText{
-		position:absolute;
-		bottom:1.5em; left:0;
-		width:100%;
-		font-size:2.5em;
-		z-index:9;
-	}
-	#dlText{
-		color:#6060AA;
-	}
-	#ulText{
-		color:#309030;
-	}
-	#pingText,#jitText{
-		color:#AA6060;
-	}
-	div.meterText:empty:before{
-		color:#505050 !important;
-		content:"0.00";
-	}
-	div.unit{
-		position:absolute;
-		bottom:2em; left:0;
-		width:100%;
-		z-index:9;
-	}
-	div.testGroup{
-		display:inline-block;
-	}
-	@media all and (max-width:65em){
-		body{
-			font-size:1.5vw;
-		}
-	}
-	@media all and (max-width:40em){
-		body{
-			font-size:0.8em;
-		}
-		div.testGroup{
-			display:block;
-			margin: 0 auto;
-		}
-	}
+      body {
+        text-align: center;
+        font-family: "Roboto", sans-serif;
+      }
 
-</style>
-</head>
-<body>
-<h1>LibreSpeed Example</h1>
-<div id="startStopBtn" onclick="startStop()"></div>
-<div id="test">
-	<div class="testGroup">
-		<div class="testArea">
-			<div class="testName">Download</div>
-			<div id="dlText" class="meterText"></div>
-			<div class="unit">Mbps</div>
-		</div>
-		<div class="testArea">
-			<div class="testName">Upload</div>
-			<div id="ulText" class="meterText"></div>
-			<div class="unit">Mbps</div>
-		</div>
-	</div>
-	<div class="testGroup">
-		<div class="testArea">
-			<div class="testName">Ping</div>
-			<div id="pingText" class="meterText"></div>
-			<div class="unit">ms</div>
-		</div>
-		<div class="testArea">
-			<div class="testName">Jitter</div>
-			<div id="jitText" class="meterText"></div>
-			<div class="unit">ms</div>
-		</div>
-	</div>
-	<div id="ipArea">
-		IP Address: <span id="ip"></span>
-	</div>
-</div>
-<a href="https://github.com/librespeed/speedtest">Source code</a>
-<script type="text/javascript">
-    initUI();
-</script>
-</body>
+      h1 {
+        color: #404040;
+      }
+
+      #startStopBtn {
+        display: inline-block;
+        margin: 0 auto;
+        color: #6060aa;
+        background-color: rgba(0, 0, 0, 0);
+        border: 0.15em solid #6060ff;
+        border-radius: 0.3em;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        width: 8em;
+        height: 3em;
+        line-height: 2.7em;
+        cursor: pointer;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0.1), inset 0 0 0 rgba(0, 0, 0, 0.1);
+      }
+
+      #startStopBtn:hover {
+        box-shadow: 0 0 2em rgba(0, 0, 0, 0.1), inset 0 0 1em rgba(0, 0, 0, 0.1);
+      }
+
+      #startStopBtn.running {
+        background-color: #ff3030 !important;
+        border-color: #ff6060 !important;
+        color: #ffffff !important;
+      }
+
+      #startStopBtn:before {
+        content: "Start";
+      }
+
+      #startStopBtn.running:before {
+        content: "Abort";
+      }
+
+      #test {
+        margin-top: 2em;
+        margin-bottom: 12em;
+      }
+
+      div.testArea {
+        display: inline-block;
+        width: 14em;
+        height: 9em;
+        position: relative;
+        box-sizing: border-box;
+      }
+
+      div.testName {
+        position: absolute;
+        top: 0.1em;
+        left: 0;
+        width: 100%;
+        font-size: 1.4em;
+        z-index: 9;
+      }
+
+      div.meterText {
+        position: absolute;
+        bottom: 1.5em;
+        left: 0;
+        width: 100%;
+        font-size: 2.5em;
+        z-index: 9;
+      }
+
+      #dlText {
+        color: #6060aa;
+      }
+
+      #ulText {
+        color: #309030;
+      }
+
+      #pingText,
+      #jitText {
+        color: #aa6060;
+      }
+
+      div.meterText:empty:before {
+        color: #505050 !important;
+        content: "0.00";
+      }
+
+      div.unit {
+        position: absolute;
+        bottom: 2em;
+        left: 0;
+        width: 100%;
+        z-index: 9;
+      }
+
+      div.testGroup {
+        display: inline-block;
+      }
+
+      @media all and (max-width: 65em) {
+        body {
+          font-size: 1.5vw;
+        }
+      }
+
+      @media all and (max-width: 40em) {
+        body {
+          font-size: 0.8em;
+        }
+
+        div.testGroup {
+          display: block;
+          margin: 0 auto;
+        }
+      }
+
+      .theme-switch-wrapper {
+        margin: 20px;
+      }
+
+      .theme-switch {
+        display: inline-block;
+        height: 40px;
+        position: relative;
+        width: 65px;
+      }
+
+      .theme-switch input {
+        display: none;
+      }
+
+      .slider {
+        background: #000;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        font-size: 13px;
+        transition: 0.4s;
+      }
+
+      .slider p:after {
+        color: #fff;
+        float: right;
+        margin: 0 5px 0 0;
+        content: "OFF";
+        transition: 0.4s;
+      }
+
+      input:checked + .slider p:after {
+        float: left;
+        color: #000;
+        content: "ON";
+        margin: 0 0 0 5px;
+      }
+
+      .slider:before {
+        background: #fff;
+        top: 8px;
+        content: "";
+        height: 26px;
+        left: 4px;
+        position: absolute;
+        transition: 0.4s;
+        width: 26px;
+      }
+
+      input:checked + .slider {
+        background-color: #fff;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(28px);
+        background: #000;
+      }
+
+      .slider.round {
+        border-radius: 34px;
+      }
+
+      .slider.round:before {
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>LibreSpeed Example</h1>
+    <div id="startStopBtn" onclick="startStop()"></div>
+    <div id="test">
+      <div class="testGroup">
+        <div class="testArea">
+          <div class="testName">Download</div>
+          <div id="dlText" class="meterText"></div>
+          <div class="unit">Mbps</div>
+        </div>
+        <div class="testArea">
+          <div class="testName">Upload</div>
+          <div id="ulText" class="meterText"></div>
+          <div class="unit">Mbps</div>
+        </div>
+      </div>
+      <div class="testGroup">
+        <div class="testArea">
+          <div class="testName">Ping</div>
+          <div id="pingText" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea">
+          <div class="testName">Jitter</div>
+          <div id="jitText" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+      </div>
+      <div id="ipArea">IP Address: <span id="ip"></span></div>
+    </div>
+    <h3>DARKMODE</h3>
+    <div class="theme-switch-wrapper">
+      <label class="theme-switch" for="checkbox">
+        <input type="checkbox" id="checkbox" />
+        <div class="slider round">
+          <p></p>
+        </div>
+      </label>
+    </div>
+    <a href="https://github.com/librespeed/speedtest">Source code</a>
+    <script type="text/javascript">
+      initUI();
+
+      //DARMODE
+      const toggleSwitch = document.querySelector(
+        '.theme-switch input[type="checkbox"]'
+      );
+
+      function switchTheme(e) {
+        if (e.target.checked) {
+          toggleDarkMode();
+        } else {
+          toggleDarkMode();
+        }
+      }
+      toggleSwitch.addEventListener("change", switchTheme, true);
+
+      var countToggleDark = 0;
+
+      function toggleDarkMode() {
+        if (countToggleDark == 0) {
+          document.querySelector("html").style.background = "#000";
+          document.querySelector("body").style.background = "#000";
+          document.querySelector("html").style.color = "#fdfdfd";
+          document.querySelector("body").style.color = "#fdfdfd";
+          document.querySelector("#startStopBtn").style.border =
+            "0.15em solid #996cb4";
+          document.querySelector("#startStopBtn").style.color = "#996cb4";
+          document.querySelector("h1").style.color = "#d3cfcf";
+          document.querySelector("#dlText").style.color = "#996cb4";
+          document.querySelector("#pingText").style.color = "#b92323";
+          document.querySelector("#jitText").style.color = "#b92323";
+          countToggleDark++;
+        } else {
+          document.querySelector("html ").style.background = "#fdfdfd";
+          document.querySelector("body").style.background = "#fdfdfd";
+          document.querySelector("html").style.color = "#202020";
+          document.querySelector("body").style.color = "#202020";
+          document.querySelector("#startStopBtn").style.border =
+            "0.15em solid #6060FF";
+          document.querySelector("#startStopBtn").style.color = "#6060AA";
+          document.querySelector("h1").style.color = "#404040";
+          document.querySelector("#dlText").style.color = "#6060AA";
+          document.querySelector("#pingText").style.color = "#AA6060";
+          document.querySelector("#jitText").style.color = "#AA6060";
+          countToggleDark = 0;
+        }
+      }
+    </script>
+  </body>
 </html>
