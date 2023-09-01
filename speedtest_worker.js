@@ -6,15 +6,30 @@
 */
 
 // data reported to main thread
-var testState = -1; // -1=not started, 0=starting, 1=download test, 2=ping+jitter test, 3=upload test, 4=finished, 5=abort
+const NOT_STARTED_STATE  		= -1, // not started
+	STARTING_STATE 			= 0,  // starting
+	DOWNLOAD_TEST_STATE 	= 1,  // download test
+	PING_JITTER_TEST_STATE  = 2,  // ping + jitter
+	UPLOAD_TEST_STATE 		= 3,  // upload test
+	RPM_UPLOAD_TEST_STATE 	= 4,  // RPM upload
+	RPM_DOWNLOAD_TEST_STATE = 5,  // RPM download
+	FINISHED_STATE 			= 6,  // finished
+	ABORT_STATE 			= 7;  // abort
+var testState = NOT_STARTED_STATE;
 var dlStatus = ""; // download speed in megabit/s with 2 decimal digits
 var ulStatus = ""; // upload speed in megabit/s with 2 decimal digits
 var pingStatus = ""; // ping in milliseconds with 2 decimal digits
 var jitterStatus = ""; // jitter in milliseconds with 2 decimal digits
 var clientIp = ""; // client's IP address as reported by getIP.php
+var rpmUlStatus = ""; // number of RPM in upload way
+var rpmUlRatioStatus = ""; // number of RPM lost in upload way
+var rpmDlStatus = ""; // number of RPM in download way
+var rpmDlRatioStatus = ""; // number of RPM lost in download way
 var dlProgress = 0; //progress of download test 0-1
 var ulProgress = 0; //progress of upload test 0-1
 var pingProgress = 0; //progress of ping+jitter test 0-1
+var rpmUlProgress = 0; // progress of RPM Upload test 0-1
+var rpmDlProgress = 0; // progress of RPM Download test 0-1
 var testId = null; //test ID (sent back by telemetry if used, null otherwise)
 
 var log = ""; //telemetry log
@@ -37,8 +52,8 @@ function twarn(s) {
 
 // test settings. can be overridden by sending specific values with the start command
 var settings = {
-	mpot: false, //set to true when in MPOT mode
-	test_order: "IP_D_U", //order in which tests will be performed as a string. D=Download, U=Upload, P=Ping+Jitter, I=IP, _=1 second delay
+	mpot: true, //set to true when in MPOT mode
+	test_order: "IP_S_R", //order in which tests will be performed as a string. D=Download, U=Upload, P=Ping+Jitter, I=IP, _=1 second delay
 	time_ul_max: 15, // max duration of upload test in seconds
 	time_dl_max: 15, // max duration of download test in seconds
 	time_auto: true, // if set to true, tests will take less time on faster connections
@@ -65,7 +80,18 @@ var settings = {
 	telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results and timing) 3=debug (results+log)
 	url_telemetry: "results/telemetry.php", // path to the script that adds telemetry data to the database
 	telemetry_extra: "", //extra data that can be passed to the telemetry through the settings
-    forceIE11Workaround: false //when set to true, it will foce the IE11 upload test on all browsers. Debug only
+    forceIE11Workaround: false, //when set to true, it will foce the IE11 upload test on all browsers. Debug only
+	rpm : { // RPM parameters
+		MAD: 4, // Moving Average Distance (number of intervals to take into account for the moving average)
+		ID: 1, // Interval duration at which the algorithm reevaluates stability
+		TMP: 0.95, // Trimmed Mean Percentage to be trimmed
+		SDT: 0.05, // Standard Deviation Tolerance for stability detection
+		MNP: 16, // Maximum number of parallel transport-layer connections
+		MPS: 20, // Maximum responsiveness probes per second
+		PTC: 0.05, // Percentage of Total Capacity the probes are allowed to consume
+		MaxTime: 20, // Maximum Time in second 
+	},
+	useWildcard : false // Use wildcard link for connexions
 };
 
 var xhr = null; // array of currently active xhr requests
@@ -77,6 +103,22 @@ var test_pointer = 0; //pointer to the next test to run inside settings.test_ord
 */
 function url_sep(url) {
 	return url.match(/\?/) ? "&" : "?";
+}
+
+function useWildcard(url, subdomain) {
+	let domain = ""
+	try {
+		domain = new URL(url).hostname;
+	} catch {
+		// url is a route e.g. "/empty.php"
+		// returns default route
+		twarn(`Couldn't create wildcard subdomain for ${url}`);
+		return url;
+	}
+	let parts = domain.split('.');
+	parts.splice(0, 0, subdomain);
+	let newDomain = parts.join('.');
+	return url.replace(domain, newDomain)
 }
 
 /*
@@ -102,13 +144,19 @@ this.addEventListener("message", function(e) {
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
 				pingProgress: pingProgress,
-				testId: testId
+				testId: testId,
+				rpmDlProgress: rpmDlProgress,
+				rpmDlStatus: rpmDlStatus,
+				rpmDlRatioStatus: rpmDlRatioStatus,
+				rpmUlProgress: rpmUlProgress,
+				rpmUlStatus: rpmUlStatus,
+				rpmUlRatioStatus: rpmUlRatioStatus,
 			})
 		);
 	}
-	if (params[0] === "start" && testState === -1) {
+	if (params[0] === "start" && testState === NOT_STARTED_STATE) {
 		// start new test
-		testState = 0;
+		testState = STARTING_STATE;
 		try {
 			// parse settings, if present
 			var s = {};
@@ -176,16 +224,18 @@ this.addEventListener("message", function(e) {
 			dRun = false,
 			uRun = false,
 			pRun = false;
+			rRun = false;
+			sRun = false;
 		var runNextTest = function() {
-			if (testState == 5) return;
+			if (testState == ABORT_STATE) return;
 			if (test_pointer >= settings.test_order.length) {
 				//test is finished
 				if (settings.telemetry_level > 0)
 					sendTelemetry(function(id) {
-						testState = 4;
+						testState = FINISHED_STATE;
 						if (id != null) testId = id;
 					});
-				else testState = 4;
+				else {testState = FINISHED_STATE;}
 				return;
 			}
 			switch (settings.test_order.charAt(test_pointer)) {
@@ -206,7 +256,7 @@ this.addEventListener("message", function(e) {
 							runNextTest();
 							return;
 						} else dRun = true;
-						testState = 1;
+						testState = DOWNLOAD_TEST_STATE;
 						dlTest(runNextTest);
 					}
 					break;
@@ -217,7 +267,7 @@ this.addEventListener("message", function(e) {
 							runNextTest();
 							return;
 						} else uRun = true;
-						testState = 3;
+						testState = UPLOAD_TEST_STATE;
 						ulTest(runNextTest);
 					}
 					break;
@@ -228,8 +278,30 @@ this.addEventListener("message", function(e) {
 							runNextTest();
 							return;
 						} else pRun = true;
-						testState = 2;
+						testState = PING_JITTER_TEST_STATE;
 						pingTest(runNextTest);
+					}
+					break;
+				case "R":
+					{
+						test_pointer++;
+						if (rRun) {
+							runNextTest();
+							return;
+						} else rRun = true;
+						testState = RPM_UPLOAD_TEST_STATE;
+						rpmUlTest(runNextTest);
+					}
+					break;
+				case "S":
+					{
+						test_pointer++;
+						if (sRun) {
+							runNextTest();
+							return;
+						} else sRun = true;
+						testState = RPM_DOWNLOAD_TEST_STATE;
+						rpmDlTest(runNextTest)
 					}
 					break;
 				case "_":
@@ -246,13 +318,13 @@ this.addEventListener("message", function(e) {
 	}
 	if (params[0] === "abort") {
 		// abort command
-        if (testState >= 4) return;
+        if (testState >= FINISHED_STATE) return;
 		tlog("manually aborted");
 		clearRequests(); // stop all xhr activity
 		runNextTest = null;
 		if (interval) clearInterval(interval); // clear timer if present
 		if (settings.telemetry_level > 1) sendTelemetry(function() {});
-		testState = 5; //set test as aborted
+		testState = ABORT_STATE; //set test as aborted
 		dlStatus = "";
 		ulStatus = "";
 		pingStatus = "";
@@ -261,6 +333,8 @@ this.addEventListener("message", function(e) {
 		dlProgress = 0;
 		ulProgress = 0;
 		pingProgress = 0;
+		rpmUlProgress = 0;
+		rpmDlProgress = 0;
 	}
 });
 // stops all XHR activity, aggressively
@@ -332,14 +406,14 @@ function dlTest(done) {
 	var testStream = function(i, delay) {
 		setTimeout(
 			function() {
-				if (testState !== 1) return; // delayed stream ended up starting after the end of the download test
+				if (testState !== DOWNLOAD_TEST_STATE) return; // delayed stream ended up starting after the end of the download test
 				tverb("dl test stream started " + i + " " + delay);
 				var prevLoaded = 0; // number of bytes loaded last time onprogress was called
 				var x = new XMLHttpRequest();
 				xhr[i] = x;
 				xhr[i].onprogress = function(event) {
 					tverb("dl stream progress event " + i + " " + event.loaded);
-					if (testState !== 1) {
+					if (testState !== DOWNLOAD_TEST_STATE) {
 						try {
 							x.abort();
 						} catch (e) {}
@@ -458,7 +532,7 @@ function ulTest(done) {
 		var testStream = function(i, delay) {
 			setTimeout(
 				function() {
-					if (testState !== 3) return; // delayed stream ended up starting after the end of the upload test
+					if (testState !== UPLOAD_TEST_STATE) return; // delayed stream ended up starting after the end of the upload test
 					tverb("ul test stream started " + i + " " + delay);
 					var prevLoaded = 0; // number of bytes transmitted last time onprogress was called
 					var x = new XMLHttpRequest();
@@ -490,7 +564,7 @@ function ulTest(done) {
 						// REGULAR version, no workaround
 						xhr[i].upload.onprogress = function(event) {
 							tverb("ul stream progress event " + i + " " + event.loaded);
-							if (testState !== 3) {
+							if (testState !== UPLOAD_TEST_STATE) {
 								try {
 									x.abort();
 								} catch (e) {}
@@ -677,6 +751,446 @@ function pingTest(done) {
 		xhr[0].send();
 	}.bind(this);
 	doPing(); // start first ping
+}
+// RPM function
+function rpm(way, createLoadGeneratingConnexions, doPing, done, updateTotalLoaded, updateIsFailed) {
+
+	let pings = []
+	let totLoaded = updateTotalLoaded();
+	let failed = updateIsFailed();
+	var currentConnexionsNumber = 0;
+	let i = 0;
+	let rpm = 0;
+	// data transfered at interval i
+	let checkpoints = [];
+	let checkpointTimes = []
+	let instantGoodputs = []
+	let movigAvgGoodputs = []
+	let responsivenesses = []
+	let loadGenerationAdded = []
+	function instantaneousAgreegateGoodput(i) {
+		return Math.max((checkpoints[i] - checkpoints[i - 1]) / ((checkpointTimes[i] - checkpointTimes[i - 1]) / 1000), 0);
+	}
+	// Util functions for the loop
+	function hasGoodputSaturate() {
+		let MADinstantGoodputs = instantGoodputs.slice(-settings.rpm.MAD);
+		const n = MADinstantGoodputs.length;
+		const mean = MADinstantGoodputs.reduce((acc, val) => acc + val, 0) / n;
+		const stdDev = Math.sqrt(MADinstantGoodputs.reduce((acc, val) => acc + (val - mean) ** 2, 0) / n);
+		const stdDevPercentage = (stdDev / mean) * 100;
+		return stdDevPercentage <= settings.rpm.SDT;
+	}
+	function getStdDev(list) {
+		list = list.slice(-settings.rpm.MAD);
+		const n = list.length;
+		const mean = list.reduce((acc, val) => acc + val, 0) / n;
+		const stdDev = Math.sqrt(list.reduce((acc, val) => acc + (val - mean) ** 2, 0) / n);
+		return stdDev;
+	}
+	function movingAverageAgreegateGoodput(i) {
+		let nPrev = Math.min(settings.rpm.MAD, i); // if i < 4
+		let totalData = checkpoints[i] - checkpoints[i - nPrev];
+		let totalTime = (checkpointTimes[i] - checkpointTimes[i - nPrev]) / 1000;
+		return totalData / totalTime;
+	}
+	const startTime = new Date().getTime();
+	let onLoadedConnection = true;
+	// Pings
+	let pingInterval = setInterval(function() {
+		doPing((ping) => {
+				if ((testState !== RPM_DOWNLOAD_TEST_STATE && way === "download") || (testState !== RPM_UPLOAD_TEST_STATE && way === "upload")) {return}
+				pings.push(ping);
+			}, onLoadedConnection);
+		onLoadedConnection = !onLoadedConnection
+	}.bind(this), Math.round(1000/settings.rpm.MPS))
+
+	// Init connections
+	createLoadGeneratingConnexions(currentConnexionsNumber);
+	currentConnexionsNumber++;
+	loadGenerationAdded[i] = currentConnexionsNumber;
+	checkpoints[0] = 0
+	checkpointTimes[0] = 0;
+	i = 1
+	
+	let interval = setInterval(function () {
+		if ((testState !== RPM_DOWNLOAD_TEST_STATE && way === "download") || (testState !== RPM_UPLOAD_TEST_STATE && way === "upload")) {
+			// test change
+			clearRequests();
+			clearInterval(pingInterval)
+			clearInterval(interval)
+		}
+		totLoaded = updateTotalLoaded();
+		// elapsedTime in ms
+		let elapsedTime = new Date().getTime() - startTime;
+		if (i > settings.rpm.MaxTime) {
+			// Timeout ending
+			tlog(`Rpm ${way} timeout end`);
+			let status = failed ? "failed" : rpm;
+			clearInterval(pingInterval)
+			clearInterval(interval)
+			clearRequests();
+			rpmDlProgress = 1;
+			tlog("rpmTest: " + status + ", took " + (elapsedTime) + "ms");
+			done();
+		} else {
+			// Updates
+			checkpoints[i] = totLoaded;
+			checkpointTimes[i] = elapsedTime;
+			instantGoodputs[i] = instantaneousAgreegateGoodput(i);
+			movigAvgGoodputs[i] = movingAverageAgreegateGoodput(i);
+			// Compute trimmed mean for responsiveness
+			let sortedValues = pings.sort();
+			let trimCount = Math.floor(sortedValues.length * ((1 - settings.rpm.TMP) / 2));
+			let trimmedValues = sortedValues.slice(trimCount, sortedValues.length - trimCount);
+			if (trimmedValues.length > 0) {
+				let mean = trimmedValues.reduce((a, v) => a + v, 0) / trimmedValues.length
+				rpm = 60_000 / mean;
+				// Update results
+				let pingAsRPM = parseFloat(pingStatus);
+				let ratioRPM = "";
+				if (pingAsRPM) {
+					pingAsRPM = Math.round(60_000 / pingAsRPM);
+					ratioRPM = pingAsRPM / rpm;
+					ratioRPM = ratioRPM.toFixed(2);
+				};
+				if (way === "upload") {
+					rpmUlStatus = rpm.toFixed(0);
+					rpmUlRatioStatus = ratioRPM;
+					rpmUlProgress = 1;
+				} else if (way === "download") {
+					rpmDlStatus = rpm.toFixed(0);
+					rpmDlRatioStatus = ratioRPM;
+					rpmDlProgress = 1;
+				}
+			}
+
+			responsivenesses[i] = rpm;
+
+			let bandwidth = ((movingAverageAgreegateGoodput(i) * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+			if (way == "download") {
+				dlStatus = bandwidth;
+			} else if (way == "upload") {
+				ulStatus = bandwidth;
+			}
+			// Following pseudo code
+			// Create an additional load-generating connection
+			if (currentConnexionsNumber < settings.rpm.MNP) {
+				createLoadGeneratingConnexions(currentConnexionsNumber);
+				currentConnexionsNumber++;
+				loadGenerationAdded[i] = currentConnexionsNumber;
+			}
+			// Check if goodput has saturated
+			let currentAvg = movigAvgGoodputs[i]
+			let stdDevAvgGoodput = getStdDev(movigAvgGoodputs)
+			if (hasGoodputSaturate() || (stdDevAvgGoodput < settings.rpm.SDT * currentAvg)) {
+				// Goodput has staturated
+				let currentResponsiveness = responsivenesses[i];
+				if (getStdDev(responsivenesses) < settings.rpm.SDT * currentResponsiveness) {
+					tlog(`Rpm ${way} gracefull end`);
+					let status = failed ? "failed" : rpm;
+					clearInterval(pingInterval)
+					clearInterval(interval)
+					clearRequests();
+					if (way === "upload") {
+						rpmUlStatus = currentResponsiveness.toFixed(0);
+						rpmUlProgress = 1;
+					} else if (way === "download") {
+						rpmDlStatus = currentResponsiveness.toFixed(0);
+						rpmDlProgress = 1;
+					}
+					rpmDlProgress = 1;
+					tlog("rpmTest: " + status + ", took " + (elapsedTime) + "ms");
+					done();
+				}
+			}
+		}
+		tlog(`RPM ${way} round ${i}, ${movingAverageAgreegateGoodput(i) * 8}bps, ${rpm} RPM`)
+		i++;
+	}.bind(this), settings.rpm.ID*1000)
+}
+// RPM Upload test
+var rpmUlCalled = false;
+function rpmUlTest(done) {
+	tverb("rpmUlTest");
+	if (rpmUlCalled) return;
+	else rpmUlCalled = true;
+
+	xhr = [];
+
+	// Buffer for upload tasks
+	var r = new ArrayBuffer(1048576);
+	var maxInt = Math.pow(2, 32) - 1;
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) { }
+	var req = [];
+	var reqsmall = [];
+	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
+	req = new Blob(req);
+	r = new ArrayBuffer(262144);
+	try {
+		r = new Uint32Array(r);
+		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+	} catch (e) { }
+	reqsmall.push(r);
+	reqsmall = new Blob(reqsmall);
+
+	var testFunction = function() {
+		var totLoaded = 0;
+		var failed = false; // set to true if a stream fails
+		createLoadGeneratingConnexions = function(i) {
+			if (testState !== RPM_UPLOAD_TEST_STATE || xhr === null) { return }
+			i += 2; // xhr[0 and 1] for pings
+			var prevUlLoaded = 0;
+			var ul = new XMLHttpRequest();
+			xhr[i] = ul;
+			var ie11workaround = false;
+			if (settings.forceIE11Workaround) ie11workaround = true;
+			else {
+				try {
+					xhr[i].upload.onprogress;
+					ie11workaround = false;
+				} catch (e) {
+					ie11workaround = true;
+				}
+			}
+			if (ie11workaround) {
+				// IE11 workarond: xhr.upload does not work properly, therefore we send a bunch of small 256k requests and use the onload event as progress. This is not precise, especially on fast connections
+				xhr[i].onload = xhr[i].onerror = function () {
+					tverb("RPM ul stream progress event (ie11wa)");
+					totLoaded += reqsmall.size;
+					createLoadGeneratingConnexions(i, {download : false});
+				};
+				xhr[i].open("POST", settings.url_ul + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				try {
+					xhr[i].setRequestHeader("Content-Encoding", "identity"); // disable compression (some browsers may refuse it, but data is incompressible anyway)
+				} catch (e) { }
+				//No Content-Type header in MPOT branch because it triggers bugs in some browsers
+				xhr[i].send(reqsmall);
+			} else {
+				// REGULAR version, no workaround
+				xhr[i].upload.onprogress = function (event) {
+					tverb("RPM ul stream progress event " + (i) + " " + event.loaded);
+					if (testState !== RPM_UPLOAD_TEST_STATE) {
+						try {
+							xhr[i].abort();
+						} catch (e) { }
+					} // just in case this XHR is still running after the upload test
+					// progress event, add number of new loaded bytes to totLoaded
+					var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevUlLoaded;
+					if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
+					totLoaded += loadDiff;
+					prevUlLoaded = event.loaded;
+				}.bind(this);
+				xhr[i].upload.onload = function () {
+					// this stream sent all the garbage data, start again
+					tverb("RPM ul stream finished " + (i));
+					createLoadGeneratingConnexions(i);
+				}.bind(this);
+				xhr[i].upload.onerror = function () {
+					tverb("RPM ul stream failed " + (i));
+					if (settings.xhr_ignoreErrors === 0) failed = true; //abort
+					try {
+						xhr[i].abort();
+					} catch (e) { }
+					delete xhr[i];
+					if (settings.xhr_ignoreErrors === 1) createLoadGeneratingConnexions(i); //restart stream
+				}.bind(this);
+				if (settings.useWildcard) {
+					// WILDCARD
+					xhr[i].open("POST", useWildcard(settings.url_ul, `con${i}`) + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				} else {
+					xhr[i].open("POST", settings.url_ul + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				}
+
+				
+				try {
+					xhr[i].setRequestHeader("Content-Encoding", "identity"); // disable compression (some browsers may refuse it, but data is incompressible anyway)
+				} catch (e) { }
+				//No Content-Type header in MPOT branch because it triggers bugs in some browsers
+				xhr[i].send(req);
+			}
+		}.bind(this)
+
+		var doPing = function (callback, onLoadedConnection) {
+			if (testState !== RPM_UPLOAD_TEST_STATE) {
+				return
+			}
+			tverb("RPM dl ping");
+			let idx = onLoadedConnection ? 1 : 0;
+			let prevT = new Date().getTime();
+			xhr[idx] = new XMLHttpRequest();
+			xhr[idx].onload = function () {
+				// pong
+				var instspd = new Date().getTime() - prevT;
+				if (settings.ping_allowPerformanceApi) {
+					try {
+						//try to get accurate performance timing using performance api
+						var p = performance.getEntries();
+						p = p[p.length - 1];
+						var d = p.responseStart - p.requestStart;
+						if (d <= 0) d = p.duration;
+						if (d > 0 && d < instspd) instspd = d;
+					} catch (e) {
+						//if not possible, keep the estimate
+						tverb("Performance API not supported, using estimate");
+					}
+				}
+				callback(instspd)
+			}.bind(this);
+			xhr[idx].onerror = function () {
+				// a ping failed, cancel test
+				tverb("RPM dl ping failed");
+				callback(undefined)
+			}.bind(this);
+			// send xhr
+			if (settings.useWildcard) {
+				// WILDCARD
+				if (onLoadedConnection) {
+					xhr[idx].open("POST", useWildcard(settings.url_ping, "con2") + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				} else {
+					xhr[idx].open("POST", useWildcard(settings.url_ping, `ping${Math.floor(Math.random() * 1000)}`) + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				}
+			} else {
+				xhr[idx].open("POST", settings.url_ping + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+			}
+			
+			xhr[idx].send();
+		}.bind(this);
+
+		rpm(
+			"upload",
+			createLoadGeneratingConnexions,
+			doPing,
+			done,
+			() => { return totLoaded },
+			() => { return failed }
+		)
+
+	}.bind(this);
+	testFunction();
+}
+// RPM Download test
+var rpmDlCalled = false;
+function rpmDlTest(done) {
+	tverb("rpmDlTest");
+	if (rpmDlCalled) return;
+	else rpmDlCalled = true;
+	
+	xhr = [];
+
+	var testFunction = function () {
+		var totLoaded = 0;
+		var failed = false; // set to true if a stream fails
+		createLoadGeneratingConnexions = function (i) {
+			if (testState !== RPM_DOWNLOAD_TEST_STATE || xhr === null) {return}
+			i += 2; // xhr[0 and 1] for pings
+			var prevDlLoaded = 0;
+			var dl = new XMLHttpRequest();
+			xhr[i] = dl;
+			xhr[i].onprogress = function (event) {
+				tverb("RPM dl stream progress event " + i + " " + event.loaded);
+				if (testState !== RPM_DOWNLOAD_TEST_STATE) {
+					try {
+						dl.abort();
+					} catch (e) { }
+				} // just in case this XHR is still running after the download test
+				// progress event, add number of new loaded bytes to totLoaded
+				var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevDlLoaded;
+				if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
+				totLoaded += loadDiff;
+				prevDlLoaded = event.loaded;
+			}.bind(this)
+			xhr[i].onload = function () {
+				// the large file has been loaded entirely, start again
+				tverb("RPM dl stream finished " + i);
+				try {
+					xhr[i].abort();
+				} catch (e) { } // reset the stream data to empty ram
+				createLoadGeneratingConnexions(i);
+			}.bind(this)
+			xhr[i].onerror = function () {
+				// error
+				tverb("RPM dl stream failed " + i);
+				if (settings.xhr_ignoreErrors === 0) failed = true; //abort
+				try {
+					xhr[i].abort();
+				} catch (e) { }
+				delete xhr[i];
+				if (settings.xhr_ignoreErrors === 1) createLoadGeneratingConnexions(i, 0); //restart stream
+			}.bind(this)
+			// LAUNCH STREAMS
+			try {
+				if (settings.xhr_dlUseBlob) xhr[i].responseType = "blob";
+				else xhr[i].responseType = "arraybuffer";
+			} catch (e) { }
+			if (settings.useWildcard) {
+				// Wildcard
+				xhr[i].open("GET", useWildcard(settings.url_dl, `con${i}`) + url_sep(settings.url_dl) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random() + "&ckSize=" + settings.garbagePhp_chunkSize, true); // random string to prevent caching
+			} else {
+				xhr[i].open("GET", settings.url_dl + url_sep(settings.url_dl) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random() + "&ckSize=" + settings.garbagePhp_chunkSize, true); // random string to prevent caching
+			}
+			xhr[i].send();
+		}.bind(this)
+		
+		var doPing = function (callback, onLoadedConnection) {
+			if (testState !== RPM_DOWNLOAD_TEST_STATE) {
+				return
+			}
+			tverb("RPM ul ping");
+			let idx = onLoadedConnection ? 1 : 0;
+			let prevT = new Date().getTime();
+			xhr[idx] = new XMLHttpRequest();
+			xhr[idx].onload = function () {
+				// pong
+				var instspd = new Date().getTime() - prevT;
+				if (settings.ping_allowPerformanceApi) {
+					try {
+						//try to get accurate performance timing using performance api
+						var p = performance.getEntries();
+						p = p[p.length - 1];
+						var d = p.responseStart - p.requestStart;
+						if (d <= 0) d = p.duration;
+						if (d > 0 && d < instspd) instspd = d;
+					} catch (e) {
+						//if not possible, keep the estimate
+						tverb("Performance API not supported, using estimate");
+					}
+				}
+				callback(instspd)
+			}.bind(this);
+			xhr[idx].onerror = function () {
+				// a ping failed, cancel test
+				tverb("RPM ul ping failed");
+				callback(undefined)
+			}.bind(this);
+			// send xhr
+			if (settings.useWildcard) {
+				// WILDCARD
+				if (onLoadedConnection) {
+					xhr[idx].open("GET", useWildcard(settings.url_ping , "con2") + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				} else {
+					xhr[idx].open("GET", useWildcard(settings.url_ping, `ping${Math.floor(Math.random() * 1000)}`) + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+				}
+			} else {
+				xhr[idx].open("GET", settings.url_ping + url_sep(settings.url_ping) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
+			}
+			xhr[idx].send();
+		}.bind(this);
+		
+		rpm(
+			"download",
+			createLoadGeneratingConnexions,
+			doPing,
+			done,
+			() => { return totLoaded },
+			() => { return failed}
+		)
+		
+	}.bind(this);
+
+	testFunction();
 }
 // telemetry
 function sendTelemetry(done) {

@@ -42,7 +42,8 @@
         At the end of the test, it will move to state 4
     - 4: test finished. You can run it again by calling start() if you want.
  */
-
+const FINISHED_STATE = 6,  // finished
+      ABORT_STATE = 7;  // abort
 function Speedtest() {
   this._serverList = []; //when using multiple points of test, this is a list of test points
   this._selectedServer = null; //when using multiple points of test, this is the selected server
@@ -329,11 +330,11 @@ Speedtest.prototype = {
       } catch (e) {
         console.error("Speedtest onupdate event threw exception: " + e);
       }
-      if (data.testState >= 4) {
+      if (data.testState >= FINISHED_STATE) {
 	  clearInterval(this.updater);
         this._state = 4;
         try {
-          if (this.onend) this.onend(data.testState == 5);
+          if (this.onend) this.onend(data.testState == ABORT_STATE);
         } catch (e) {
           console.error("Speedtest onend event threw exception: " + e);
         }

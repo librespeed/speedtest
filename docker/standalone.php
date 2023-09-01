@@ -109,6 +109,10 @@ function updateUI(forced){
 	drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColor,Number(uiData.ulProgress),progColor);
 	I("pingText").textContent=format(uiData.pingStatus);
 	I("jitText").textContent=format(uiData.jitterStatus);
+	I("rpmUlText").textContent=(status==4&&uiData.rpmUlStatus==0)?"...":uiData.rpmUlStatus;
+	I("rpmUlRatioText").textContent=(status==4&&uiData.rpmUlStatus==0)?"...":uiData.rpmUlRatioStatus;
+	I("rpmDlText").textContent=(status==5&&uiData.rpmDlStatus==0)?"...":uiData.rpmDlStatus;
+	I("rpmDlRatioText").textContent=(status==5&&uiData.rpmDlStatus==0)?"...":uiData.rpmDlRatioStatus;
 }
 function oscillate(){
 	return 1+0.02*Math.sin(Date.now()/100);
@@ -129,6 +133,10 @@ function initUI(){
 	I("pingText").textContent="";
 	I("jitText").textContent="";
 	I("ip").textContent="";
+	I("rpmUlText").textContent="";
+	I("rpmUlRatioText").textContent="";
+	I("rpmDlText").textContent="";
+	I("rpmDlRatioText").textContent="";
 }
 </script>
 <style type="text/css">
@@ -217,6 +225,9 @@ function initUI(){
 	div.meterText:empty:before{
 		content:"0.00";
 	}
+	 div.rpmText:empty:before {
+		content: "0";
+	 }
 	div.testArea div.unit{
 		position:absolute;
 		bottom:2em; left:0;
@@ -225,6 +236,27 @@ function initUI(){
 	}
 	div.testArea2 div.unit{
 		display:inline-block;
+	}
+	div.respTitle {
+		font-size: 1.5em;
+	}
+	div.respArea {
+		margin-top: 1em;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	div.respWay {
+		font-size: 1.2em;
+	}
+	div.respResultArea {
+		margin: 4em;
+		margin-top: 1em;
+		margin-bottom: 2em;
+	}
+	div.respResult {
+		width: 100%;
+		display: block ruby;
 	}
 	div.testArea canvas{
 		position:absolute;
@@ -310,6 +342,33 @@ function initUI(){
 				<div class="unit">Mbps</div>
 			</div>
 		</div>
+		<div id="respTest">
+			<div class="respTitle">Responsiveness Under Working Conditions</div>
+			<div class="respArea">
+				<div class="respResultArea">
+					<div class="testName">Download</div>
+					<div class="respResult">
+						<div id="rpmDlText"></div>
+						<div>RPM</div>
+					</div>
+					<div class="respResult">
+						<div> Factor of latency increase :</div>
+						<div id="rpmDlRatioText">-</div>
+					</div>
+				</div>
+				<div class="respResultArea">
+					<div class="testName">Upload</div>
+					<div class="respResult">
+						<div id="rpmUlText"></div>
+						<div>RPM</div>
+					</div>
+					<div class="respResult">
+						<div> Factor of latency increase :</div>
+						<div id="rpmUlRatioText">-</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<div id="ipArea">
 			<span id="ip"></span>
 		</div>
@@ -319,6 +378,9 @@ function initUI(){
 			<input type="text" value="" id="resultsURL" readonly="readonly" onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')"/>
 			<img src="" id="resultsImg" />
 		</div>
+	</div>
+	<div style="margin-bottom: 2em">
+		The RPM is the number of Round-trip time (RTT) Per Minute. This metric describes the latency under working conditions. <a href="https://datatracker.ietf.org/doc/draft-ietf-ippm-responsiveness/">Click here to know more about it.</a>
 	</div>
 	<a href="https://github.com/librespeed/speedtest">Source code</a>
 </div>

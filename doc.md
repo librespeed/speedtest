@@ -15,6 +15,7 @@ __Features:__
 * Telemetry (optional)
 * Results sharing (optional)
 * Multiple Points of Test (optional)
+* Responsiveness Under Working Conditions
 
 __Browser support:__
 The test supports any browser that supports XHR Level 2 and Web Workers. JavaScript must be enabled.
@@ -624,6 +625,14 @@ This test works by creating a persistent HTTP connection to the server, and then
 Timing can be measured as a simple timestamp difference or with the Performance API if available.
 
 Jitter is the variance in ping times.
+
+See the code for more implementation details.
+
+#### Responsiveness tests
+
+The Responsiveness tests follows [this draft](https://datatracker.ietf.org/doc/draft-ietf-ippm-responsiveness/). The goal is to measure ping on loaded connections. You can do in both way upload and download.
+
+This test also measures the bandwidth.
 
 See the code for more implementation details.
 

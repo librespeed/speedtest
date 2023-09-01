@@ -22,6 +22,7 @@ Works with mobile versions too.
 * Telemetry (optional)
 * Results sharing (optional)
 * Multiple Points of Test (optional)
+* Responsiveness Under Working Conditions (optional)
 
 ![Screenshot](https://speedtest.fdossena.com/mpot_v6.gif)
 
