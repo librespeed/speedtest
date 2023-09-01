@@ -85,6 +85,33 @@ function I(id){return document.getElementById(id);}
 	#startStopBtn:before{
 		content:"Start";
 	}
+	#startStopBtn:hover, .testArea:hover{
+		background-image:     linear-gradient(
+		   to right, 
+		   #E7484F,
+		   #E7484F 16.65%,
+		   #F68B1D 16.65%,
+		   #F68B1D 33.3%,
+		   #FCED00 33.3%,
+		   #FCED00 49.95%,
+		   #009E4F 49.95%,
+		   #009E4F 66.6%,
+		   #00AAC3 66.6%,
+		   #00AAC3 83.25%,
+		   #732982 83.25%,
+		   #732982 100%,
+		   #E7484F 100%
+		  
+		  
+		  
+		 );
+	   animation:slidebg 2s linear infinite;
+	 }
+	 @keyframes slidebg {
+		to {
+		  background-position:20vw;
+		}
+	  }
 	#startStopBtn.running:before{
 		content:"Abort";
 	}
