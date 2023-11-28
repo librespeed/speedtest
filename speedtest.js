@@ -49,7 +49,7 @@ function Speedtest() {
   this._settings = {}; //settings for the speed test worker
   this._state = 0; //0=adding settings, 1=adding servers, 2=server selection done, 3=test running, 4=done
   console.log(
-    "LibreSpeed by Federico Dossena v5.2.5 - https://github.com/librespeed/speedtest"
+    "LibreSpeed by Federico Dossena v5.3.0 - https://github.com/librespeed/speedtest"
   );
 }
 
