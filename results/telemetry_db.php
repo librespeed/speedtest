@@ -3,7 +3,15 @@
 require_once 'idObfuscation.php';
 
 define('TELEMETRY_SETTINGS_FILE', 'telemetry_settings.php');
+$tz = getenv('TZ');
+if ($tz !== false) {
+    //If the environment variable TZ exists, set the default time zone of PHP to this value
+    date_default_timezone_set($tz);
+} else {
+    //If the environment variable TZ does not exist, set UTC
+    date_default_timezone_set('UTC');
 
+}
 /**
  * @return PDO|false
  */
@@ -184,19 +192,21 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
     }
 
     try {
+        $currentTimestamp = new DateTime('now'); // Automatically use PHP configured time zone
+        $formattedTimestamp = $currentTimestamp->format('Y-m-d H:i:s');
         $stmt = $pdo->prepare(
             'INSERT INTO speedtest_users
-        (ip,ispinfo,extra,ua,lang,dl,ul,ping,jitter,log)
-        VALUES (?,?,?,?,?,?,?,?,?,?)'
+        (ip,ispinfo,extra,ua,lang,dl,ul,ping,jitter,log,timestamp)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)' // Added timestamp field here
         );
         $stmt->execute([
-            $ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log
+            $ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log, $formattedTimestamp // Add $formatedTimestamp to the parameters of execute
         ]);
         $id = $pdo->lastInsertId();
     } catch (Exception $e) {
-		if($returnExceptionOnError){
-			return $e;
-		}
+        if($returnExceptionOnError){
+            return $e;
+        }
         return false;
     }
 
