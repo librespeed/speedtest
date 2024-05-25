@@ -198,14 +198,13 @@ function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping,
     
         $stmt = $pdo->prepare(
             'INSERT INTO speedtest_users
-            (ip, ispinfo, extra, ua, lang, dl, ul, ping, jitter, log, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)' // Added the timestamp field here
+            (ip,ispinfo,extra,ua,lang,dl,ul,ping,jitter,log,timestamp)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)' // Added the timestamp field here
         );
         $stmt->execute([
             $ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log, $formattedTimestamp // Added $formattedTimestamp in the execute parameters
         ]);
-        $id = $pdo->lastInsertId();
-    }    
+        $id = $pdo->lastInsertId();   
     } catch (Exception $e) {
 		if($returnExceptionOnError){
 			return $e;
