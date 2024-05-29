@@ -7,9 +7,15 @@
 <script type="text/javascript" src="speedtest.js"></script>
 <script type="text/javascript">
 function I(i){return document.getElementById(i);}
-//INITIALIZE SPEEDTEST
+//INITIALIZE SPEEDTEST FROM FILE "config.json"
 var s=new Speedtest(); //create speedtest object
-s.setParameter("telemetry_level","basic"); //enable telemetry
+fetch( "config.json" )
+  .then( response => response.json() )
+  .then( (responseJson) => {
+    for( let key in responseJson ){
+      s.setParameter( key, responseJson[key] );
+    }
+  });
 
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
 var dlColor="#6060AA",

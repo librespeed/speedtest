@@ -1,0 +1,7 @@
+{
+  "telemetry_level": "basic", 
+  "url_dl": "URL-OF-YOUR-BACKEND/garbage.jsp",
+  "url_ul": "URL-OF-YOUR-BACKEND/empty.jsp",
+  "url_ping": "URL-OF-YOUR-BACKEND/empty.jsp",
+  "url_getIp": "URL-OF-YOUR-BACKEND/getIP.jsp"
+}
