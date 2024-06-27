@@ -11,6 +11,7 @@ This is a very lightweight speed test implemented in Javascript, using XMLHttpRe
 
 ## Compatibility
 All modern browsers are supported: IE11, latest Edge, latest Chrome, latest Firefox, latest Safari.
+
 Works with mobile versions too.
 
 ## Features
@@ -27,19 +28,23 @@ Works with mobile versions too.
 
 
 ## Server requirements
+
 * A reasonably fast web server with Apache 2 (nginx, IIS also supported)
-* PHP 5.4 or newer (other backends also available)
+* Choose between:
+  * PHP 5.4 or newer (other backends also available)
+  * A JSP-capable Java container (Tomcat)
 * MySQL database to store test results (optional, Microsoft SQL Server, PostgreSQL and SQLite also supported)
 * A fast! internet connection
 
 ## Installation
+
 Assuming you have PHP installed, the installation steps are quite simple.
 I set this up on a QNAP.
 For this example, I am using a folder called **speedtest** in my web share area.
 
 1. Choose one of the example-xxx.html files in `examples` folder as your index.html if the default index.html does not fit.
 2. Add: speedtest.js, speedtest_worker.js, and favicon.ico to your speedtest folder.
-3. Download all of the backend folder into speedtest/backend.
+3. Download all of the backend/php folder into speedtest/backend.
 4. Download all of the results folder into speedtest/results.
 5. Be sure your permissions allow execute (755).
 6. Visit YOURSITE/speedtest/index.html and voila!
