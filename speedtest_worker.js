@@ -16,6 +16,8 @@ var dlProgress = 0; //progress of download test 0-1
 var ulProgress = 0; //progress of upload test 0-1
 var pingProgress = 0; //progress of ping+jitter test 0-1
 var testId = null; //test ID (sent back by telemetry if used, null otherwise)
+var dlBytes; // Total number of bytes downloaded
+var ulBytes; // Total number of bytes uploaded
 
 var log = ""; //telemetry log
 function tlog(s) {
@@ -82,7 +84,7 @@ function url_sep(url) {
 /*
 	listener for commands from main thread to this worker.
 	commands:
-	-status: returns the current status as a JSON string containing testState, dlStatus, ulStatus, pingStatus, clientIp, jitterStatus, dlProgress, ulProgress, pingProgress
+	-status: returns the current status as a JSON string containing testState, dlStatus, ulStatus, pingStatus, clientIp, jitterStatus, dlProgress, ulProgress, pingProgress, dlBytes, ulBytes
 	-abort: aborts the current test
 	-start: starts the test. optionally, settings can be passed as JSON.
 		example: start {"time_ul_max":"10", "time_dl_max":"10", "count_ping":"50"}
@@ -102,7 +104,9 @@ this.addEventListener("message", function(e) {
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
 				pingProgress: pingProgress,
-				testId: testId
+				testId: testId,
+				dlBytes: dlBytes,
+				ulBytes: ulBytes
 			})
 		);
 	}
@@ -261,6 +265,8 @@ this.addEventListener("message", function(e) {
 		dlProgress = 0;
 		ulProgress = 0;
 		pingProgress = 0;
+		dlBytes = 0;
+		ulBytes = 0;
 	}
 });
 // stops all XHR activity, aggressively
@@ -323,6 +329,7 @@ function dlTest(done) {
 	if (dlCalled) return;
 	else dlCalled = true; // dlTest already called?
 	var totLoaded = 0.0, // total number of loaded bytes
+		totLoadedWithGrace = 0.0, // total number of loaded bytes incl. grace time
 		startT = new Date().getTime(), // timestamp when test was started
 		bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 		graceTimeDone = false, //set to true after the grace time is past
@@ -348,6 +355,7 @@ function dlTest(done) {
 					var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
 					if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
 					totLoaded += loadDiff;
+					totLoadedWithGrace += loadDiff;
 					prevLoaded = event.loaded;
 				}.bind(this);
 				xhr[i].onload = function() {
@@ -409,6 +417,7 @@ function dlTest(done) {
 				}
 				//update status
 				dlStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+				dlBytes = totLoadedWithGrace;
 				if ((t + bonusT) / 1000.0 > settings.time_dl_max || failed) {
 					// test is over, stop streams and timer
 					if (failed || isNaN(dlStatus)) dlStatus = "Fail";
@@ -449,6 +458,7 @@ function ulTest(done) {
 	reqsmall = new Blob(reqsmall);
 	var testFunction = function() {
 		var totLoaded = 0.0, // total number of transmitted bytes
+			totLoadedWithGrace = 0.0, // total number of loaded bytes incl. grace time
 			startT = new Date().getTime(), // timestamp when test was started
 			bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 			graceTimeDone = false, //set to true after the grace time is past
@@ -499,6 +509,7 @@ function ulTest(done) {
 							var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
 							if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
 							totLoaded += loadDiff;
+							totLoadedWithGrace += loadDiff;
 							prevLoaded = event.loaded;
 						}.bind(this);
 						xhr[i].upload.onload = function() {
@@ -557,6 +568,7 @@ function ulTest(done) {
 					}
 					//update status
 					ulStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+					ulBytes = totLoadedWithGrace;
 					if ((t + bonusT) / 1000.0 > settings.time_ul_max || failed) {
 						// test is over, stop streams and timer
 						if (failed || isNaN(ulStatus)) ulStatus = "Fail";
