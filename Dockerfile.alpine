@@ -1,22 +1,29 @@
-FROM php:8-apache
+FROM php:8-alpine
 
 # Install extensions
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
+RUN apk add --quiet --no-cache \
+    bash \
+    apache2 \
+    apache2-ssl \
+    php82-apache2 \
+    php82-ctype \
+    php82-openssl \
+    freetype-dev \
+    libjpeg-turbo-dev \
     libpng-dev \
     libpq-dev \
-    && docker-php-ext-install -j$(nproc) iconv \
     && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_pgsql pgsql \
     && rm -f /usr/src/php.tar.xz /usr/src/php.tar.xz.asc \
-    && apt-get remove -y libfreetype6-dev \
-    libjpeg62-turbo-dev \
+    && apk del --quiet --no-cache \
+    freetype-dev \
+    libjpeg-turbo-dev \
     libpng-dev \
-    libpq-dev \
-    && apt autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev
+
+RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
+    ln -sf /dev/stderr /var/log/apache2/error.log
 
 # Prepare files and folders
 RUN mkdir -p /speedtest/

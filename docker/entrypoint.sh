@@ -12,6 +12,11 @@ cp /speedtest/*.js /var/www/html/
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
 
+# Set custom webroot on alpine
+if [ -f /etc/alpine-release ]; then
+  sed -i "s#\"/var/www/localhost/htdocs\"#\"/var/www/html\"#g" /etc/apache2/httpd.conf
+fi
+
 # Set up backend side for standlone modes
 if [[ "$MODE" == "standalone" || "$MODE" == "dual" ]]; then
   cp -r /speedtest/backend/ /var/www/html/backend
@@ -81,11 +86,19 @@ chown -R www-data /var/www/html/*
 
 # Allow selection of Apache port for network_mode: host
 if [ "$WEBPORT" != "80" ]; then
-  sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/ports.conf
-  sed -i "s/*:80>/*:$WEBPORT>/g" /etc/apache2/sites-available/000-default.conf
+  if [ -f /etc/alpine-release ]; then
+    sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/httpd.conf
+  else
+    sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/ports.conf
+    sed -i "s/*:80>/*:$WEBPORT>/g" /etc/apache2/sites-available/000-default.conf
+  fi
 fi
 
 echo "Done, Starting APACHE"
 
 # This runs apache
-exec apache2-foreground
+if [ -f /etc/alpine-release ]; then
+  exec httpd -DFOREGROUND
+else
+  exec apache2-foreground
+fi
