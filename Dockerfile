@@ -18,6 +18,7 @@ RUN mkdir -p /speedtest/
 # Copy sources
 COPY backend/ /speedtest/backend
 
+
 COPY results/*.php /speedtest/results/
 COPY results/*.ttf /speedtest/results/
 
@@ -25,6 +26,8 @@ COPY *.js /speedtest/
 COPY favicon.ico /speedtest/
 
 COPY docker/servers.json /servers.json
+
+COPY logo.png /speedtest/
 
 COPY docker/*.php /speedtest/
 COPY docker/entrypoint.sh /

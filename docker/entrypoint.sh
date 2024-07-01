@@ -12,6 +12,9 @@ cp /speedtest/*.js /var/www/html/
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
 
+# Copy logo
+cp /speedtest/logo.png /var/www/html/
+
 # Set up backend side for standlone modes
 if [[ "$MODE" == "standalone" || "$MODE" == "dual" ]]; then
   cp -r /speedtest/backend/ /var/www/html/backend

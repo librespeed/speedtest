@@ -1,3 +1,23 @@
+#To Run in Docker:
+
+## Enter in the directory and Run these in terminal
+
+docker build . -t speedtest
+
+docker run -p 8080:80 docker-img-name
+
+## To test or view, in browser
+
+Go to browser: localhost:8080
+
+
+
+
+
+
+
+
+
 ![LibreSpeed Logo](https://github.com/librespeed/speedtest/blob/master/.logo/logo3.png?raw=true)
 
 # LibreSpeed
