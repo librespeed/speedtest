@@ -250,6 +250,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 				updateUlColor(uiData.ulStatus);
 
 			}
+			
 
 			updatePingColor(uiData.pingStatus);
 			updateJitterColor(uiData.jitterStatus);
@@ -311,6 +312,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			object-fit: cover; */
 
 			position: relative;
+			
 
 		}
 		* {
@@ -341,15 +343,26 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			width: auto;
 		}
 
+
 		.container {
 
 			background-color: #F9FAFB;
-			padding-left: 140px;
-			padding-right: 140px;
+			padding-left: 7%;
+			padding-right: 7%;
 			padding-top: 16px;
-			padding-bottom: 24px;
+			/* padding-bottom: 24px; */
+			padding-bottom: 2.5%;
 			flex: 1;
 			overflow: auto;
+
+
+			/* width: 100%; */
+			/* max-width: 1200px; */
+			/* padding: 20px; */
+			display: flex;
+			flex-direction: column;
+			flex-wrap: wrap;
+			
 		}
 
 		.child-container {
@@ -360,12 +373,29 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			flex-direction: column;
 			justify-content: center;
 			align-items: center;
+
+
+			width: 100%;
+			/* background-color: #FFFFFF; */
+			/* padding: 20px; */
+			border-radius: 8px;
+			/* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+			
+
 		}
 
 		div.testGroup {
 			display: flex;
-			flex-direction: row;
+			/* flex-direction: row; */
 			gap: 24px;
+			top:10%;
+
+
+			/* display: flex; */
+			/* flex-wrap: wrap; */
+			justify-content: center;
+			/* gap: 20px; */
+			margin-bottom: 20px;
 		}
 
 
@@ -444,13 +474,13 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			flex-shrink: 0;
 		}
 
-		#test {
+		.test {
 			top: 125px;
 			position: absolute;
 			display: flex;
 			flex-direction: column;
 			gap: 32px;
-			align-items: center;
+			align-items: center; 
 		}
 
 		div.testArea {
@@ -464,6 +494,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			border-radius: 16px;
 			border: 1px solid var(--Monochrome-Grey-7, #D1D5DB);
 			background: var(--Monochrome-White, #FFF);
+
 		}
 
 		div.testArea2 {
@@ -489,7 +520,8 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 
 		.title-class{
 			display:flex;
-			top: 44px;
+			/* top: 44px; */
+			top: 3.6%;
 			position: absolute;
 			color: #1F2937;
 			font-family: Roboto;
@@ -497,6 +529,11 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			font-style: normal;
 			font-weight: 600;
 			line-height: normal;
+
+			/* font-size: 24px; */
+			/* font-weight: 600; */
+			margin-bottom: 20px;
+			/* color: #1F2937; */
 		}
 
 		div.testName {
@@ -506,19 +543,6 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			font-style: normal;
 			font-weight: 400;
 			line-height: normal;
-		}
-
-		div.testArea {
-			display: flex;
-			width: 248px;
-			padding: 24px 33px 24px 24px;
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 12px;
-
-			border-radius: 16px;
-			border: 1px solid var(--Monochrome-Grey-7, #D1D5DB);
-			background: var(--Monochrome-White, #FFF);
 		}
 
 
@@ -551,7 +575,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			width: 95%;
 			max-width: 40em;
 			margin: 0 auto;
-			margin-top: 2em;
+			/* margin-top: 2em; */
 			border-radius: 8px;
 		}
 
@@ -561,6 +585,42 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			height: auto;
 			margin: 0.25em 0;
 		}
+
+
+
+
+		@media (max-width: 768px) {
+            .testGroup {
+                flex-direction: row;
+                gap: 12px;
+            }
+			
+        }
+
+        @media (max-width: 614px) {
+            .testArea,
+            .testArea2 {
+                width: 100% !important;
+                padding: 12px !important;
+                border-radius: 8px !important;
+                gap: 6px !important;
+            }
+
+            .title-class {
+                font-size: 24px !important;
+            }
+
+            .container {
+                padding: 10px !important;
+            }
+
+            #startStopBtn {
+                width: 100%;
+                padding: 10px;
+            }
+
+            
+        }
 	</style>
 
 	<title>Talview Speedtest</title>
@@ -581,7 +641,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 
 				
 				<!-- <a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a> -->
-				<div id="test">
+				<div class="test">
 					<div class="testGroup">
 						<div class="testArea2">
 							<div class="testName">Ping</div>
@@ -618,7 +678,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 						<p>Test ID: <span id="testId"></span></p>
 						<input type="text" value="" id="resultsURL" readonly="readonly"
 							onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')" />
-						<img src="" id="resultsImg" />
+						<!-- <img src="" id="resultsImg" /> -->
 					</div>
 
 
