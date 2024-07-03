@@ -368,7 +368,7 @@
 			height: 100%;
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
+			/* justify-content: center; */
 			align-items: center;
 
 
@@ -377,6 +377,8 @@
 			/* padding: 20px; */
 			border-radius: 8px;
 			/* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+
+			padding-top: 44px;
 			
 
 		}
@@ -400,6 +402,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			margin-top: 32px;
 		}
 
 		#startStopBtn {
@@ -416,9 +419,6 @@
 			font-family: Inter;
 			color: white;
 			font-size: 16px;
-
-
-
 
 		}
 
@@ -469,15 +469,17 @@
 			align-items: center;
 			gap: 8px;
 			flex-shrink: 0;
+			
 		}
 
 		.test {
-			top: 125px;
-			position: absolute;
+			/* top: 125px; */
+			/* position: absolute; */
 			display: flex;
 			flex-direction: column;
-			gap: 32px;
+			gap: 20px;
 			align-items: center; 
+			padding-top: 43px;
 		}
 
 		div.testArea {
@@ -519,7 +521,7 @@
 			display:flex;
 			/* top: 44px; */
 			top: 3.6%;
-			position: absolute;
+			/* position: absolute; */
 			color: #1F2937;
 			font-family: Roboto;
 			font-size: 32px;
@@ -529,7 +531,7 @@
 
 			/* font-size: 24px; */
 			/* font-weight: 600; */
-			margin-bottom: 20px;
+			/* margin-bottom: 20px; */
 			/* color: #1F2937; */
 		}
 
@@ -611,10 +613,11 @@
                 padding: 10px !important;
             }
 
-            #startStopBtn {
-                width: 100%;
-                padding: 10px;
-            }
+			/* .startBtnStyle{
+				margin-top:32px;
+			} */
+
+            
 
             
         }
@@ -639,6 +642,7 @@
 				
 				<!-- <a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a> -->
 				<div class="test">
+
 					<div class="testGroup">
 						<div class="testArea2">
 							<div class="testName">Ping</div>
@@ -666,6 +670,8 @@
 						</div>
 					</div>
 
+				</div>	
+
 					
 					<!-- <div id="ipArea">
 						<span id="ip"></span>
@@ -679,11 +685,11 @@
 					</div>
 
 
-					<!-- <div class="startBtnStyle"> -->
+					<div class="startBtnStyle">
 
 						<div id="startStopBtn" onclick="startStop()"></div>
-					<!-- </div> -->
-				</div>
+					</div>
+				
 
 				<!-- <div id="startStopBtn" onclick="startStop()"></div> -->
 
