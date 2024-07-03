@@ -371,7 +371,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			height: 100%;
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
+			/* justify-content: center; */
 			align-items: center;
 
 
@@ -380,6 +380,8 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			/* padding: 20px; */
 			border-radius: 8px;
 			/* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+
+			padding-top: 44px;
 			
 
 		}
@@ -403,6 +405,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			margin-top: 32px;
 		}
 
 		#startStopBtn {
@@ -419,9 +422,6 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			font-family: Inter;
 			color: white;
 			font-size: 16px;
-
-
-
 
 		}
 
@@ -472,15 +472,17 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			align-items: center;
 			gap: 8px;
 			flex-shrink: 0;
+			
 		}
 
 		.test {
-			top: 125px;
-			position: absolute;
+			/* top: 125px; */
+			/* position: absolute; */
 			display: flex;
 			flex-direction: column;
-			gap: 32px;
+			gap: 20px;
 			align-items: center; 
+			padding-top: 43px;
 		}
 
 		div.testArea {
@@ -522,7 +524,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 			display:flex;
 			/* top: 44px; */
 			top: 3.6%;
-			position: absolute;
+			/* position: absolute; */
 			color: #1F2937;
 			font-family: Roboto;
 			font-size: 32px;
@@ -532,7 +534,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 
 			/* font-size: 24px; */
 			/* font-weight: 600; */
-			margin-bottom: 20px;
+			/* margin-bottom: 20px; */
 			/* color: #1F2937; */
 		}
 
@@ -614,10 +616,11 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
                 padding: 10px !important;
             }
 
-            #startStopBtn {
-                width: 100%;
-                padding: 10px;
-            }
+			/* .startBtnStyle{
+				margin-top:32px;
+			} */
+
+            
 
             
         }
@@ -642,6 +645,7 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 				
 				<!-- <a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a> -->
 				<div class="test">
+
 					<div class="testGroup">
 						<div class="testArea2">
 							<div class="testName">Ping</div>
@@ -669,6 +673,8 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 						</div>
 					</div>
 
+				</div>	
+
 					
 					<!-- <div id="ipArea">
 						<span id="ip"></span>
@@ -682,11 +688,11 @@ var meterBk = /Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent) ? "#EAEAEA" : 
 					</div>
 
 
-					<!-- <div class="startBtnStyle"> -->
+					<div class="startBtnStyle">
 
 						<div id="startStopBtn" onclick="startStop()"></div>
-					<!-- </div> -->
-				</div>
+					</div>
+				
 
 				<!-- <div id="startStopBtn" onclick="startStop()"></div> -->
 
