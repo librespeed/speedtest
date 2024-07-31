@@ -383,7 +383,7 @@ function sendResponse(
     sendHeaders();
     echo json_encode([
         'processedString' => $processedString,
-        'rawIspInfo' => $rawIspInfo ?: '',
+        'rawIspInfo' => $rawIspInfo ?: null,
     ]);
 }
 
