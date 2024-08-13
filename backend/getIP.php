@@ -138,7 +138,7 @@ if (PHP_MAJOR_VERSION >= 8){
     require_once("geoip2.phar");
 }
 function getIspInfo_ipinfoOfflineDb($ip){
-    if (!file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
+    if (PHP_MAJOR_VERSION < 8 || !file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
         return null;
     }
     $reader = new MaxMind\Db\Reader(OFFLINE_IPINFO_DB_FILE);
@@ -181,21 +181,16 @@ if(isset($_GET['isp'])){
     if (is_string($localIpInfo)) {
         echo formatResponse_simple($ip,$localIpInfo);
     }else{
-        //ipinfo API and offline db require PHP 8 or newer
-        if (PHP_MAJOR_VERSION >= 8){
-            $r=getIspInfo_ipinfoApi($ip);
+        $r=getIspInfo_ipinfoApi($ip);
+        if(!is_null($r)){
+            echo $r;
+        }else{
+            $r=getIspInfo_ipinfoOfflineDb($ip);
             if(!is_null($r)){
                 echo $r;
             }else{
-                $r=getIspInfo_ipinfoOfflineDb($ip);
-                if(!is_null($r)){
-                    echo $r;
-                }else{
-                    echo formatResponse_simple($ip);
-                }
+                echo formatResponse_simple($ip);
             }
-        }else{
-            echo formatResponse_simple($ip);
         }
     }
 }else{
