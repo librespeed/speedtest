@@ -31,7 +31,7 @@ Works with mobile versions too.
 ## Server requirements
 
 * A reasonably fast web server with Apache 2 (nginx, IIS also supported)
-* PHP 5.4 or newer (other backends also available)
+* PHP 8.0 or newer (other backends also available)
 * MySQL database to store test results (optional, Microsoft SQL Server, PostgreSQL and SQLite also supported)
 * A fast! internet connection
 
