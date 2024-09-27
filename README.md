@@ -78,8 +78,12 @@ A partial Node.js implementation is available in the `node` branch, developed by
 
 ## Donate
 
-[![Donate with Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/fdossena/donate)
-[Donate with PayPal](https://www.paypal.me/sineisochronic)
+<a href="https://liberapay.com/fdossena/donate">
+<img alt="Donate with Liberapay" src="https://raw.githubusercontent.com/aha999/DonateButtons/master/LiberaPay.png" width="300" height="113" />
+</a>
+<a href="https://www.paypal.me/sineisochronic">
+<img alt="Donate with PayPal" src="https://raw.githubusercontent.com/aha999/DonateButtons/master/Paypal.png" width="300" height="113" />
+</a>
 
 ## License
 
