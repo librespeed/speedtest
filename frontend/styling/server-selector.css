@@ -1,0 +1,171 @@
+/* The server selector fake dropdown */
+
+.server-selector {
+  position: relative;
+  width: 50rem;
+  margin: 0rem auto;
+  display: none;
+
+  &.active {
+    display: block;
+  }
+
+  @media screen and (max-width: 500px) {
+    width: 100%;
+  }
+
+  & > .chosen {
+    position: relative;
+    height: 8.8rem;
+
+    border: 1px solid var(--server-selector-border-color);
+    border-radius: 0.8rem;
+    background-color: var(--server-selector-background-color);
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: var(--server-selector-hover-border-color);
+    }
+
+    & > div.chevron {
+      content: "";
+      position: absolute;
+      display: block;
+      width: 32;
+      height: 32;
+      right: 1.8rem;
+      top: 1rem;
+    }
+
+    & > p {
+      margin: 0;
+      position: absolute;
+      left: 2.4rem;
+      top: 1.5rem;
+      font-size: 1.6rem;
+      font-weight: 400;
+      letter-spacing: -0.1rem;
+      color: var(--theme-green);
+    }
+
+    & > h2 {
+      position: absolute;
+      left: 2.4rem;
+      right: 2.4rem;
+      bottom: 1rem;
+
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.2rem;
+      color: var(--primary-text-color);
+      text-align: left;
+      text-transform: uppercase;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+
+      & span {
+        font-weight: 400;
+      }
+    }
+  }
+
+  /* Special case for when we have only one server */
+  &.single-server {
+    & > .chosen {
+      cursor: default;
+      &:hover {
+        border-color: var(--server-selector-border-color);
+      }
+      & > div.chevron {
+        display: none;
+      }
+    }
+  }
+
+  /* Overrides for when the test is running and the selector is disabled */
+  &.disabled {
+    pointer-events: none;
+
+    & > .chosen {
+      cursor: default;
+      &:hover {
+        border-color: var(--server-selector-border-color);
+      }
+      & > p {
+        color: var(--secondary-text-disabled-color);
+      }
+      & > h2 {
+        color: var(--primary-text-disabled-color);
+      }
+    }
+  }
+
+  /* Styling for the list of servers that pops out */
+  & > ul.servers {
+    position: absolute;
+    width: 50rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 1;
+
+    border: 1px solid var(--server-selector-border-color);
+    border-radius: 0.8rem;
+    background-color: var(--server-selector-background-color);
+    list-style: none;
+
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.1s;
+
+    &.active {
+      transform: scaleY(1);
+    }
+
+    @media screen and (max-width: 800px) {
+      width: 100%;
+    }
+
+    & > li {
+      &:first-child a {
+        padding-top: 1.5rem;
+      }
+      &:last-child a {
+        padding-bottom: 1.5rem;
+      }
+
+      & a {
+        display: block;
+        padding: 0.7rem 2.4rem;
+
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: -0.2rem;
+        color: var(--sprint-text-color);
+        text-transform: uppercase;
+        text-decoration: none;
+        text-align: left;
+        cursor: pointer;
+
+        transition: background-color 0.2s;
+
+        & span {
+          font-weight: 400;
+        }
+        &:hover {
+          background-color: var(--server-selector-hover-background-color);
+        }
+      }
+    }
+  }
+
+  /* Styling for the sponsor text under the dropdown */
+  & > p.sponsor {
+    margin: 1rem 0 5rem 0;
+
+    & a {
+      font-weight: 400;
+    }
+  }
+}
