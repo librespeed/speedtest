@@ -3,6 +3,10 @@
 set -e
 set -x
 
+is_alpine() {
+  [ -f /etc/alpine-release ]
+}
+
 # Cleanup
 rm -rf /var/www/html/*
 
@@ -13,7 +17,7 @@ cp /speedtest/*.js /var/www/html/
 cp /speedtest/favicon.ico /var/www/html/
 
 # Set custom webroot on alpine
-if [ -f /etc/alpine-release ]; then
+if is_alpine; then
   sed -i "s#\"/var/www/localhost/htdocs\"#\"/var/www/html\"#g" /etc/apache2/httpd.conf
 fi
 
@@ -34,11 +38,12 @@ fi
 
 # Set up unified index.php
 if [ "$MODE" != "backend" ]; then
-  cp /speedtest/ui.php /var/www/html/index.php
+  cp -av /speedtest/frontend/* /var/www/html/
+  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
 fi
 
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
-if [[ "$TELEMETRY" == "true" && ( "$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual" ) ]]; then
+if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual") ]]; then
   cp -r /speedtest/results /var/www/html/results
 
   if [ "$MODE" == "frontend" ]; then
@@ -46,16 +51,16 @@ if [[ "$TELEMETRY" == "true" && ( "$MODE" == "frontend" || "$MODE" == "standalon
     cp /speedtest/backend/getIP_util.php /var/www/html/backend
   fi
 
-  if  [ "$DB_TYPE" == "mysql" ]; then
+  if [ "$DB_TYPE" == "mysql" ]; then
     sed -i 's/$db_type = '\''.*'\''/$db_type = '\'$DB_TYPE\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$MySql_username = '\''.*'\''/$MySql_username = '\'$DB_USERNAME\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$MySql_password = '\''.*'\''/$MySql_password = '\'$DB_PASSWORD\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$MySql_hostname = '\''.*'\''/$MySql_hostname = '\'$DB_HOSTNAME\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$MySql_databasename = '\''.*'\''/$MySql_databasename = '\'$DB_NAME\''/g' /var/www/html/results/telemetry_settings.php
-    if  [ "$DB_PORT" != "" ]; then
+    if [ "$DB_PORT" != "" ]; then
       sed -i 's/$MySql_port = '\''.*'\''/$MySql_port = '\'$DB_PORT\''/g' /var/www/html/results/telemetry_settings.php
     fi
-  elif  [ "$DB_TYPE" == "postgresql" ]; then
+  elif [ "$DB_TYPE" == "postgresql" ]; then
     sed -i 's/$db_type = '\''.*'\''/$db_type = '\'$DB_TYPE\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$PostgreSql_username = '\''.*'\''/$PostgreSql_username = '\'$DB_USERNAME\''/g' /var/www/html/results/telemetry_settings.php
     sed -i 's/$PostgreSql_password = '\''.*'\''/$PostgreSql_password = '\'$DB_PASSWORD\''/g' /var/www/html/results/telemetry_settings.php
@@ -77,14 +82,22 @@ if [[ "$TELEMETRY" == "true" && ( "$MODE" == "frontend" || "$MODE" == "standalon
   fi
 
   mkdir -p /database/
-  chown www-data /database/
+  if is_alpine; then
+    chown apache /database/
+  else
+    chown www-data /database/
+  fi
 fi
 
-chown -R www-data /var/www/html/*
+if is_alpine; then
+  chown -R apache /var/www/html/*
+else
+  chown -R www-data /var/www/html/*
+fi
 
 # Allow selection of Apache port for network_mode: host
 if [ "$WEBPORT" != "80" ]; then
-  if [ -f /etc/alpine-release ]; then
+  if is_alpine; then
     sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/httpd.conf
   else
     sed -i "s/^Listen 80\$/Listen $WEBPORT/g" /etc/apache2/ports.conf
@@ -95,7 +108,7 @@ fi
 echo "Done, Starting APACHE"
 
 # This runs apache
-if [ -f /etc/alpine-release ]; then
+if is_alpine; then
   exec httpd -DFOREGROUND
 else
   exec apache2-foreground
