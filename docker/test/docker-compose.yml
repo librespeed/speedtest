@@ -1,5 +1,14 @@
 ## this is a docker compose file used to test all scenarios
 ## do not use it in production
+x-shared:
+  speedtest-service: &speedtest-service
+    environment:
+      - PASSWORD=gimmeTheStats1337
+      - EMAIL=test@example.com
+      - ENABLE_ID_OBFUSCATION=true
+      - MODE=standalone
+      - REDACT_IP_ADDRESSES=true
+      - TELEMETRY=true
 
 services:
   ###################### POSTGRESQL ################################
@@ -102,3 +111,15 @@ services:
     environment: *env_vars_sqlite
     ports:
       - 9128:8080
+  speedtest-alpine-sqlite-dual:
+    <<: *speedtest-service
+    build:
+      context: ../..
+      dockerfile: Dockerfile.alpine
+    environment:
+      - MODE=dual
+
+    volumes:
+      - ./servers.json:/servers.json:ro
+    ports:
+      - 9129:8080

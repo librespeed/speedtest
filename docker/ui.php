@@ -11,8 +11,35 @@ function I(i){return document.getElementById(i);}
 //LIST OF TEST SERVERS. See documentation for details if needed
 <?php
 $mode=getenv("MODE");
-if($mode=="standalone" || $mode=="dual"){ ?>
+if($mode=="standalone" || $mode=="backend"){ ?>
 var SPEEDTEST_SERVERS=[];
+<?php } elseif ($mode=="dual") {
+	$servers = json_decode(file_get_contents('/servers.json'), true);
+
+	// find out my own URL
+	$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+
+	// Retrieve the host (e.g., www.example.com)
+	$host = $_SERVER['HTTP_HOST'];
+
+	// Retrieve the URI (path and query string)
+	$uri = $_SERVER['REQUEST_URI'];
+
+	// Combine them to get the full URL
+	$url = $protocol . $host . $uri;
+	array_unshift($servers,
+			[
+				"name"=> "This Server",
+				"server"=> $url."backend/",
+				"id"=> 1,
+				"dlURL"=> "garbage.php",
+				"ulURL"=> "empty.php",
+				"pingURL"=> "empty.php",
+				"getIpURL"=> "getIP.php"
+			]
+		);
+	?>
+var SPEEDTEST_SERVERS= <?= json_encode($servers, JSON_PRETTY_PRINT) ?: '[]' ?>;
 <?php } else { ?>
 var SPEEDTEST_SERVERS= <?= file_get_contents('/servers.json') ?: '[]' ?>;
 <?php } ?>
