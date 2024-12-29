@@ -40,9 +40,12 @@ if [ "$MODE" == "backend" ]; then
   fi
 fi
 
-# Set up unified index.php
-if [ "$MODE" != "backend" ]; then
-  cp /speedtest/ui.php /var/www/html/index.php
+# Set up index.php for frontend-only or standalone modes
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
+  cp -av /speedtest/frontend/* /var/www/html/
+elif [ "$MODE" == "standalone" ]; then
+  cp -av /speedtest/frontend/* /var/www/html/
+  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
 fi
 
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
