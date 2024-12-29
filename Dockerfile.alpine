@@ -4,6 +4,7 @@ RUN apk add --quiet --no-cache \
     apache2 \
     php-apache2 \
     php-ctype \
+    php-phar \
     php-gd \
     php-openssl \
     php-pdo \
