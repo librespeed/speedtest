@@ -16,6 +16,7 @@ RUN mkdir -p /speedtest/
 
 # Copy sources
 COPY backend/ /speedtest/backend
+COPY frontend/ /speedtest/frontend
 
 COPY results/*.php /speedtest/results/
 COPY results/*.ttf /speedtest/results/
