@@ -11,6 +11,10 @@ RUN rm -f /usr/src/php.tar.xz /usr/src/php.tar.xz.asc \
     && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
+# Set the timezone
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Prepare files and folders
 RUN mkdir -p /speedtest/
 
