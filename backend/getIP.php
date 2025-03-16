@@ -2,7 +2,7 @@
 
 /*
  * This script detects the client's IP address and fetches ISP info from ipinfo.io/
- * Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Country and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (will be empty if isp detection is disabled).
+ * Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Country and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (or an empty string if isp detection is disabled or if it failed).
  * Client side, the output of this script can be treated as JSON or as regular text. If the output is regular text, it will be shown to the user as is.
  */
 
@@ -10,399 +10,189 @@ error_reporting(0);
 
 define('API_KEY_FILE', 'getIP_ipInfo_apikey.php');
 define('SERVER_LOCATION_CACHE_FILE', 'getIP_serverLocation.php');
+define('OFFLINE_IPINFO_DB_FILE', 'country_asn.mmdb');
 
 require_once 'getIP_util.php';
 
-/**
- * @param string $ip
- *
- * @return string|null
- */
-function getLocalOrPrivateIpInfo($ip)
-{
+function getLocalOrPrivateIpInfo($ip){
     // ::1/128 is the only localhost ipv6 address. there are no others, no need to strpos this
     if ('::1' === $ip) {
         return 'localhost IPv6 access';
     }
-
     // simplified IPv6 link-local address (should match fe80::/10)
     if (stripos($ip, 'fe80:') === 0) {
         return 'link-local IPv6 access';
     }
-
     // fc00::/7 Unique Local IPv6 Unicast Addresses
     if (preg_match('/^(fc|fd)([0-9a-f]{0,4}:){1,7}[0-9a-f]{1,4}$/i', $ip) === 1) {
         return 'ULA IPv6 access';
     }
-
     // anything within the 127/8 range is localhost ipv4, the ip must start with 127.0
     if (strpos($ip, '127.') === 0) {
         return 'localhost IPv4 access';
     }
-
     // 10/8 private IPv4
     if (strpos($ip, '10.') === 0) {
         return 'private IPv4 access';
     }
-
     // 172.16/12 private IPv4
     if (preg_match('/^172\.(1[6-9]|2\d|3[01])\./', $ip) === 1) {
         return 'private IPv4 access';
     }
-
     // 192.168/16 private IPv4
     if (strpos($ip, '192.168.') === 0) {
         return 'private IPv4 access';
     }
-
     // IPv4 link-local
     if (strpos($ip, '169.254.') === 0) {
         return 'link-local IPv4 access';
     }
-
     return null;
 }
 
-/**
- * @return string
- */
-function getIpInfoTokenString()
-{
-    if (
-        !file_exists(API_KEY_FILE)
-        || !is_readable(API_KEY_FILE)
-    ) {
-        return '';
+function getIspInfo_ipinfoApi($ip){
+    if (!file_exists(API_KEY_FILE) || !is_readable(API_KEY_FILE)){
+        return null;
     }
-
     require API_KEY_FILE;
-
-    if (empty($IPINFO_APIKEY)) {
-        return '';
+    if(empty($IPINFO_APIKEY)){
+        return null;
     }
-
-    return '?token=' . $IPINFO_APIKEY;
-}
-
-/**
- * @param string $ip
- *
- * @return array|null
- */
-function getIspInfo($ip)
-{
-    $json = file_get_contents('https://ipinfo.io/' . $ip . '/json' . getIpInfoTokenString());
+    $json = file_get_contents('https://ipinfo.io/' . $ip . '/json?token=' . $IPINFO_APIKEY);
     if (!is_string($json)) {
         return null;
     }
-
     $data = json_decode($json, true);
     if (!is_array($data)) {
         return null;
     }
-
-    return $data;
-}
-
-/**
- * @param array|null $rawIspInfo
- *
- * @return string
- */
-function getIsp($rawIspInfo)
-{
-    if (is_array($rawIspInfo)) {
-        /* variant with no token
-        has json like:
-        {
-            "ip": "xxx.xxx.xxx.xxx",
-            "hostname": "example.com",
-            "city": "Vienna",
-            "region": "Vienna",
-            "country": "AT",
-            "loc": "48.2085,16.3721",
-            "org": "ASxxxx T-Mobile Austria GmbH",
-            "postal": "nnnn",
-            "timezone": "Europe/Vienna",
-            "readme": "https://ipinfo.io/missingauth"
+    $isp=null;
+    //ISP name, if present, is either in org or asn.name
+    if (array_key_exists('org', $data) && is_string($data['org']) && !empty($data['org'])) {
+        // Remove AS##### from ISP name, if present
+        $isp = preg_replace('/AS\\d+\\s/', '', $data['org']);
+    } elseif (array_key_exists('asn', $data) && is_array($data['asn']) && !empty($data['asn']) && array_key_exists('name', $data['asn']) && is_string($data['asn']['name'])) {
+        $isp = $data['asn']['name'];
+    } else{
+        return null;
+    }
+    $country=null;
+    if(array_key_exists('country',$data) && is_string($data['country'])){
+        $country = $data['country'];
+    }
+    //If requested by the client (and we have the required information), calculate the distance
+    $distance=null;
+    if(isset($_GET['distance']) && ($_GET['distance']==='mi' || $_GET['distance']==='km') && array_key_exists('loc', $data) && is_string($data['loc'])){
+        $unit = $_GET['distance'];
+        $clientLoc = $data['loc'];
+        $serverLoc = null;
+        if (file_exists(SERVER_LOCATION_CACHE_FILE) && is_readable(SERVER_LOCATION_CACHE_FILE)) {
+            require SERVER_LOCATION_CACHE_FILE;
         }
-        */
-        if (
-            array_key_exists('org', $rawIspInfo)
-            && is_string($rawIspInfo['org'])
-            && !empty($rawIspInfo['org'])
-        ) {
-            // Remove AS##### from ISP name, if present
-            return preg_replace('/AS\\d+\\s/', '', $rawIspInfo['org']);
-        }
-
-        /*
-        variant with valid token has json:
-        {
-            "ip": "xxx.xxx.xxx.xxx",
-            "hostname": "example.com",
-            "city": "Vienna",
-            "region": "Vienna",
-            "country": "AT",
-            "loc": "48.2085,16.3721",
-            "postal": "1010",
-            "timezone": "Europe/Vienna",
-            "asn": {
-                "asn": "ASxxxx",
-                "name": "T-Mobile Austria GmbH",
-                "domain": "t-mobile.at",
-                "route": "xxx.xxx.xxx.xxx/xx",
-                "type": "isp"
-            },
-            "company": {
-                "name": "XX",
-                "domain": "example.com",
-                "type": "isp"
-            },
-            "privacy": {
-                "vpn": true,
-                "proxy": false,
-                "tor": false,
-                "relay": false,
-                "hosting": false,
-                "service": ""
-            },
-            "abuse": {
-                "address": "...",
-                "country": "AT",
-                "email": "abuse@example.com",
-                "name": "XXX",
-                "network": "xxx.xxx.xxx.xxx-xxx.xxx.xxx.xxx",
-                "phone": ""
-            },
-            "domains": {
-                "total": 0,
-                "domains": [
-
-                ]
+        if (!is_string($serverLoc) || empty($serverLoc)) {
+            $json = file_get_contents('https://ipinfo.io/json?token=' . $IPINFO_APIKEY);
+            if (!is_string($json)) {
+                return null;
             }
+            $sdata = json_decode($json, true);
+            if (!is_array($sdata) || !array_key_exists('loc', $sdata) || !is_string($sdata['loc']) || empty($sdata['loc'])) {
+                return null;
             }
-         */
-        if (
-            array_key_exists('asn', $rawIspInfo)
-            && is_array($rawIspInfo['asn'])
-            && !empty($rawIspInfo['asn'])
-            && array_key_exists('name', $rawIspInfo['asn'])
-            && is_string($rawIspInfo['asn']['name'])
-        ) {
-            // Remove AS##### from ISP name, if present
-            return $rawIspInfo['asn']['name'];
+            $serverLoc = $sdata['loc'];
+            file_put_contents(SERVER_LOCATION_CACHE_FILE, "<?php\n\n\$serverLoc = '" . addslashes($serverLoc) . "';\n");
+        }
+        list($clientLatitude, $clientLongitude) = explode(',', $clientLoc);
+        list($serverLatitude, $serverLongitude) = explode(',', $serverLoc);
+        //distance calculation adapted from http://www.codexworld.com
+        $rad = M_PI / 180;
+        $dist = acos(sin($clientLatitude * $rad) * sin($serverLatitude * $rad) + cos($clientLatitude * $rad) * cos($serverLatitude * $rad) * cos(($clientLongitude - $serverLongitude) * $rad)) / $rad * 60 * 1.853;
+        if ($unit === 'mi') {
+            $dist /= 1.609344;
+            $dist = round($dist, -1);
+            if ($dist < 15) {
+                $dist = '<15';
+            }
+            $distance = $dist . ' mi';
+        }elseif ($unit === 'km') {
+            $dist = round($dist, -1);
+            if ($dist < 20) {
+                $dist = '<20';
+            }
+            $distance =  $dist . ' km';
         }
     }
-
-    return 'Unknown ISP';
-}
-
-/**
- * @return string|null
- */
-function getServerLocation()
-{
-    $serverLoc = null;
-    if (
-        file_exists(SERVER_LOCATION_CACHE_FILE)
-        && is_readable(SERVER_LOCATION_CACHE_FILE)
-    ) {
-        require SERVER_LOCATION_CACHE_FILE;
+    $processedString=$ip.' - '.$isp;
+    if(is_string($country)){
+        $processedString.=', '.$country;
     }
-    if (is_string($serverLoc) && !empty($serverLoc)) {
-        return $serverLoc;
+    if(is_string($distance)){
+        $processedString.=' ('.$distance.')';
     }
-
-    $json = file_get_contents('https://ipinfo.io/json' . getIpInfoTokenString());
-    if (!is_string($json)) {
-        return null;
-    }
-
-    $details = json_decode($json, true);
-    if (
-        !is_array($details)
-        || !array_key_exists('loc', $details)
-        || !is_string($details['loc'])
-        || empty($details['loc'])
-    ) {
-        return null;
-    }
-
-    $serverLoc = $details['loc'];
-    $cacheData = "<?php\n\n\$serverLoc = '" . addslashes($serverLoc) . "';\n";
-    file_put_contents(SERVER_LOCATION_CACHE_FILE, $cacheData);
-
-    return $serverLoc;
-}
-
-/**
- * Optimized algorithm from http://www.codexworld.com
- *
- * @param float $latitudeFrom
- * @param float $longitudeFrom
- * @param float $latitudeTo
- * @param float $longitudeTo
- *
- * @return float [km]
- */
-function distance(
-    $latitudeFrom,
-    $longitudeFrom,
-    $latitudeTo,
-    $longitudeTo
-) {
-    $rad = M_PI / 180;
-    $theta = $longitudeFrom - $longitudeTo;
-    $dist = sin($latitudeFrom * $rad)
-        * sin($latitudeTo * $rad)
-        + cos($latitudeFrom * $rad)
-        * cos($latitudeTo * $rad)
-        * cos($theta * $rad);
-
-    return acos($dist) / $rad * 60 * 1.853;
-}
-
-/**
- * @param array|null $rawIspInfo
- *
- * @return string|null
- */
-function getDistance($rawIspInfo)
-{
-    if (
-        !is_array($rawIspInfo)
-        || !array_key_exists('loc', $rawIspInfo)
-        || !isset($_GET['distance'])
-        || !in_array($_GET['distance'], ['mi', 'km'], true)
-    ) {
-        return null;
-    }
-
-    $unit = $_GET['distance'];
-    $clientLocation = $rawIspInfo['loc'];
-    $serverLocation = getServerLocation();
-
-    if (!is_string($serverLocation)) {
-        return null;
-    }
-
-    return calculateDistance(
-        $serverLocation,
-        $clientLocation,
-        $unit
-    );
-}
-
-/**
- * @param string $clientLocation
- * @param string $serverLocation
- * @param string $unit
- *
- * @return string
- */
-function calculateDistance($clientLocation, $serverLocation, $unit)
-{
-    list($clientLatitude, $clientLongitude) = explode(',', $clientLocation);
-    list($serverLatitude, $serverLongitude) = explode(',', $serverLocation);
-    $dist = distance(
-        $clientLatitude,
-        $clientLongitude,
-        $serverLatitude,
-        $serverLongitude
-    );
-
-    if ('mi' === $unit) {
-        $dist /= 1.609344;
-        $dist = round($dist, -1);
-        if ($dist < 15) {
-            $dist = '<15';
-        }
-
-        return $dist . ' mi';
-    }
-
-    if ('km' === $unit) {
-        $dist = round($dist, -1);
-        if ($dist < 20) {
-            $dist = '<20';
-        }
-
-        return $dist . ' km';
-    }
-
-    return null;
-}
-
-/**
- * @return void
- */
-function sendHeaders()
-{
-    header('Content-Type: application/json; charset=utf-8');
-
-    if (isset($_GET['cors'])) {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: GET, POST');
-    }
-
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
-    header('Cache-Control: post-check=0, pre-check=0', false);
-    header('Pragma: no-cache');
-}
-
-/**
- * @param string $ip
- * @param string|null $ipInfo
- * @param string|null $distance
- * @param array|null $rawIspInfo
- *
- * @return void
- */
-function sendResponse(
-    $ip,
-    $ipInfo = null,
-    $distance = null,
-    $rawIspInfo = null
-) {
-    $processedString = $ip;
-    if (is_string($ipInfo)) {
-        $processedString .= ' - ' . $ipInfo;
-    }
-
-    if (
-        is_array($rawIspInfo)
-        && array_key_exists('country', $rawIspInfo)
-    ) {
-        $processedString .= ', ' . $rawIspInfo['country'];
-    }
-    if (is_string($distance)) {
-        $processedString .= ' (' . $distance . ')';
-    }
-
-    sendHeaders();
-    echo json_encode([
+    return json_encode([
         'processedString' => $processedString,
-        'rawIspInfo' => $rawIspInfo ?: '',
+        'rawIspInfo' => $data ?: '',
     ]);
 }
 
+if (PHP_MAJOR_VERSION >= 8){
+    require_once("geoip2.phar");
+}
+function getIspInfo_ipinfoOfflineDb($ip){
+    if (PHP_MAJOR_VERSION < 8 || !file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
+        return null;
+    }
+    $reader = new MaxMind\Db\Reader(OFFLINE_IPINFO_DB_FILE);
+    $data = $reader->get($ip);
+    if(!is_array($data)){
+        return null;
+    }
+    $processedString = $ip.' - ' . $data['as_name'] . ', ' . $data['country_name'];
+    return json_encode([
+        'processedString' => $processedString,
+        'rawIspInfo' => $data ?: '',
+    ]);
+}
+
+function formatResponse_simple($ip,$ispName=null){
+    $processedString=$ip;
+    if(is_string($ispName)){
+        $processedString.=' - '.$ispName;
+    }
+    return json_encode([
+        'processedString' => $processedString,
+        'rawIspInfo' => '',
+    ]);
+}
+
+header('Content-Type: application/json; charset=utf-8');
+if (isset($_GET['cors'])) {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST');
+}
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
 $ip = getClientIp();
-
-$localIpInfo = getLocalOrPrivateIpInfo($ip);
-// local ip, no need to fetch further information
-if (is_string($localIpInfo)) {
-    sendResponse($ip, $localIpInfo);
-    exit;
+//if the user requested the ISP info, we first try to fetch it using ipinfo.io (if there is no api key set it fails without sending data, it can also fail because of rate limiting or invalid responses), then we try with the offline db, if that also fails (or if ISP info was not requested) we just respond with the IP address
+if(isset($_GET['isp'])){
+    $localIpInfo = getLocalOrPrivateIpInfo($ip);
+    //local ip, no need to fetch further information
+    if (is_string($localIpInfo)) {
+        echo formatResponse_simple($ip,$localIpInfo);
+    }else{
+        $r=getIspInfo_ipinfoApi($ip);
+        if(!is_null($r)){
+            echo $r;
+        }else{
+            $r=getIspInfo_ipinfoOfflineDb($ip);
+            if(!is_null($r)){
+                echo $r;
+            }else{
+                echo formatResponse_simple($ip);
+            }
+        }
+    }
+}else{
+    echo formatResponse_simple($ip);
 }
-
-if (!isset($_GET['isp'])) {
-    sendResponse($ip);
-    exit;
-}
-
-$rawIspInfo = getIspInfo($ip);
-$isp = getIsp($rawIspInfo);
-$distance = getDistance($rawIspInfo);
-
-sendResponse($ip, $isp, $distance, $rawIspInfo);

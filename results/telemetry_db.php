@@ -57,7 +57,7 @@ function getPdo($returnErrorMessage = false)
 			if (!$MsSql_WindowsAuthentication and
 			    !isset(
 						$MsSql_username,
-						$MsSql_password,
+						$MsSql_password
 						)
 				) {
 				if($returnErrorMessage){
@@ -79,7 +79,7 @@ function getPdo($returnErrorMessage = false)
 			if($MsSql_WindowsAuthentication){
 				return new PDO($dsn, "", "", $pdoOptions);
 			} else {
-				return new PDO($dsn, $MySql_username, $MySql_password, $pdoOptions);
+				return new PDO($dsn, $MsSql_username, $MsSql_password, $pdoOptions);
 			}
         }
 
@@ -115,20 +115,21 @@ function getPdo($returnErrorMessage = false)
 
             $pdo = new PDO('sqlite:'.$Sqlite_db_file, null, null, $pdoOptions);
 
+            # TODO: Why create table only in sqlite mode?
             $pdo->exec('
                 CREATE TABLE IF NOT EXISTS `speedtest_users` (
-                `id`    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                `ispinfo`    text,
-                `extra`    text,
-                `timestamp`     timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                `ip`    text NOT NULL,
-                `ua`    text NOT NULL,
-                `lang`  text NOT NULL,
-                `dl`    text,
-                `ul`    text,
-                `ping`  text,
-                `jitter`        text,
-                `log`   longtext
+                `id`        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                `ispinfo`   text,
+                `extra`     text,
+                `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `ip`        text NOT NULL,
+                `ua`        text NOT NULL,
+                `lang`      text NOT NULL,
+                `dl`        text,
+                `ul`        text,
+                `ping`      text,
+                `jitter`    text,
+                `log`       longtext
                 );
             ');
 

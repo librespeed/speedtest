@@ -1,15 +1,14 @@
 FROM php:8-apache
 
+# use docker-php-extension-installer for automatically get the right packages installed
+ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+
 # Install extensions
-RUN apt-get update && apt-get install -y \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libpq-dev \
-    && docker-php-ext-install -j$(nproc) iconv \
-    && docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_pgsql pgsql \
+RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql
+
+RUN rm -f /usr/src/php.tar.xz /usr/src/php.tar.xz.asc \
+    && apt autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the timezone
@@ -40,11 +39,11 @@ ENV PASSWORD=password
 ENV TELEMETRY=false
 ENV ENABLE_ID_OBFUSCATION=false
 ENV REDACT_IP_ADDRESSES=false
-ENV WEBPORT=80
+ENV WEBPORT=8080
 
 # https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
 STOPSIGNAL SIGWINCH
 
 # Final touches
-EXPOSE 80
+EXPOSE ${WEBPORT}
 CMD ["bash", "/entrypoint.sh"]

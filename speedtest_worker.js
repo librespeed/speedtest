@@ -6,18 +6,18 @@
 */
 
 // data reported to main thread
-var testState = -1; // -1=not started, 0=starting, 1=download test, 2=ping+jitter test, 3=upload test, 4=finished, 5=abort
-var dlStatus = ""; // download speed in megabit/s with 2 decimal digits
-var ulStatus = ""; // upload speed in megabit/s with 2 decimal digits
-var pingStatus = ""; // ping in milliseconds with 2 decimal digits
-var jitterStatus = ""; // jitter in milliseconds with 2 decimal digits
-var clientIp = ""; // client's IP address as reported by getIP.php
-var dlProgress = 0; //progress of download test 0-1
-var ulProgress = 0; //progress of upload test 0-1
-var pingProgress = 0; //progress of ping+jitter test 0-1
-var testId = null; //test ID (sent back by telemetry if used, null otherwise)
+let testState = -1; // -1=not started, 0=starting, 1=download test, 2=ping+jitter test, 3=upload test, 4=finished, 5=abort
+let dlStatus = ""; // download speed in megabit/s with 2 decimal digits
+let ulStatus = ""; // upload speed in megabit/s with 2 decimal digits
+let pingStatus = ""; // ping in milliseconds with 2 decimal digits
+let jitterStatus = ""; // jitter in milliseconds with 2 decimal digits
+let clientIp = ""; // client's IP address as reported by getIP.php
+let dlProgress = 0; //progress of download test 0-1
+let ulProgress = 0; //progress of upload test 0-1
+let pingProgress = 0; //progress of ping+jitter test 0-1
+let testId = null; //test ID (sent back by telemetry if used, null otherwise)
 
-var log = ""; //telemetry log
+let log = ""; //telemetry log
 function tlog(s) {
 	if (settings.telemetry_level >= 2) {
 		log += Date.now() + ": " + s + "\n";
@@ -36,7 +36,7 @@ function twarn(s) {
 }
 
 // test settings. can be overridden by sending specific values with the start command
-var settings = {
+let settings = {
 	mpot: false, //set to true when in MPOT mode
 	test_order: "IP_D_U", //order in which tests will be performed as a string. D=Download, U=Upload, P=Ping+Jitter, I=IP, _=1 second delay
 	time_ul_max: 15, // max duration of upload test in seconds
@@ -68,9 +68,9 @@ var settings = {
     forceIE11Workaround: false //when set to true, it will force the IE11 upload test on all browsers. Debug only
 };
 
-var xhr = null; // array of currently active xhr requests
-var interval = null; // timer used in tests
-var test_pointer = 0; //pointer to the next test to run inside settings.test_order
+let xhr = null; // array of currently active xhr requests
+let interval = null; // timer used in tests
+let test_pointer = 0; //pointer to the next test to run inside settings.test_order
 
 /*
   this function is used on URLs passed in the settings to determine whether we need a ? or an & as a separator
@@ -88,7 +88,7 @@ function url_sep(url) {
 		example: start {"time_ul_max":"10", "time_dl_max":"10", "count_ping":"50"}
 */
 this.addEventListener("message", function(e) {
-	var params = e.data.split(" ");
+	const params = e.data.split(" ");
 	if (params[0] === "status") {
 		// return status
 		postMessage(
@@ -111,19 +111,19 @@ this.addEventListener("message", function(e) {
 		testState = 0;
 		try {
 			// parse settings, if present
-			var s = {};
+			let s = {};
 			try {
-				var ss = e.data.substring(5);
+				const ss = e.data.substring(5);
 				if (ss) s = JSON.parse(ss);
 			} catch (e) {
 				twarn("Error parsing custom settings JSON. Please check your syntax");
 			}
 			//copy custom settings
-			for (var key in s) {
+			for (let key in s) {
 				if (typeof settings[key] !== "undefined") settings[key] = s[key];
 				else twarn("Unknown setting ignored: " + key);
 			}
-			var ua = navigator.userAgent;
+			const ua = navigator.userAgent;
 			// quirks for specific browsers. apply only if not overridden. more may be added in future releases
 			if (settings.enable_quirks || (typeof s.enable_quirks !== "undefined" && s.enable_quirks)) {
 				if (/Firefox.(\d+\.\d+)/i.test(ua)) {
@@ -172,11 +172,11 @@ this.addEventListener("message", function(e) {
 		// run the tests
 		tverb(JSON.stringify(settings));
 		test_pointer = 0;
-		var iRun = false,
+		let iRun = false,
 			dRun = false,
 			uRun = false,
 			pRun = false;
-		var runNextTest = function() {
+		const runNextTest = function() {
 			if (testState == 5) return;
 			if (test_pointer >= settings.test_order.length) {
 				//test is finished
@@ -267,7 +267,7 @@ this.addEventListener("message", function(e) {
 function clearRequests() {
 	tverb("stopping pending XHRs");
 	if (xhr) {
-		for (var i = 0; i < xhr.length; i++) {
+		for (let i = 0; i < xhr.length; i++) {
 			try {
 				xhr[i].onprogress = null;
 				xhr[i].onload = null;
@@ -289,18 +289,18 @@ function clearRequests() {
 	}
 }
 // gets client's IP using url_getIp, then calls the done function
-var ipCalled = false; // used to prevent multiple accidental calls to getIp
-var ispInfo = ""; //used for telemetry
+let ipCalled = false; // used to prevent multiple accidental calls to getIp
+let ispInfo = ""; //used for telemetry
 function getIp(done) {
 	tverb("getIp");
 	if (ipCalled) return;
 	else ipCalled = true; // getIp already called?
-	var startT = new Date().getTime();
+	let startT = new Date().getTime();
 	xhr = new XMLHttpRequest();
 	xhr.onload = function() {
 		tlog("IP: " + xhr.responseText + ", took " + (new Date().getTime() - startT) + "ms");
 		try {
-			var data = JSON.parse(xhr.responseText);
+			const data = JSON.parse(xhr.responseText);
 			clientIp = data.processedString;
 			ispInfo = data.rawIspInfo;
 		} catch (e) {
@@ -317,25 +317,25 @@ function getIp(done) {
 	xhr.send();
 }
 // download test, calls done function when it's over
-var dlCalled = false; // used to prevent multiple accidental calls to dlTest
+let dlCalled = false; // used to prevent multiple accidental calls to dlTest
 function dlTest(done) {
 	tverb("dlTest");
 	if (dlCalled) return;
 	else dlCalled = true; // dlTest already called?
-	var totLoaded = 0.0, // total number of loaded bytes
+	let totLoaded = 0.0, // total number of loaded bytes
 		startT = new Date().getTime(), // timestamp when test was started
 		bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 		graceTimeDone = false, //set to true after the grace time is past
 		failed = false; // set to true if a stream fails
 	xhr = [];
 	// function to create a download stream. streams are slightly delayed so that they will not end at the same time
-	var testStream = function(i, delay) {
+	const testStream = function(i, delay) {
 		setTimeout(
 			function() {
 				if (testState !== 1) return; // delayed stream ended up starting after the end of the download test
 				tverb("dl test stream started " + i + " " + delay);
-				var prevLoaded = 0; // number of bytes loaded last time onprogress was called
-				var x = new XMLHttpRequest();
+				let prevLoaded = 0; // number of bytes loaded last time onprogress was called
+				let x = new XMLHttpRequest();
 				xhr[i] = x;
 				xhr[i].onprogress = function(event) {
 					tverb("dl stream progress event " + i + " " + event.loaded);
@@ -345,7 +345,7 @@ function dlTest(done) {
 						} catch (e) {}
 					} // just in case this XHR is still running after the download test
 					// progress event, add number of new loaded bytes to totLoaded
-					var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
+					const loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
 					if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
 					totLoaded += loadDiff;
 					prevLoaded = event.loaded;
@@ -380,14 +380,14 @@ function dlTest(done) {
 		);
 	}.bind(this);
 	// open streams
-	for (var i = 0; i < settings.xhr_dlMultistream; i++) {
+	for (let i = 0; i < settings.xhr_dlMultistream; i++) {
 		testStream(i, settings.xhr_multistreamDelay * i);
 	}
 	// every 200ms, update dlStatus
 	interval = setInterval(
 		function() {
 			tverb("DL: " + dlStatus + (graceTimeDone ? "" : " (in grace time)"));
-			var t = new Date().getTime() - startT;
+			const t = new Date().getTime() - startT;
 			if (graceTimeDone) dlProgress = (t + bonusT) / (settings.time_dl_max * 1000);
 			if (t < 200) return;
 			if (!graceTimeDone) {
@@ -401,10 +401,10 @@ function dlTest(done) {
 					graceTimeDone = true;
 				}
 			} else {
-				var speed = totLoaded / (t / 1000.0);
+				const speed = totLoaded / (t / 1000.0);
 				if (settings.time_auto) {
 					//decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-					var bonus = (5.0 * speed) / 100000;
+					const bonus = (5.0 * speed) / 100000;
 					bonusT += bonus > 400 ? 400 : bonus;
 				}
 				//update status
@@ -424,46 +424,46 @@ function dlTest(done) {
 	);
 }
 // upload test, calls done function when it's over
-var ulCalled = false; // used to prevent multiple accidental calls to ulTest
+let ulCalled = false; // used to prevent multiple accidental calls to ulTest
 function ulTest(done) {
 	tverb("ulTest");
 	if (ulCalled) return;
 	else ulCalled = true; // ulTest already called?
 	// garbage data for upload test
-	var r = new ArrayBuffer(1048576);
-	var maxInt = Math.pow(2, 32) - 1;
+	let r = new ArrayBuffer(1048576);
+	const maxInt = Math.pow(2, 32) - 1;
 	try {
 		r = new Uint32Array(r);
-		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+		for (let i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
 	} catch (e) {}
-	var req = [];
-	var reqsmall = [];
-	for (var i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
+	let req = [];
+	let reqsmall = [];
+	for (let i = 0; i < settings.xhr_ul_blob_megabytes; i++) req.push(r);
 	req = new Blob(req);
 	r = new ArrayBuffer(262144);
 	try {
 		r = new Uint32Array(r);
-		for (var i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
+		for (let i = 0; i < r.length; i++) r[i] = Math.random() * maxInt;
 	} catch (e) {}
 	reqsmall.push(r);
 	reqsmall = new Blob(reqsmall);
-	var testFunction = function() {
-		var totLoaded = 0.0, // total number of transmitted bytes
+	const testFunction = function() {
+		let totLoaded = 0.0, // total number of transmitted bytes
 			startT = new Date().getTime(), // timestamp when test was started
 			bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 			graceTimeDone = false, //set to true after the grace time is past
 			failed = false; // set to true if a stream fails
 		xhr = [];
 		// function to create an upload stream. streams are slightly delayed so that they will not end at the same time
-		var testStream = function(i, delay) {
+		const testStream = function(i, delay) {
 			setTimeout(
 				function() {
 					if (testState !== 3) return; // delayed stream ended up starting after the end of the upload test
 					tverb("ul test stream started " + i + " " + delay);
-					var prevLoaded = 0; // number of bytes transmitted last time onprogress was called
-					var x = new XMLHttpRequest();
+					let prevLoaded = 0; // number of bytes transmitted last time onprogress was called
+					let x = new XMLHttpRequest();
 					xhr[i] = x;
-					var ie11workaround;
+					let ie11workaround;
 					if (settings.forceIE11Workaround) ie11workaround = true;
 					else {
 						try {
@@ -496,7 +496,7 @@ function ulTest(done) {
 								} catch (e) {}
 							} // just in case this XHR is still running after the upload test
 							// progress event, add number of new loaded bytes to totLoaded
-							var loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
+							const loadDiff = event.loaded <= 0 ? 0 : event.loaded - prevLoaded;
 							if (isNaN(loadDiff) || !isFinite(loadDiff) || loadDiff < 0) return; // just in case
 							totLoaded += loadDiff;
 							prevLoaded = event.loaded;
@@ -528,14 +528,14 @@ function ulTest(done) {
 			);
 		}.bind(this);
 		// open streams
-		for (var i = 0; i < settings.xhr_ulMultistream; i++) {
+		for (let i = 0; i < settings.xhr_ulMultistream; i++) {
 			testStream(i, settings.xhr_multistreamDelay * i);
 		}
 		// every 200ms, update ulStatus
 		interval = setInterval(
 			function() {
 				tverb("UL: " + ulStatus + (graceTimeDone ? "" : " (in grace time)"));
-				var t = new Date().getTime() - startT;
+				const t = new Date().getTime() - startT;
 				if (graceTimeDone) ulProgress = (t + bonusT) / (settings.time_ul_max * 1000);
 				if (t < 200) return;
 				if (!graceTimeDone) {
@@ -549,10 +549,10 @@ function ulTest(done) {
 						graceTimeDone = true;
 					}
 				} else {
-					var speed = totLoaded / (t / 1000.0);
+					const speed = totLoaded / (t / 1000.0);
 					if (settings.time_auto) {
 						//decide how much to shorten the test. Every 200ms, the test is shortened by the bonusT calculated here
-						var bonus = (5.0 * speed) / 100000;
+						const bonus = (5.0 * speed) / 100000;
 						bonusT += bonus > 400 ? 400 : bonus;
 					}
 					//update status
@@ -584,20 +584,20 @@ function ulTest(done) {
 	} else testFunction();
 }
 // ping+jitter test, function done is called when it's over
-var ptCalled = false; // used to prevent multiple accidental calls to pingTest
+let ptCalled = false; // used to prevent multiple accidental calls to pingTest
 function pingTest(done) {
 	tverb("pingTest");
 	if (ptCalled) return;
 	else ptCalled = true; // pingTest already called?
-	var startT = new Date().getTime(); //when the test was started
-	var prevT = null; // last time a pong was received
-	var ping = 0.0; // current ping value
-	var jitter = 0.0; // current jitter value
-	var i = 0; // counter of pongs received
-	var prevInstspd = 0; // last ping time, used for jitter calculation
+	const startT = new Date().getTime(); //when the test was started
+	let prevT = null; // last time a pong was received
+	let ping = 0.0; // current ping value
+	let jitter = 0.0; // current jitter value
+	let i = 0; // counter of pongs received
+	let prevInstspd = 0; // last ping time, used for jitter calculation
 	xhr = [];
 	// ping function
-	var doPing = function() {
+	const doPing = function() {
 		tverb("ping");
 		pingProgress = i / settings.count_ping;
 		prevT = new Date().getTime();
@@ -608,13 +608,13 @@ function pingTest(done) {
 			if (i === 0) {
 				prevT = new Date().getTime(); // first pong
 			} else {
-				var instspd = new Date().getTime() - prevT;
+				let instspd = new Date().getTime() - prevT;
 				if (settings.ping_allowPerformanceApi) {
 					try {
 						//try to get accurate performance timing using performance api
-						var p = performance.getEntries();
+						let p = performance.getEntries();
 						p = p[p.length - 1];
-						var d = p.responseStart - p.requestStart;
+						let d = p.responseStart - p.requestStart;
 						if (d <= 0) d = p.duration;
 						if (d > 0 && d < instspd) instspd = d;
 					} catch (e) {
@@ -625,7 +625,7 @@ function pingTest(done) {
 				//noticed that some browsers randomly have 0ms ping
 				if (instspd < 1) instspd = prevInstspd;
 				if (instspd < 1) instspd = 1;
-				var instjitter = Math.abs(instspd - prevInstspd);
+				const instjitter = Math.abs(instspd - prevInstspd);
 				if (i === 1) ping = instspd;
 				/* first ping, can't tell jitter yet*/ else {
 					if (instspd < ping) ping = instspd; // update ping, if the instant ping is lower
@@ -684,10 +684,10 @@ function sendTelemetry(done) {
 	xhr = new XMLHttpRequest();
 	xhr.onload = function() {
 		try {
-			var parts = xhr.responseText.split(" ");
+			const parts = xhr.responseText.split(" ");
 			if (parts[0] == "id") {
 				try {
-					var id = parts[1];
+					let id = parts[1];
 					done(id);
 				} catch (e) {
 					done(null);
@@ -702,12 +702,12 @@ function sendTelemetry(done) {
 		done(null);
 	};
 	xhr.open("POST", settings.url_telemetry + url_sep(settings.url_telemetry) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true);
-	var telemetryIspInfo = {
+	const telemetryIspInfo = {
 		processedString: clientIp,
 		rawIspInfo: typeof ispInfo === "object" ? ispInfo : ""
 	};
 	try {
-		var fd = new FormData();
+		const fd = new FormData();
 		fd.append("ispinfo", JSON.stringify(telemetryIspInfo));
 		fd.append("dl", dlStatus);
 		fd.append("ul", ulStatus);
@@ -717,7 +717,7 @@ function sendTelemetry(done) {
 		fd.append("extra", settings.telemetry_extra);
 		xhr.send(fd);
 	} catch (ex) {
-		var postData = "extra=" + encodeURIComponent(settings.telemetry_extra) + "&ispinfo=" + encodeURIComponent(JSON.stringify(telemetryIspInfo)) + "&dl=" + encodeURIComponent(dlStatus) + "&ul=" + encodeURIComponent(ulStatus) + "&ping=" + encodeURIComponent(pingStatus) + "&jitter=" + encodeURIComponent(jitterStatus) + "&log=" + encodeURIComponent(settings.telemetry_level > 1 ? log : "");
+		const postData = "extra=" + encodeURIComponent(settings.telemetry_extra) + "&ispinfo=" + encodeURIComponent(JSON.stringify(telemetryIspInfo)) + "&dl=" + encodeURIComponent(dlStatus) + "&ul=" + encodeURIComponent(ulStatus) + "&ping=" + encodeURIComponent(pingStatus) + "&jitter=" + encodeURIComponent(jitterStatus) + "&log=" + encodeURIComponent(settings.telemetry_level > 1 ? log : "");
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		xhr.send(postData);
 	}
