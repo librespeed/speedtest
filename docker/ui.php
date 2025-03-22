@@ -11,12 +11,24 @@ function I(i){return document.getElementById(i);}
 //LIST OF TEST SERVERS. See documentation for details if needed
 <?php
 $mode=getenv("MODE");
-if($mode=="standalone" || $mode=="dual"){ ?>
+if($mode=="standalone" || $mode=="backend"){ ?>
 var SPEEDTEST_SERVERS=[];
 <?php } else { ?>
 var SPEEDTEST_SERVERS= <?= file_get_contents('/servers.json') ?: '[]' ?>;
+<?php } 
+if ($mode=="dual"){ ?>
+// add own server in dual mode
+SPEEDTEST_SERVERS.unshift({
+	"name":"This Server",
+	"server":document.location.href+"backend/",
+	"id":1,
+	"dlURL":"garbage.php",
+	"ulURL":"empty.php",
+	"pingURL":"empty.php",
+	"getIpURL":"getIP.php",
+	"pingT":-1
+})
 <?php } ?>
-
 //INITIALIZE SPEED TEST
 var s=new Speedtest(); //create speed test object
 <?php if(getenv("TELEMETRY")=="true"){ ?>
