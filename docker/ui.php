@@ -428,10 +428,10 @@ function initUI(){
 		}
 	}
 </style>
-<title><?= getenv('TITLE') ?: 'LibreSpeed' ?></title>
+<title><?= getenv('TITLE') ?: 'TLAXICOM' ?></title>
 </head>
 <body onload="initServers()">
-<h1><?= getenv('TITLE') ?: 'LibreSpeed' ?></h1>
+<h1><?= getenv('TITLE') ?: 'TLAXICOM' ?></h1>
 <div id="loading" class="visible">
 	<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
 </div>
@@ -461,13 +461,13 @@ function initUI(){
 				<div class="testName">Download</div>
 				<canvas id="dlMeter" class="meter"></canvas>
 				<div id="dlText" class="meterText"></div>
-				<div class="unit">Mbit/s</div>
+				<div class="unit">Mbps</div>
 			</div>
 			<div class="testArea">
 				<div class="testName">Upload</div>
 				<canvas id="ulMeter" class="meter"></canvas>
 				<div id="ulText" class="meterText"></div>
-				<div class="unit">Mbit/s</div>
+				<div class="unit">Mbps</div>
 			</div>
 		</div>
 		<div id="ipArea">

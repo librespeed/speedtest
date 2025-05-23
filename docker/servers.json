@@ -1,8 +1,8 @@
 
 [
 	{
-		"name": "Example server 1 (HTTP and HTTPS)",
-		"server" :"//example1.mydomain.com/",
+		"name": "VPS (HTTP and HTTPS)",
+		"server" :"https://tlaxicom.com/",
 		"dlURL" :"garbage.php",
 		"ulURL" :"empty.php",
 		"pingURL" :"empty.php",
