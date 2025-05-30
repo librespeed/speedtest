@@ -4,17 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TLAXICOM</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <div class="logo-container">
+  	<img src=".logo\tlaxilogo.png" alt="TLAXICOM" class="logo">
+  	<span class="texto-logo">Internet a tu alcance</span>
+	</div>
     <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/dist/speedtest.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-start: #000000;
+            --bg-start: #1a1010;
             --bg-end: #0898ff;
             --primary-color: #00d1ff;
             --secondary-color: #ff9500;
             --text-color: #ffffff;
         }
+		.logo-container {
+  		display: flex;          /* Organiza los elementos en línea */
+  		align-items: center;   /* Centra verticalmente */
+  		gap: 10px;             /* Espacio entre logo y texto */
+		}
+
+		.logo {
+ 		 height: 30px;          /* Tamaño más pequeño (ajusta según necesites) */
+ 		 width: auto;           /* Mantiene proporción */
+		}
+
+		.texto-logo {
+ 		font-size: 14px;       /* Tamaño del texto "Internet a tu alcance" */
+ 		color: #ffffff;           /* Color opcional (gris oscuro) */
+		}
 
         body {
             background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
