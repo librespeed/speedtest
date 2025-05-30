@@ -1,517 +1,948 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<link rel="shortcut icon" href="favicon.ico">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<meta charset="UTF-8" />
-<script type="text/javascript" src="speedtest.js"></script>
-<script type="text/javascript">
-function I(i){return document.getElementById(i);}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedTest Circular</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/dist/speedtest.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-start: #000000;
+            --bg-end: #0898ff;
+            --primary-color: #00d1ff;
+            --secondary-color: #ff9500;
+            --text-color: #ffffff;
+        }
 
-//LIST OF TEST SERVERS. Leave empty if you're doing a standalone installation. See documentation for details
-var SPEEDTEST_SERVERS=[
-	/*{	//this server doesn't actually exist, remove it
-		name:"Example Server 1", //user friendly name for the server
-		server:"//test1.mydomain.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
-		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
-		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	},
-	{	//this server doesn't actually exist, remove it
-		name:"Example Server 2", //user friendly name for the server
-		server:"//test2.example.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		dlURL:"garbage.php",  //path to download test on this server (garbage.php or replacement)
-		ulURL:"empty.php",  //path to upload test on this server (empty.php or replacement)
-		pingURL:"empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		getIpURL:"getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	}*/
-	//add other servers here, comma separated
-];
+        body {
+            background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
 
-//INITIALIZE SPEEDTEST
-var s=new Speedtest(); //create speed test object
-s.setParameter("telemetry_level","basic"); //enable basic telemetry (for results sharing)
+        h1 {
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            font-weight: 300;
+        }
 
-//SERVER AUTO SELECTION
-function initServers(){
-	if(SPEEDTEST_SERVERS.length==0){ //standalone installation
-		//just make the UI visible
-		I("loading").className="hidden";
-		I("serverArea").style.display="none";
-		I("testWrapper").className="visible";
-		initUI();
-	}else{ //multiple servers
-		var noServersAvailable=function(){
-			I("message").innerHTML="No servers available";
-		}
-		var runServerSelect=function(){
-			s.selectServer(function(server){
-				if(server!=null){ //at least 1 server is available
-					I("loading").className="hidden"; //hide loading message
-					//populate server list for manual selection
-					for(var i=0;i<SPEEDTEST_SERVERS.length;i++){
-						if(SPEEDTEST_SERVERS[i].pingT==-1) continue;
-						var option=document.createElement("option");
-						option.value=i;
-						option.textContent=SPEEDTEST_SERVERS[i].name;
-						if(SPEEDTEST_SERVERS[i]===server) option.selected=true;
-						I("server").appendChild(option);
-					}
-					//show test UI
-					I("testWrapper").className="visible";
-					initUI();
-				}else{ //no servers are available, the test cannot proceed
-					noServersAvailable();
-				}
-			});
-		}
-		if(typeof SPEEDTEST_SERVERS === "string"){
-			//need to fetch list of servers from specified URL
-			s.loadServerList(SPEEDTEST_SERVERS,function(servers){
-				if(servers==null){ //failed to load server list
-					noServersAvailable();
-				}else{ //server list loaded
-					SPEEDTEST_SERVERS=servers;
-					runServerSelect();
-				}
-			});
-		}else{
-			//hardcoded server list
-			s.addTestPoints(SPEEDTEST_SERVERS);
-			runServerSelect();
-		}
-	}
-}
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
 
-var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
-var dlColor="#6060AA",
-	ulColor="#616161";
-var progColor=meterBk;
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
 
-//CODE FOR GAUGES
-function drawMeter(c,amount,bk,fg,progress,prog){
-	var ctx=c.getContext("2d");
-	var dp=window.devicePixelRatio||1;
-	var cw=c.clientWidth*dp, ch=c.clientHeight*dp;
-	var sizScale=ch*0.0055;
-	if(c.width==cw&&c.height==ch){
-		ctx.clearRect(0,0,cw,ch);
-	}else{
-		c.width=cw;
-		c.height=ch;
-	}
-	ctx.beginPath();
-	ctx.strokeStyle=bk;
-	ctx.lineWidth=12*sizScale;
-	ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,Math.PI*0.1);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.strokeStyle=fg;
-	ctx.lineWidth=12*sizScale;
-	ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,amount*Math.PI*1.2-Math.PI*1.1);
-	ctx.stroke();
-	if(typeof progress !== "undefined"){
-		ctx.fillStyle=prog;
-		ctx.fillRect(c.width*0.3,c.height-16*sizScale,c.width*0.4*progress,4*sizScale);
-	}
-}
-function mbpsToAmount(s){
-	return 1-(1/(Math.pow(1.3,Math.sqrt(s))));
-}
-function format(d){
-    d=Number(d);
-    if(d<10) return d.toFixed(2);
-    if(d<100) return d.toFixed(1);
-    return d.toFixed(0);
-}
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
 
-//UI CODE
-var uiData=null;
-function startStop(){
-    if(s.getState()==3){
-		//speed test is running, abort
-		s.abort();
-		data=null;
-		I("startStopBtn").className="";
-		I("server").disabled=false;
-		initUI();
-	}else{
-		//test is not running, begin
-		I("startStopBtn").className="running";
-		I("shareArea").style.display="none";
-		I("server").disabled=true;
-		s.onupdate=function(data){
-            uiData=data;
-		};
-		s.onend=function(aborted){
-            I("startStopBtn").className="";
-            I("server").disabled=false;
-            updateUI(true);
-            if(!aborted){
-                //if testId is present, show sharing panel, otherwise do nothing
-                try{
-                    var testId=uiData.testId;
-                    if(testId!=null){
-                        var shareURL=window.location.href.substring(0,window.location.href.lastIndexOf("/"))+"/results/?id="+testId;
-                        I("resultsImg").src=shareURL;
-                        I("resultsURL").value=shareURL;
-                        I("testId").innerHTML=testId;
-                        I("shareArea").style.display="";
-                    }
-                }catch(e){}
+        .speedtest-container {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .bar {
+            width: 20px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .bar-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            transition: height 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        #dlBar {
+            background: linear-gradient(to top, #9ccaf8, var(--primary-color));
+            box-shadow: 0 0 10px rgba(0, 209, 255, 0.6);
+        }
+
+        #ulBar {
+            background: linear-gradient(to top, #f8c19c, var(--secondary-color));
+            box-shadow: 0 0 10px rgba(255, 149, 0, 0.6);
+        }
+
+        .speed-meter {
+            position: relative;
+            width: 250px;
+            height: 250px;
+        }
+
+        .meter-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .meter-fill {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip: rect(0, 250px, 250px, 125px);
+            border-radius: 50%;
+        }
+
+        .meter-fill-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip: rect(0, 125px, 250px, 0);
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            transform: rotate(0deg);
+            transition: transform 1s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .meter-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .meter-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .meter-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            color: var(--text-color);
+        }
+
+        .speed-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .speed-text {
+            font-size: 1.2rem;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .speed-icon {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .speed-low {
+            color: #ff6b6b;
+        }
+
+        .speed-medium {
+            color: #feca57;
+        }
+
+        .speed-high {
+            color: #1dd1a1;
+        }
+
+        #startStopBtn {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            border: none;
+            background-color: rgba(0, 64, 128, 0.7);
+            color: white;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 10px rgba(254, 255, 255, 0.7);
+        }
+
+        #startStopBtn:hover {
+            background-color: rgba(0, 64, 128, 0.9);
+        }
+
+        #startStopBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .pulse-animation {
+            animation: pulse-blue 2s infinite;
+        }
+
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 10px rgba(254, 255, 255, 0.7); }
+            50% { box-shadow: 0 0 25px rgba(0, 209, 255, 1); }
+            100% { box-shadow: 0 0 10px rgba(0, 209, 255, 0.7); }
+        }
+
+        .connection-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .chart-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .history-container {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            backdrop-filter: blur(5px);
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .server-selector {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .server-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .server-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .success-icon {
+            color: #1dd1a1;
+        }
+
+        .warning-icon {
+            color: #feca57;
+        }
+
+        .error-icon {
+            color: #ff6b6b;
+        }
+
+        /* Temas adicionales */
+        body.purple-theme {
+            --bg-end: #6a11cb;
+            --primary-color: #9d4edd;
+            --secondary-color: #c77dff;
+        }
+
+        body.green-theme {
+            --bg-end: #11998e;
+            --primary-color: #38ef7d;
+            --secondary-color: #a8ff78;
+        }
+
+        body.red-theme {
+            --bg-end: #f85032;
+            --primary-color: #f85032;
+            --secondary-color: #e73827;
+        }
+
+        body.dark-theme {
+            --bg-start: #121212;
+            --bg-end: #1e3a8a;
+            --text-color: #f8fafc;
+        }
+
+        body.light-theme {
+            --bg-start: #f5f7fa;
+            --bg-end: #c3cfe2;
+            --text-color: #1e293b;
+            background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
+        }
+
+        @media (max-width: 768px) {
+            .speedtest-container {
+                flex-direction: column;
+                gap: 20px;
             }
-		};
-		s.start();
-	}
-}
-//this function reads the data sent back by the test and updates the UI
-function updateUI(forced){
-	if(!forced&&s.getState()!=3) return;
-	if(uiData==null) return;
-	var status=uiData.testState;
-	I("ip").textContent=uiData.clientIp;
-	I("dlText").textContent=(status==1&&uiData.dlStatus==0)?"...":format(uiData.dlStatus);
-	drawMeter(I("dlMeter"),mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))),meterBk,dlColor,Number(uiData.dlProgress),progColor);
-	I("ulText").textContent=(status==3&&uiData.ulStatus==0)?"...":format(uiData.ulStatus);
-	drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColor,Number(uiData.ulProgress),progColor);
-	I("pingText").textContent=format(uiData.pingStatus);
-	I("jitText").textContent=format(uiData.jitterStatus);
-}
-function oscillate(){
-	return 1+0.02*Math.sin(Date.now()/100);
-}
-//update the UI every frame
-window.requestAnimationFrame=window.requestAnimationFrame||window.webkitRequestAnimationFrame||window.mozRequestAnimationFrame||window.msRequestAnimationFrame||(function(callback,element){setTimeout(callback,1000/60);});
-function frame(){
-	requestAnimationFrame(frame);
-	updateUI();
-}
-frame(); //start frame loop
-//function to (re)initialize UI
-function initUI(){
-	drawMeter(I("dlMeter"),0,meterBk,dlColor,0);
-	drawMeter(I("ulMeter"),0,meterBk,ulColor,0);
-	I("dlText").textContent="";
-	I("ulText").textContent="";
-	I("pingText").textContent="";
-	I("jitText").textContent="";
-	I("ip").textContent="";
-}
-</script>
-<style type="text/css">
-	html,body{
-		border:none; padding:0; margin:0;
-		background:#FFFFFF;
-		color:#202020;
-	}
-	body{
-		text-align:center;
-		font-family:"Roboto",sans-serif;
-	}
-	h1{
-		color:#404040;
-	}
-	#loading{
-		background-color:#FFFFFF;
-		color:#404040;
-		text-align:center;
-	}
-	span.loadCircle{
-		display:inline-block;
-		width:2em;
-		height:2em;
-		vertical-align:middle;
-		background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAP1BMVEUAAAB2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZyFzwnAAAAFHRSTlMAEvRFvX406baecwbf0casimhSHyiwmqgAAADpSURBVHja7dbJbQMxAENRahnN5lkc//5rDRAkDeRgHszXgACJoKiIiIiIiIiIiIiIiIiIiIj4HHspsrpAVhdVVguzrA4OWc10WcEqpwKbnBo0OU1Q5NSpsoJFTgOecrrdEag85DRgktNqfoEdTjnd7hrEHMEJvmRUYJbTYk5Agy6nau6Abp5Cm7mDBtRdPi9gyKdU7w4p1fsLvyqs8hl4z9/w3n/Hmr9WoQ65lAU4d7lMYOz//QboRR5jBZibLMZdAR6O/Vfa1PlxNr3XdS3HzK/HVPRu/KnLs8iAOh993VpRRERERMT/fAN60wwWaVyWwAAAAABJRU5ErkJggg==');
-		background-size:2em 2em;
-		margin-right:0.5em;
-		animation: spin 0.6s linear infinite;
-	}
-	@keyframes spin{
-		0%{transform:rotate(0deg);}
-		100%{transform:rotate(359deg);}
-	}
-	#startStopBtn{
-		display:inline-block;
-		margin:0 auto;
-		color:#6060AA;
-		background-color:rgba(0,0,0,0);
-		border:0.15em solid #6060FF;
-		border-radius:0.3em;
-		transition:all 0.3s;
-		box-sizing:border-box;
-		width:8em; height:3em;
-		line-height:2.7em;
-		cursor:pointer;
-		box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
-	}
-	#startStopBtn:hover{
-		box-shadow: 0 0 2em rgba(0,0,0,0.1), inset 0 0 1em rgba(0,0,0,0.1);
-	}
-	#startStopBtn.running{
-		background-color:#FF3030;
-		border-color:#FF6060;
-		color:#FFFFFF;
-	}
-	#startStopBtn:before{
-		content:"Start";
-	}
-	#startStopBtn.running:before{
-		content:"Abort";
-	}
-	#serverArea{
-		margin-top:1em;
-	}
-	#server{
-		font-size:1em;
-		padding:0.2em;
-	}
-	#test{
-		margin-top:2em;
-		margin-bottom:12em;
-	}
-	div.testArea{
-		display:inline-block;
-		width:16em;
-		height:12.5em;
-		position:relative;
-		box-sizing:border-box;
-	}
-	div.testArea2{
-		display:inline-block;
-		width:14em;
-		height:7em;
-		position:relative;
-		box-sizing:border-box;
-		text-align:center;
-	}
-	div.testArea div.testName{
-		position:absolute;
-		top:0.1em; left:0;
-		width:100%;
-		font-size:1.4em;
-		z-index:9;
-	}
-	div.testArea2 div.testName{
-        display:block;
-        text-align:center;
-        font-size:1.4em;
-	}
-	div.testArea div.meterText{
-		position:absolute;
-		bottom:1.55em; left:0;
-		width:100%;
-		font-size:2.5em;
-		z-index:9;
-	}
-	div.testArea2 div.meterText{
-        display:inline-block;
-        font-size:2.5em;
-	}
-	div.meterText:empty:before{
-		content:"0.00";
-	}
-	div.testArea div.unit{
-		position:absolute;
-		bottom:2em; left:0;
-		width:100%;
-		z-index:9;
-	}
-	div.testArea2 div.unit{
-		display:inline-block;
-	}
-	div.testArea canvas{
-		position:absolute;
-		top:0; left:0; width:100%; height:100%;
-		z-index:1;
-	}
-	div.testGroup{
-		display:block;
-        margin: 0 auto;
-	}
-	#shareArea{
-		width:95%;
-		max-width:40em;
-		margin:0 auto;
-		margin-top:2em;
-	}
-	#shareArea > *{
-		display:block;
-		width:100%;
-		height:auto;
-		margin: 0.25em 0;
-	}
-	#privacyPolicy{
-        position:fixed;
-        top:2em;
-        bottom:2em;
-        left:2em;
-        right:2em;
-        overflow-y:auto;
-        width:auto;
-        height:auto;
-        box-shadow:0 0 3em 1em #000000;
-        z-index:999999;
-        text-align:left;
-        background-color:#FFFFFF;
-        padding:1em;
-	}
-	a.privacy{
-        text-align:center;
-        font-size:0.8em;
-        color:#808080;
-        padding: 0 3em;
-	}
-    div.closePrivacyPolicy {
-        width: 100%;
-        text-align: center;
-    }
-    div.closePrivacyPolicy a.privacy {
-        padding: 1em 3em;
-    }
-	@media all and (max-width:40em){
-		body{
-			font-size:0.8em;
-		}
-	}
-	div.visible{
-		animation: fadeIn 0.4s;
-		display:block;
-	}
-	div.hidden{
-		animation: fadeOut 0.4s;
-		display:none;
-	}
-	@keyframes fadeIn{
-		0%{
-			opacity:0;
-		}
-		100%{
-			opacity:1;
-		}
-	}
-	@keyframes fadeOut{
-		0%{
-			display:block;
-			opacity:1;
-		}
-		100%{
-			display:block;
-			opacity:0;
-		}
-	}
-	@media all and (prefers-color-scheme: dark){
-		html,body,#loading{
-			background:#202020;
-			color:#F4F4F4;
-			color-scheme:dark;
-		}
-		h1{
-			color:#E0E0E0;
-		}
-		a{
-			color:#9090FF;
-		}
-		#privacyPolicy{
-			background:#000000;
-		}
-		#resultsImg{
-			filter: invert(1);
-		}
-	}
-</style>
-<title>TLAXICOM</title>
+            
+            .bar-container {
+                flex-direction: row;
+                width: auto;
+                height: 80px;
+            }
+            
+            .bar {
+                width: 100px;
+                height: 20px;
+                margin: 0 10px;
+            }
+            
+            .bar-fill {
+                width: 0%;
+                height: 100%;
+            }
+            
+            .speed-meter {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
 </head>
-<body onload="initServers()">
-<h1>TLAXICOM</h1>
-<div id="loading" class="visible">
-	<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
-</div>
-<div id="testWrapper" class="hidden">
-	<div id="startStopBtn" onclick="startStop()"></div><br/>
-	<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
-	<div id="serverArea">
-		Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
-	</div>
-	<div id="test">
-		<div class="testGroup">
-            <div class="testArea2">
-				<div class="testName">Ping</div>
-				<div id="pingText" class="meterText" style="color:#AA6060"></div>
-				<div class="unit">MS</div>
-			</div>
-			<div class="testArea2">
-				<div class="testName">Jitter</div>
-				<div id="jitText" class="meterText" style="color:#AA6060"></div>
-				<div class="unit">MS</div>
-			</div>
-		</div>
-		<div class="testGroup">
-			<div class="testArea">
-				<div class="testName">Download</div>
-				<canvas id="dlMeter" class="meter"></canvas>
-				<div id="dlText" class="meterText"></div>
-				<div class="unit">Mbps</div>
-			</div>
-			<div class="testArea">
-				<div class="testName">Upload</div>
-				<canvas id="ulMeter" class="meter"></canvas>
-				<div id="ulText" class="meterText"></div>
-				<div class="unit">Mbps</div>
-			</div>
-		</div>
-		<div id="ipArea">
-			<span id="ip"></span>
-		</div>
-		<div id="shareArea" style="display:none">
-			<h3>Share results</h3>
-			<p>Test ID: <span id="testId"></span></p>
-			<input type="text" value="" id="resultsURL" readonly="readonly" onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')"/>
-			<img src="" id="resultsImg" />
-		</div>
-	</div>
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
-</div>
-<div id="privacyPolicy" style="display:none">
-    <h2>Privacy Policy</h2>
-    <p>This HTML5 speed test server is configured with telemetry enabled.</p>
-    <h4>What data we collect</h4>
-    <p>
-        At the end of the test, the following data is collected and stored:
-        <ul>
-            <li>Test ID</li>
-            <li>Time of testing</li>
-            <li>Test results (download and upload speed, ping and jitter)</li>
-            <li>IP address</li>
-            <li>ISP information</li>
-            <li>Approximate location (inferred from IP address, not GPS)</li>
-            <li>User agent and browser locale</li>
-            <li>Test log (contains no personal information)</li>
-        </ul>
-    </p>
-    <h4>How we use the data</h4>
-    <p>
-        Data collected through this service is used to:
-        <ul>
-            <li>Allow sharing of test results (sharable image for forums, etc.)</li>
-            <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
-        </ul>
-        No personal information is disclosed to third parties.
-    </p>
-    <h4>Your consent</h4>
-    <p>
-        By starting the test, you consent to the terms of this privacy policy.
-    </p>
-    <h4>Data removal</h4>
-    <p>
-        If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.<br/><br/>
-        Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
-    </p>
-    <br/><br/>
-    <div class="closePrivacyPolicy">
-        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+<body>
+    <div class="header-controls">
+        <button class="control-btn" onclick="toggleDarkMode()">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button class="control-btn" onclick="changeTheme('blue')">
+            <i class="fas fa-palette" style="color: #00d1ff;"></i>
+        </button>
+        <button class="control-btn" onclick="changeTheme('purple')">
+            <i class="fas fa-palette" style="color: #9d4edd;"></i>
+        </button>
+        <button class="control-btn" onclick="changeTheme('green')">
+            <i class="fas fa-palette" style="color: #38ef7d;"></i>
+        </button>
     </div>
-    <br/>
-</div>
+
+    <h1>SpeedTest Circular</h1>
+    
+    <div class="speedtest-container">
+        <!-- Barra de descarga (izquierda) -->
+        <div class="bar-container">
+            <div class="speed-info">
+                <div class="speed-text" id="dlText">0 Mbps</div>
+                <div class="speed-text" id="dlLabel">-</div>
+            </div>
+            <div class="bar">
+                <div class="bar-fill" id="dlBar"></div>
+            </div>
+            <div class="speed-text"><i class="fas fa-download speed-icon"></i> Descarga</div>
+        </div>
+        
+        <!-- Medidor circular central -->
+        <div class="speed-meter">
+            <div class="meter-circle">
+                <div class="meter-fill">
+                    <div class="meter-fill-inner" id="meterFill"></div>
+                </div>
+            </div>
+            <div class="meter-center">
+                <div class="meter-value" id="avgSpeed">0</div>
+                <div class="meter-label">Mbps promedio</div>
+            </div>
+        </div>
+        
+        <!-- Barra de subida (derecha) -->
+        <div class="bar-container">
+            <div class="speed-info">
+                <div class="speed-text" id="ulText">0 Mbps</div>
+                <div class="speed-text" id="ulLabel">-</div>
+            </div>
+            <div class="bar">
+                <div class="bar-fill" id="ulBar"></div>
+            </div>
+            <div class="speed-text"><i class="fas fa-upload speed-icon"></i> Subida</div>
+        </div>
+    </div>
+    
+    <div class="connection-info">
+        <div class="info-item">
+            <i class="fas fa-network-wired"></i>
+            <span>Ping: <span id="pingText">-</span></span>
+        </div>
+        <div class="info-item" id="serverText" onclick="showServerList()">
+            <i class="fas fa-server"></i>
+            <span>Servidor: Auto</span>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-user"></i>
+            <span>IP: <span id="ipText">-</span></span>
+        </div>
+    </div>
+    
+    <button id="startStopBtn" class="pulse-animation" onclick="startRealTest()">Iniciar Test</button>
+    
+    <div id="comparisonText" class="comparison" style="display: none;">
+        <div class="comparison-item">
+            <i class="fas fa-download"></i>
+            <span id="dlComparison">-</span>
+        </div>
+        <div class="comparison-item">
+            <i class="fas fa-upload"></i>
+            <span id="ulComparison">-</span>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <canvas id="speedChart"></canvas>
+    </div>
+    
+    <div id="historyContainer" class="history-container">
+        <h3>Historial de Pruebas</h3>
+        <div id="historyItems"></div>
+    </div>
+
+    <script>
+        // Variables globales
+        let speedtest;
+        let speedChart;
+        let testHistory = [];
+        let chartData = {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Descarga (Mbps)',
+                    data: [],
+                    borderColor: '#00d1ff',
+                    backgroundColor: 'rgba(0, 209, 255, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Subida (Mbps)',
+                    data: [],
+                    borderColor: '#ff9500',
+                    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2
+                }
+            ]
+        };
+
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initSpeedTest();
+            initChart();
+            detectIP();
+        });
+
+        function initSpeedTest() {
+            speedtest = new SpeedTest({
+                test_order: "IP_D_P_U",
+                enable_quirks: true,
+                time_ul_max: 15,
+                time_dl_max: 15,
+                time_auto: true,
+                threads: "auto",
+                useMebibits: false
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('speedChart').getContext('2d');
+            speedChart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8fafc'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#f8fafc'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#f8fafc'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function detectIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ipText').textContent = data.ip;
+                })
+                .catch(() => {
+                    document.getElementById('ipText').textContent = 'No detectada';
+                });
+        }
+
+        function startRealTest() {
+            const btn = document.getElementById("startStopBtn");
+            btn.disabled = true;
+            btn.textContent = "Probando...";
+            btn.classList.remove("pulse-animation");
+            
+            document.getElementById("comparisonText").style.display = "none";
+            resetUI();
+            
+            speedtest.onupdate = function(data) {
+                updateTestProgress(data);
+            };
+            
+            speedtest.onend = function(data) {
+                finalizeTest(data);
+            };
+            
+            speedtest.start();
+        }
+
+        function resetUI() {
+            document.getElementById("dlBar").style.height = "0%";
+            document.getElementById("ulBar").style.height = "0%";
+            document.getElementById("pingText").textContent = "-";
+            document.getElementById("dlText").textContent = "0 Mbps";
+            document.getElementById("ulText").textContent = "0 Mbps";
+            document.getElementById("avgSpeed").textContent = "0";
+            document.getElementById("meterFill").style.transform = "rotate(0deg)";
+            document.getElementById("dlLabel").textContent = "-";
+            document.getElementById("ulLabel").textContent = "-";
+        }
+
+        function updateTestProgress(data) {
+            // Actualizar Ping
+            if(data.testState === 1 && data.pingStatus === 1) {
+                document.getElementById("pingText").textContent = data.ping + " ms";
+                setPingColor(data.ping);
+            }
+            
+            // Actualizar Descarga
+            if(data.testState === 2 && data.dlStatus === 1) {
+                const dlMbps = (data.dl * 8 / 1000000).toFixed(1);
+                const dlProgress = Math.min(data.dlProgress * 100, 100);
+                
+                document.getElementById("dlBar").style.height = dlProgress + "%";
+                document.getElementById("dlText").textContent = dlMbps + " Mbps";
+                setSpeedColor(document.getElementById("dlText"), dlMbps);
+                setPerformanceLabel(document.getElementById("dlLabel"), dlMbps);
+                
+                // Actualizar promedio
+                updateAverageSpeed(dlMbps, 0);
+            }
+            
+            // Actualizar Subida
+            if(data.testState === 3 && data.ulStatus === 1) {
+                const ulMbps = (data.ul * 8 / 1000000).toFixed(1);
+                const ulProgress = Math.min(data.ulProgress * 100, 100);
+                
+                document.getElementById("ulBar").style.height = ulProgress + "%";
+                document.getElementById("ulText").textContent = ulMbps + " Mbps";
+                setSpeedColor(document.getElementById("ulText"), ulMbps);
+                setPerformanceLabel(document.getElementById("ulLabel"), ulMbps);
+                
+                // Actualizar promedio
+                updateAverageSpeed(0, ulMbps);
+            }
+        }
+
+        function updateAverageSpeed(dl, ul) {
+            const currentDl = dl || parseFloat(document.getElementById("dlText").textContent) || 0;
+            const currentUl = ul || parseFloat(document.getElementById("ulText").textContent) || 0;
+            const avg = (parseFloat(currentDl) + parseFloat(currentUl)) / 2;
+            
+            document.getElementById("avgSpeed").textContent = avg.toFixed(1);
+            const rotation = Math.min(avg * 1.8, 180);
+            document.getElementById("meterFill").style.transform = `rotate(${rotation}deg)`;
+        }
+
+        function finalizeTest(data) {
+            const btn = document.getElementById("startStopBtn");
+            btn.disabled = false;
+            btn.textContent = "Nueva Prueba";
+            btn.classList.add("pulse-animation");
+            
+            const dlMbps = (data.dl * 8 / 1000000).toFixed(1);
+            const ulMbps = (data.ul * 8 / 1000000).toFixed(1);
+            const ping = data.ping;
+            
+            // Resultados finales
+            document.getElementById("dlText").textContent = dlMbps + " Mbps";
+            document.getElementById("ulText").textContent = ulMbps + " Mbps";
+            document.getElementById("pingText").textContent = ping + " ms";
+            
+            // Establecer colores y etiquetas
+            setSpeedColor(document.getElementById("dlText"), dlMbps);
+            setSpeedColor(document.getElementById("ulText"), ulMbps);
+            setPingColor(ping);
+            setPerformanceLabel(document.getElementById("dlLabel"), dlMbps);
+            setPerformanceLabel(document.getElementById("ulLabel"), ulMbps);
+            
+            // Actualizar promedio
+            updateAverageSpeed(dlMbps, ulMbps);
+            
+            // Guardar en historial
+            saveToHistory(dlMbps, ulMbps, ping);
+            
+            // Actualizar gráfico
+            updateChart(dlMbps, ulMbps);
+            
+            // Mostrar comparación
+            compareWithAverage(dlMbps, ulMbps);
+            
+            // Mostrar notificación
+            showNotification(dlMbps, ulMbps, ping);
+        }
+
+        function setSpeedColor(element, value) {
+            value = parseFloat(value);
+            element.classList.remove("speed-low", "speed-medium", "speed-high");
+            if(value < 10) {
+                element.classList.add("speed-low");
+            } else if(value < 50) {
+                element.classList.add("speed-medium");
+            } else {
+                element.classList.add("speed-high");
+            }
+        }
+
+        function setPingColor(ping) {
+            const elem = document.getElementById("pingText");
+            elem.className = "";
+            if(ping < 30) {
+                elem.classList.add("speed-high");
+            } else if(ping < 100) {
+                elem.classList.add("speed-medium");
+            } else {
+                elem.classList.add("speed-low");
+            }
+        }
+
+        function setPerformanceLabel(labelElem, value) {
+            value = parseFloat(value);
+            labelElem.classList.remove("speed-low", "speed-medium", "speed-high");
+            if(value < 10) {
+                labelElem.textContent = "Lento";
+                labelElem.classList.add("speed-low");
+            } else if(value < 50) {
+                labelElem.textContent = "Aceptable";
+                labelElem.classList.add("speed-medium");
+            } else {
+                labelElem.textContent = "Excelente";
+                labelElem.classList.add("speed-high");
+            }
+        }
+
+        function saveToHistory(dl, ul, ping) {
+            const now = new Date();
+            testHistory.unshift({
+                date: now,
+                time: now.toLocaleTimeString(),
+                download: dl,
+                upload: ul,
+                ping: ping,
+                avg: ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1)
+            });
+            
+            if(testHistory.length > 5) testHistory.pop();
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const historyItems = document.getElementById("historyItems");
+            historyItems.innerHTML = testHistory.map(test => `
+                <div class="history-item">
+                    <span>${test.time}</span>
+                    <span>↓ ${test.download} Mbps</span>
+                    <span>↑ ${test.upload} Mbps</span>
+                    <span>${test.ping} ms</span>
+                </div>
+            `).join("");
+        }
+
+        function updateChart(dl, ul) {
+            const now = new Date();
+            const timeLabel = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            chartData.labels.push(timeLabel);
+            chartData.datasets[0].data.push(dl);
+            chartData.datasets[1].data.push(ul);
+            
+            if(chartData.labels.length > 10) {
+                chartData.labels.shift();
+                chartData.datasets[0].data.shift();
+                chartData.datasets[1].data.shift();
+            }
+            
+            speedChart.update();
+        }
+
+        function compareWithAverage(dl, ul) {
+            const regionalAverages = {
+                download: 45, // Mbps
+                upload: 18   // Mbps
+            };
+            
+            const dlComparison = ((parseFloat(dl) - regionalAverages.download) / regionalAverages.download * 100).toFixed(1);
+            const ulComparison = ((parseFloat(ul) - regionalAverages.upload) / regionalAverages.upload * 100).toFixed(1);
+            
+            document.getElementById("dlComparison").innerHTML = `
+                ${dlComparison > 0 ? '+' : ''}${dlComparison}% 
+                ${getComparisonIcon(dlComparison, 'download')}
+            `;
+            
+            document.getElementById("ulComparison").innerHTML = `
+                ${ulComparison > 0 ? '+' : ''}${ulComparison}% 
+                ${getComparisonIcon(ulComparison, 'upload')}
+            `;
+            
+            document.getElementById("comparisonText").style.display = "flex";
+        }
+
+        function getComparisonIcon(percent, type) {
+            percent = parseFloat(percent);
+            if(percent > 20) return '<i class="fas fa-arrow-up success-icon"></i>';
+            if(percent < -20) return '<i class="fas fa-arrow-down warning-icon"></i>';
+            return '<i class="fas fa-equals"></i>';
+        }
+
+        function showServerList() {
+            speedtest.getServers(list => {
+                const selector = document.createElement('div');
+                selector.className = 'server-selector';
+                selector.id = 'serverSelector';
+                
+                // Ordenar servidores por distancia
+                list.servers.sort((a, b) => a.distance - b.distance);
+                
+                list.servers.forEach(server => {
+                    const option = document.createElement('div');
+                    option.className = 'server-option';
+                    option.innerHTML = `
+                        <div><strong>${server.name}</strong></div>
+                        <div style="font-size:0.8em;opacity:0.8;">${server.location} (${server.distance} km)</div>
+                    `;
+                    option.onclick = () => {
+                        speedtest.setSelectedServer(server.id);
+                        document.getElementById('serverText').innerHTML = `
+                            <i class="fas fa-server"></i>
+                            <span>Servidor: ${server.name}</span>
+                        `;
+                        selector.remove();
+                    };
+                    selector.appendChild(option);
+                });
+                
+                document.body.appendChild(selector);
+                
+                // Posicionar el selector
+                const serverText = document.getElementById('serverText');
+                const rect = serverText.getBoundingClientRect();
+                selector.style.top = `${rect.bottom + window.scrollY}px`;
+                selector.style.left = `${rect.left + window.scrollX}px`;
+                selector.style.display = 'block';
+                
+                // Cerrar al hacer clic fuera
+                setTimeout(() => {
+                    document.addEventListener('click', closeServerSelector);
+                }, 10);
+            });
+        }
+
+        function closeServerSelector(e) {
+            const selector = document.getElementById('serverSelector');
+            if (selector && !selector.contains(e.target) && e.target.id !== 'serverText') {
+                selector.remove();
+                document.removeEventListener('click', closeServerSelector);
+            }
+        }
+
+        function showNotification(dl, ul, ping) {
+            if(!("Notification" in window)) return;
+            
+            if(Notification.permission === "granted") {
+                new Notification("Prueba de velocidad completada", {
+                    body: `↓ ${dl} Mbps | ↑ ${ul} Mbps | Ping: ${ping} ms`,
+                    icon: "https://librespeed.org/favicon.ico"
+                });
+            }
+            else if(Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if(permission === "granted") showNotification(dl, ul, ping);
+                });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-theme");
+            document.body.classList.toggle("light-theme");
+            
+            // Actualizar el icono
+            const icon = document.querySelector('.header-controls .fa-moon');
+            if(document.body.classList.contains("light-theme")) {
+                icon.classList.replace("fa-moon", "fa-sun");
+            } else {
+                icon.classList.replace("fa-sun", "fa-moon");
+            }
+            
+            // Actualizar el gráfico
+            updateChartTheme();
+        }
+
+        function changeTheme(color) {
+            document.body.className = ''; // Reset classes
+            document.body.classList.add(color + '-theme');
+            
+            // Actualizar el gráfico
+            updateChartTheme();
+        }
+
+        function updateChartTheme() {
+            const isDark = !document.body.classList.contains("light-theme");
+            const textColor = isDark ? '#f8fafc' : '#1e293b';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            if(speedChart) {
+                speedChart.options.scales.x.grid.color = gridColor;
+                speedChart.options.scales.x.ticks.color = textColor;
+                speedChart.options.scales.y.grid.color = gridColor;
+                speedChart.options.scales.y.ticks.color = textColor;
+                speedChart.options.plugins.legend.labels.color = textColor;
+                speedChart.update();
+            }
+        }
+
+        function exportResults() {
+            const dl = document.getElementById("dlText").textContent;
+            const ul = document.getElementById("ulText").textContent;
+            const ping = document.getElementById("pingText").textContent;
+            const avg = document.getElementById("avgSpeed").textContent;
+            
+            let historyText = "";
+            if(testHistory.length > 0) {
+                historyText = "\n\nHistorial:\n" + testHistory.map(test => 
+                    `${test.time} - ↓ ${test.download} Mbps | ↑ ${test.upload} Mbps | Ping: ${test.ping} ms`
+                ).join("\n");
+            }
+            
+            const result = `Resultados SpeedTest:\n\nDescarga: ${dl}\nSubida: ${ul}\nPing: ${ping}\nPromedio: ${avg} Mbps${historyText}`;
+
+            const blob = new Blob([result], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `resultados_speedtest_${new Date().toISOString().slice(0,10)}.txt`;
+            link.click();
+        }
+    </script>
 </body>
 </html>
