@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Speedtest.js -->
   <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/speedtest.js"></script>
@@ -26,12 +26,13 @@
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f5f5f5; 
-      color: #333;
+      background-color: #0f32a3; 
+      color: white;
       padding: 2em;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
     }
 
     header {
@@ -41,9 +42,9 @@
       align-items: center;
       justify-content: space-between;
       padding: 1em 2em;
-      background-color: white;
+      background-color: rgba(0, 0, 0, 0.8);
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       margin-bottom: 2em;
     }
 
@@ -53,7 +54,7 @@
 
     .header-left h1 {
       font-size: 1.8em;
-      color: #0073e6;
+      color: #00e5ff;
       margin: 0;
     }
 
@@ -66,72 +67,172 @@
       height: 60px;
     }
 
-    /* Velocímetro */
+    /* Velocímetro profesional */
     .speedometer-container {
       position: relative;
-      width: 260px;
-      height: 260px;
+      width: 320px;
+      height: 320px;
       margin-bottom: 2em;
     }
 
     .speedometer {
+      position: relative;
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: #111;
+      box-shadow: 
+        0 0 25px rgba(0, 229, 255, 0.3),
+        inset 0 0 15px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+    }
+
+    .gauge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #00e5ff 0%,
+        #00e5ff calc(var(--progress) * 1%),
+        #333 calc(var(--progress) * 1%),
+        #333 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gauge-inner {
+      width: calc(100% - 40px);
+      height: calc(100% - 40px);
+      border-radius: 50%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
-      border: 10px solid #e0e0e0;
+    }
+
+    .scale {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: 
+        radial-gradient(
+          circle at center,
+          transparent 60%,
+          rgba(255, 255, 255, 0.1) 60%,
+          rgba(255, 255, 255, 0.1) 62%,
+          transparent 62%
+        );
+    }
+
+    .scale-mark {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      transform-origin: 50% 160px;
+    }
+
+    .scale-label {
+      position: absolute;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      transform-origin: 50% 140px;
     }
 
     .needle {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform-origin: bottom center;
+      width: 4px;
+      height: 120px;
+      background: linear-gradient(to bottom, #fff, #ccc);
+      border-radius: 4px;
+      transform-origin: 50% 0;
       transform: rotate(0deg);
-      width: 3px;
-      height: 90px;
-      background: #0073e6;
       z-index: 10;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .value {
+    .needle-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 11;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .value-display {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 5;
+      width: 80%;
     }
 
-    .value #avgSpeed {
-      font-size: 2.2em;
+    .value-display #avgSpeed {
+      font-size: 2.5em;
       font-weight: bold;
-      color: #0073e6;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+      margin-bottom: 5px;
     }
 
-    .value div:last-child {
-      font-size: 0.9em;
+    .value-display .unit {
+      font-size: 1em;
+      color: #00e5ff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .value-display .status {
+      font-size: 0.8em;
       color: #888;
+      margin-top: 10px;
     }
 
     /* Botón Iniciar */
     #startBtn {
-      background-color: #0073e6;
+      background: linear-gradient(to right, #0073e6, #00a1ff);
       color: white;
       border: none;
-      padding: 0.8em 2em;
-      font-size: 1em;
+      padding: 1em 2.5em;
+      font-size: 1.1em;
+      font-weight: 600;
       border-radius: 30px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 115, 230, 0.2);
-      transition: background 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 115, 230, 0.4);
+      transition: all 0.3s ease;
       margin-top: 1em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     #startBtn:hover {
-      background-color: #005bb5;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 115, 230, 0.6);
+    }
+
+    #startBtn:active {
+      transform: translateY(1px);
     }
 
     /* Tarjetas informativas */
@@ -141,41 +242,92 @@
       gap: 2em;
       flex-wrap: wrap;
       margin-top: 2em;
+      width: 100%;
+      max-width: 800px;
     }
 
     .info-card {
-      background: white;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+      color: white;
       padding: 1.5em;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
       min-width: 160px;
       max-width: 200px;
-      text-align: left;
-      transition: transform 0.3s ease;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 229, 255, 0.1);
     }
 
     .info-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 229, 255, 0.2);
+      border-color: rgba(0, 229, 255, 0.3);
     }
 
     .info-card h3 {
       font-size: 1em;
       font-weight: 600;
       margin-bottom: 0.5em;
-      color: #0073e6;
+      color: #00e5ff;
       display: flex;
       align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .info-card h3 i {
-      margin-right: 8px;
-      color: #0073e6;
-    }
-
-    .info-card div {
-      font-size: 1.4em;
+    .info-card .card-value {
+      font-size: 1.8em;
       font-weight: bold;
-      color: #333;
+      color: #fff;
+      margin: 10px 0;
+    }
+
+    .info-card .card-unit {
+      font-size: 0.8em;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .card-icon {
+      font-size: 1.2em;
+      color: #00e5ff;
+    }
+
+    /* Estado de la prueba */
+    .test-status {
+      margin-top: 1em;
+      color: #aaa;
+      font-size: 0.9em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: 1em;
+      }
+      
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      
+      .header-left {
+        text-align: center;
+      }
+      
+      .info-wrapper {
+        gap: 1em;
+      }
+      
+      .info-card {
+        min-width: 120px;
+        padding: 1em;
+      }
     }
   </style>
 </head>
@@ -190,62 +342,167 @@
     <img src=".logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Velocímetro -->
+  <!-- Velocímetro profesional -->
   <div class="speedometer-container">
     <div class="speedometer" id="speedMeter">
-      <div class="needle" id="speedNeedle"></div>
-      <div class="value">
-        <div id="avgSpeed">0</div>
-        <div>Mbps</div>
+      <div class="gauge" style="--progress: 0;">
+        <div class="gauge-inner">
+          <div class="scale" id="scale"></div>
+          <div class="value-display">
+            <div id="avgSpeed">0</div>
+            <div class="unit">Mbps</div>
+            <div class="status" id="testStatus">Listo para probar</div>
+          </div>
+        </div>
       </div>
+      <div class="needle" id="speedNeedle"></div>
+      <div class="needle-center"></div>
     </div>
   </div>
 
   <!-- Botón Iniciar -->
-  <button id="startBtn" onclick="startTest()">Iniciar prueba</button>
+  <button id="startBtn" onclick="startTest()">
+    <i class="fas fa-play"></i> Iniciar prueba
+  </button>
+
+  <div class="test-status" id="detailedStatus">
+    <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba de velocidad
+  </div>
 
   <!-- Tarjetas informativas -->
   <div class="info-wrapper">
     <div class="info-card">
-      <h3><i class="fas fa-download"></i>Subida</h3>
-      <div id="dlSpeed">0 Mbps</div>
+      <h3><i class="fas fa-download card-icon"></i>Descarga</h3>
+      <div class="card-value" id="dlSpeed">0</div>
+      <div class="card-unit">Mbps</div>
     </div>
     <div class="info-card">
-      <h3><i class="fas fa-upload"></i>Bajada</h3>
-      <div id="ulSpeed">0 Mbps</div>
+      <h3><i class="fas fa-upload card-icon"></i>Subida</h3>
+      <div class="card-value" id="ulSpeed">0</div>
+      <div class="card-unit">Mbps</div>
     </div>
     <div class="info-card">
-      <h3><i class="fas fa-bolt"></i>Ping</h3>
-      <div id="pingText">0 ms</div>
+      <h3><i class="fas fa-network-wired card-icon"></i>Ping</h3>
+      <div class="card-value" id="pingText">0</div>
+      <div class="card-unit">ms</div>
     </div>
     <div class="info-card">
-      <h3><i class="fas fa-wifi"></i>Jitter</h3>
-      <div id="jitterText">0 ms</div>
+      <h3><i class="fas fa-tachometer-alt card-icon"></i>Jitter</h3>
+      <div class="card-value" id="jitterText">0</div>
+      <div class="card-unit">ms</div>
     </div>
   </div>
 
   <!-- Lógica JS -->
   <script>
     const s = new Speedtest();
+    let testInProgress = false;
+
+    // Crear escala del velocímetro
+    function createScale() {
+      const scale = document.getElementById('scale');
+      const marks = [];
+      const labels = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
+      
+      // Crear marcas de escala
+      for (let i = 0; i <= 100; i++) {
+        const angle = (i * 2.7) - 135;
+        const mark = document.createElement('div');
+        mark.className = 'scale-mark';
+        mark.style.transform = `rotate(${angle}deg)`;
+        
+        // Hacer marcas principales más grandes
+        if (i % 10 === 0) {
+          mark.style.height = '15px';
+          mark.style.background = 'rgba(255, 255, 255, 0.9)';
+        }
+        
+        marks.push(mark);
+      }
+      
+      // Crear etiquetas
+      labels.forEach((value, index) => {
+        const angle = (index * 27) - 135;
+        const label = document.createElement('div');
+        label.className = 'scale-label';
+        label.textContent = value;
+        label.style.transform = `rotate(${angle}deg) translate(0, -125px) rotate(${-angle}deg)`;
+        
+        // Ajustar posición para que no quede al revés
+        if (angle > 90 || angle < -90) {
+          label.style.transform += ' rotate(180deg)';
+        }
+        
+        marks.push(label);
+      });
+      
+      // Añadir todas las marcas al scale
+      marks.forEach(mark => scale.appendChild(mark));
+    }
+
+    // Inicializar escala al cargar
+    window.onload = createScale;
 
     function startTest() {
+      if (testInProgress) return;
+      
+      testInProgress = true;
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('startBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
+      document.getElementById('testStatus').textContent = 'Iniciando prueba...';
+      document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Preparando prueba de velocidad...';
+
       s.onupdate = function(data) {
         let dl = parseFloat(data.dlStatus || 0).toFixed(1);
         let ul = parseFloat(data.ulStatus || 0).toFixed(1);
         let ping = parseFloat(data.ping || 0).toFixed(1);
         let jitter = parseFloat(data.jitter || 0).toFixed(1);
-        let avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(0);
+        let avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-        document.getElementById("dlSpeed").textContent = dl + " Mbps";
-        document.getElementById("ulSpeed").textContent = ul + " Mbps";
-        document.getElementById("pingText").textContent = ping + " ms";
-        document.getElementById("jitterText").textContent = jitter + " ms";
+        // Actualizar tarjetas
+        document.getElementById("dlSpeed").textContent = dl;
+        document.getElementById("ulSpeed").textContent = ul;
+        document.getElementById("pingText").textContent = ping;
+        document.getElementById("jitterText").textContent = jitter;
         document.getElementById("avgSpeed").textContent = avg;
 
-        // Rotar la aguja (máximo 100% = 270 grados)
-        let degrees = Math.min(avg, 100) * 2.7;
+        // Actualizar velocímetro
+        const progress = Math.min(avg, 500) / 500 * 100;
+        document.querySelector(".gauge").style.setProperty("--progress", progress);
+
+        // Rotar la aguja (máximo 500 Mbps = 270 grados, desde -135 a +135)
+        let degrees = (Math.min(avg, 500) * 0.54) - 135;
         document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+
+        // Actualizar estado
+        let statusText = '';
+        if (data.testState === 1) {
+          statusText = `Probando descarga: ${dl} Mbps`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-download fa-fw"></i> Probando velocidad de descarga... ${dl} Mbps`;
+        } else if (data.testState === 2) {
+          statusText = `Probando subida: ${ul} Mbps`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-upload fa-fw"></i> Probando velocidad de subida... ${ul} Mbps`;
+        } else if (data.testState === 3) {
+          statusText = `Probando ping: ${ping} ms`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-network-wired fa-fw"></i> Probando latencia... ${ping} ms`;
+        } else if (data.testState === 4) {
+          statusText = `Prueba completada`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-check-circle"></i> Prueba completada - Descarga: ${dl} Mbps, Subida: ${ul} Mbps`;
+        }
+        
+        document.getElementById('testStatus').textContent = statusText;
       };
+
+      s.onend = function(aborted) {
+        testInProgress = false;
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
+        
+        if (!aborted) {
+          document.getElementById('testStatus').textContent = 'Prueba completada';
+        }
+      };
+
       s.start();
     }
   </script>
