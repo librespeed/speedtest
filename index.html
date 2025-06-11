@@ -2,216 +2,233 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TLAXICOM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Font Awesome para iconos -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Speedtest.js -->
   <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/speedtest.js"></script>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #001e3c, #0073e6);   
-      color: white;
-      text-align: center;
+      font-family: 'Inter', sans-serif;
+      background-color: #f5f5f5; 
+      color: #333;
       padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header {
+      width: 100%;
+      max-width: 1000px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 1em 2em;
-      background-color: #004aad;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2em;
     }
 
     .header-left {
       text-align: left;
     }
 
-    h1 {
+    .header-left h1 {
+      font-size: 1.8em;
+      color: #0073e6;
       margin: 0;
-      font-size: 2em;
     }
 
-    .subtitle {
-      font-size: 1em;
-      color: #ddd;
+    .header-left .subtitle {
+      font-size: 0.95em;
+      color: #666;
     }
 
     .logo {
       height: 60px;
     }
 
-    /* --- Velocímetro mejorado --- */
-    .meter-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 2em;
+    /* Velocímetro */
+    .speedometer-container {
       position: relative;
+      width: 260px;
+      height: 260px;
+      margin-bottom: 2em;
     }
 
-    .meter {
-      width: 240px;
-      height: 240px;
+    .speedometer {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      background: conic-gradient(#00e5ff 0deg, #004aad 0deg);
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border: 10px solid #e0e0e0;
     }
 
-    .meter::before {
-      content: "";
+    .needle {
       position: absolute;
-      width: 10px;
-      height: 10px;
-      background: #fff;
-      border-radius: 50%;
-      z-index: 2;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+      width: 3px;
+      height: 90px;
+      background: #0073e6;
+      z-index: 10;
     }
 
-    .meter-value {
+    .value {
       position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      z-index: 1;
+      z-index: 5;
     }
 
-    #startBtn {
-      margin-top: 2em;
-      padding: 1em 2em;
-      background: #003d99;
-      border: none;
-      border-radius: 30px;
-      color: white;
-      font-size: 1.2em;
+    .value #avgSpeed {
+      font-size: 2.2em;
       font-weight: bold;
+      color: #0073e6;
+    }
+
+    .value div:last-child {
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    /* Botón Iniciar */
+    #startBtn {
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      padding: 0.8em 2em;
+      font-size: 1em;
+      border-radius: 30px;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 115, 230, 0.2);
+      transition: background 0.3s ease;
+      margin-top: 1em;
     }
 
     #startBtn:hover {
-      background: #002f7a;
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      background-color: #005bb5;
     }
 
+    /* Tarjetas informativas */
     .info-wrapper {
       display: flex;
       justify-content: center;
+      gap: 2em;
       flex-wrap: wrap;
-      gap: 1.5em;
       margin-top: 2em;
     }
 
     .info-card {
-      background: #fff;
-      color: #222;
-      padding: 1em;
-      border-radius: 10px;
-      width: 180px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      transition: border-left 0.3s;
-      border-left: 5px solid #ccc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      min-width: 160px;
+      max-width: 200px;
+      text-align: left;
+      transition: transform 0.3s ease;
     }
 
-    .info-card i {
-      font-size: 1.5em;
-      margin-bottom: 0.5em;
+    .info-card:hover {
+      transform: translateY(-4px);
     }
 
     .info-card h3 {
-      margin: 0.2em 0;
       font-size: 1em;
+      font-weight: 600;
+      margin-bottom: 0.5em;
+      color: #0073e6;
+      display: flex;
+      align-items: center;
     }
 
-    .info-card.green { border-left: 5px solid #00c853; }
-    .info-card.orange { border-left: 5px solid #ff9800; }
-    .info-card.red { border-left: 5px solid #f44336; }
+    .info-card h3 i {
+      margin-right: 8px;
+      color: #0073e6;
+    }
+
+    .info-card div {
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #333;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Header con Logo y Título -->
   <header>
     <div class="header-left">
       <h1>TLAXICOM</h1>
       <div class="subtitle">Internet a tu alcance</div>
     </div>
-    <img src="./logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
+    <img src=".logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <div class="meter-container">
-    <div class="meter" id="speedMeter">
-      <div class="meter-value">
-        <div id="avgSpeed" style="font-size: 2em; font-weight: bold;">0</div>
-        <div>Mbps promedio</div>
+  <!-- Velocímetro -->
+  <div class="speedometer-container">
+    <div class="speedometer" id="speedMeter">
+      <div class="needle" id="speedNeedle"></div>
+      <div class="value">
+        <div id="avgSpeed">0</div>
+        <div>Mbps</div>
       </div>
     </div>
   </div>
 
-  <button id="startBtn" onclick="startTest()">
-    <i class="fas fa-bolt"></i> Iniciar prueba de velocidad
-  </button>
+  <!-- Botón Iniciar -->
+  <button id="startBtn" onclick="startTest()">Iniciar prueba</button>
 
+  <!-- Tarjetas informativas -->
   <div class="info-wrapper">
-    <div class="info-card green" id="dlCard">
-      <i class="fas fa-download"></i>
-      <h3>Descarga</h3>
+    <div class="info-card">
+      <h3><i class="fas fa-download"></i>Subida</h3>
       <div id="dlSpeed">0 Mbps</div>
     </div>
-    <div class="info-card orange" id="ulCard">
-      <i class="fas fa-upload"></i>
-      <h3>Subida</h3>
+    <div class="info-card">
+      <h3><i class="fas fa-upload"></i>Bajada</h3>
       <div id="ulSpeed">0 Mbps</div>
     </div>
-    <div class="info-card green" id="pingCard">
-      <i class="fas fa-signal"></i>
-      <h3>Ping</h3>
+    <div class="info-card">
+      <h3><i class="fas fa-bolt"></i>Ping</h3>
       <div id="pingText">0 ms</div>
     </div>
-    <div class="info-card red" id="jitterCard">
-      <i class="fas fa-wave-square"></i>
-      <h3>Jitter</h3>
+    <div class="info-card">
+      <h3><i class="fas fa-wifi"></i>Jitter</h3>
       <div id="jitterText">0 ms</div>
     </div>
   </div>
 
+  <!-- Lógica JS -->
   <script>
-    let s;
-
-    window.addEventListener("load", () => {
-      if (typeof Speedtest !== "undefined") {
-        s = new Speedtest();
-      } else {
-        alert("No se pudo cargar Speedtest.js. Revisa tu conexión o la URL del script.");
-      }
-    });
-
-    function setColorClass(element, value, thresholds) {
-      element.classList.remove("green", "orange", "red");
-      if (value <= thresholds.green) {
-        element.classList.add("green");
-      } else if (value <= thresholds.orange) {
-        element.classList.add("orange");
-      } else {
-        element.classList.add("red");
-      }
-    }
+    const s = new Speedtest();
 
     function startTest() {
-      if (!s) {
-        alert("Speedtest aún no está listo.");
-        return;
-      }
-
       s.onupdate = function(data) {
         let dl = parseFloat(data.dlStatus || 0).toFixed(1);
         let ul = parseFloat(data.ulStatus || 0).toFixed(1);
@@ -225,23 +242,13 @@
         document.getElementById("jitterText").textContent = jitter + " ms";
         document.getElementById("avgSpeed").textContent = avg;
 
-        // Actualizar el velocímetro
-        let degrees = Math.min(avg, 100) * 1.8;
-        document.getElementById("speedMeter").style.background = `conic-gradient(#00e5ff 0deg ${degrees}deg, #004aad ${degrees}deg 360deg)`;
-
-        // Colores dinámicos
-        setColorClass(document.getElementById("dlCard"), parseFloat(dl), { green: 50, orange: 20 });
-        setColorClass(document.getElementById("ulCard"), parseFloat(ul), { green: 20, orange: 10 });
-        setColorClass(document.getElementById("pingCard"), parseFloat(ping), { green: 30, orange: 60 });
-        setColorClass(document.getElementById("jitterCard"), parseFloat(jitter), { green: 5, orange: 10 });
+        // Rotar la aguja (máximo 100% = 270 grados)
+        let degrees = Math.min(avg, 100) * 2.7;
+        document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
       };
-
-      s.onend = function(data) {
-        console.log("Test finalizado:", data);
-      };
-
       s.start();
     }
   </script>
+
 </body>
 </html>
