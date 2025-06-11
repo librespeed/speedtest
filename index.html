@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TLAXICOM</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome para iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/speedtest.js"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #001e3c, #0073e6);
+      background: linear-gradient(to right, #001e3c, #0073e6);   
       color: white;
       text-align: center;
       padding: 2em;
@@ -42,28 +44,41 @@
       height: 60px;
     }
 
+    /* --- Velocímetro mejorado --- */
     .meter-container {
       display: flex;
       justify-content: center;
       align-items: center;
       margin-top: 2em;
+      position: relative;
     }
 
     .meter {
-      position: relative;
-      width: 220px;
-      height: 220px;
+      width: 240px;
+      height: 240px;
       border-radius: 50%;
       background: conic-gradient(#00e5ff 0deg, #004aad 0deg);
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      position: relative;
       display: flex;
-      justify-content: center;
       align-items: center;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      justify-content: center;
+    }
+
+    .meter::before {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      z-index: 2;
     }
 
     .meter-value {
       position: absolute;
       text-align: center;
+      z-index: 1;
     }
 
     #startBtn {
@@ -74,12 +89,16 @@
       border-radius: 30px;
       color: white;
       font-size: 1.2em;
+      font-weight: bold;
       cursor: pointer;
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
     }
 
     #startBtn:hover {
       background: #002f7a;
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
     }
 
     .info-wrapper {
@@ -99,10 +118,20 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       transition: border-left 0.3s;
       border-left: 5px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .info-card i {
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
     }
 
     .info-card h3 {
       margin: 0.2em 0;
+      font-size: 1em;
     }
 
     .info-card.green { border-left: 5px solid #00c853; }
@@ -116,7 +145,7 @@
       <h1>TLAXICOM</h1>
       <div class="subtitle">Internet a tu alcance</div>
     </div>
-    <img src="/speed/.logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
+    <img src="./logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
   <div class="meter-container">
@@ -128,29 +157,43 @@
     </div>
   </div>
 
-  <button id="startBtn" onclick="startTest()">Iniciar</button>
+  <button id="startBtn" onclick="startTest()">
+    <i class="fas fa-bolt"></i> Iniciar prueba de velocidad
+  </button>
 
   <div class="info-wrapper">
-    <div class="info-card" id="dlCard">
+    <div class="info-card green" id="dlCard">
+      <i class="fas fa-download"></i>
       <h3>Descarga</h3>
       <div id="dlSpeed">0 Mbps</div>
     </div>
-    <div class="info-card" id="ulCard">
+    <div class="info-card orange" id="ulCard">
+      <i class="fas fa-upload"></i>
       <h3>Subida</h3>
       <div id="ulSpeed">0 Mbps</div>
     </div>
-    <div class="info-card" id="pingCard">
+    <div class="info-card green" id="pingCard">
+      <i class="fas fa-signal"></i>
       <h3>Ping</h3>
       <div id="pingText">0 ms</div>
     </div>
-    <div class="info-card" id="jitterCard">
+    <div class="info-card red" id="jitterCard">
+      <i class="fas fa-wave-square"></i>
       <h3>Jitter</h3>
       <div id="jitterText">0 ms</div>
     </div>
   </div>
 
   <script>
-    const s = new Speedtest();
+    let s;
+
+    window.addEventListener("load", () => {
+      if (typeof Speedtest !== "undefined") {
+        s = new Speedtest();
+      } else {
+        alert("No se pudo cargar Speedtest.js. Revisa tu conexión o la URL del script.");
+      }
+    });
 
     function setColorClass(element, value, thresholds) {
       element.classList.remove("green", "orange", "red");
@@ -164,6 +207,11 @@
     }
 
     function startTest() {
+      if (!s) {
+        alert("Speedtest aún no está listo.");
+        return;
+      }
+
       s.onupdate = function(data) {
         let dl = parseFloat(data.dlStatus || 0).toFixed(1);
         let ul = parseFloat(data.ulStatus || 0).toFixed(1);
@@ -177,16 +225,21 @@
         document.getElementById("jitterText").textContent = jitter + " ms";
         document.getElementById("avgSpeed").textContent = avg;
 
-        // Animación del velocímetro circular
+        // Actualizar el velocímetro
         let degrees = Math.min(avg, 100) * 1.8;
         document.getElementById("speedMeter").style.background = `conic-gradient(#00e5ff 0deg ${degrees}deg, #004aad ${degrees}deg 360deg)`;
 
-        // Color dinámico en tarjetas
+        // Colores dinámicos
         setColorClass(document.getElementById("dlCard"), parseFloat(dl), { green: 50, orange: 20 });
         setColorClass(document.getElementById("ulCard"), parseFloat(ul), { green: 20, orange: 10 });
         setColorClass(document.getElementById("pingCard"), parseFloat(ping), { green: 30, orange: 60 });
         setColorClass(document.getElementById("jitterCard"), parseFloat(jitter), { green: 5, orange: 10 });
       };
+
+      s.onend = function(data) {
+        console.log("Test finalizado:", data);
+      };
+
       s.start();
     }
   </script>
