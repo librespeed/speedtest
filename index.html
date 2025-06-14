@@ -26,8 +26,8 @@
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
+      background-color: #0f32a3; 
+      color: white;
       padding: 2em;
       display: flex;
       flex-direction: column;
@@ -42,32 +42,36 @@
       align-items: center;
       justify-content: space-between;
       padding: 1em 2em;
-      background-color: white;
+      background-color: rgb(18, 1, 112);
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(19, 204, 217, 0.3);
       margin-bottom: 2em;
+    }
+
+    .header-left {
+      text-align: left;
     }
 
     .header-left h1 {
       font-size: 1.8em;
-      color: #0066cc;
+      color: #ffffff;
       margin: 0;
     }
 
     .header-left .subtitle {
       font-size: 0.95em;
-      color: #666;
+      color: #ffffff;
     }
 
     .logo {
       height: 60px;
     }
 
-    /* Velocímetro sencillo */
+    /* Velocímetro mejorado */
     .speedometer-container {
       position: relative;
-      width: 280px;
-      height: 280px;
+      width: 350px;
+      height: 350px;
       margin-bottom: 2em;
     }
 
@@ -76,56 +80,60 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e0e0e0;
+      background: radial-gradient(circle at center, #111 0%, #000 70%);
+      box-shadow: 
+        0 0 30px rgba(0, 229, 255, 0.5),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
       overflow: hidden;
+      border: 8px solid #0a1a4a;
     }
 
     .gauge {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
       border-radius: 50%;
       background: conic-gradient(
-        #4CAF50 0%,
-        #4CAF50 20%,
-        #8BC34A 40%,
-        #FFC107 60%,
-        #FF9800 80%,
-        #F44336 100%
+        #00ff88 0%,
+        #00ff88 20%,
+        #00e5ff 40%,
+        #0062ff 60%,
+        #ff00aa 80%,
+        #ff0000 100%
       );
       display: flex;
       align-items: center;
       justify-content: center;
+      filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5));
     }
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - 20px);
-      height: calc(100% - 20px);
+      width: calc(100% - 30px);
+      height: calc(100% - 30px);
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
         transparent calc(var(--progress) * 1%),
-        white calc(var(--progress) * 1%),
-        white 100%
+        rgba(0, 0, 0, 0.8) calc(var(--progress) * 1%),
+        rgba(0, 0, 0, 0.8) 100%
       );
-      transition: all 0.5s ease;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .gauge-inner {
-      width: calc(100% - 40px);
-      height: calc(100% - 40px);
+      width: calc(100% - 60px);
+      height: calc(100% - 60px);
       border-radius: 50%;
-      background: white;
+      background: radial-gradient(circle at center, #0a1a4a 0%, #000 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+      border: 2px solid rgba(0, 229, 255, 0.2);
     }
 
     .scale {
@@ -140,42 +148,48 @@
       top: 0;
       left: 50%;
       width: 2px;
-      height: 10px;
-      background: rgba(0, 0, 0, 0.2);
-      transform-origin: 50% 140px;
+      height: 15px;
+      background: rgba(255, 255, 255, 0.7);
+      transform-origin: 50% 175px;
     }
 
     .scale-label {
       position: absolute;
-      color: #555;
+      color: white;
       font-size: 12px;
-      font-weight: 500;
-      transform-origin: 50% 120px;
+      font-weight: bold;
+      transform-origin: 50% 150px;
     }
 
     .needle {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 3px;
-      height: 110px;
-      background: #333;
+      width: 4px;
+      height: 140px;
+      background: linear-gradient(to bottom, #fff, #ff3366);
+      border-radius: 4px;
       transform-origin: 50% 0;
       transform: rotate(-135deg);
       z-index: 10;
-      transition: transform 0.5s ease;
+      box-shadow: 0 0 15px rgba(255, 0, 102, 0.7);
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .needle-center {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 12px;
-      height: 12px;
-      background: #333;
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
+      box-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.7),
+        inset 0 0 5px rgba(0, 0, 0, 0.5);
+      border: 2px solid #ff3366;
     }
 
     .value-display {
@@ -189,55 +203,123 @@
     }
 
     .value-display #avgSpeed {
-      font-size: 2.5em;
+      font-size: 3em;
       font-weight: bold;
-      color: #0066cc;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(0, 229, 255, 0.9);
       margin-bottom: 5px;
+      font-family: 'Inter', sans-serif;
     }
 
     .value-display .unit {
-      font-size: 1em;
-      color: #666;
+      font-size: 1.2em;
+      color: #00e5ff;
       text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
     }
 
     .value-display .status {
-      font-size: 0.8em;
-      color: #888;
-      margin-top: 10px;
+      font-size: 0.9em;
+      color: #aaa;
+      margin-top: 15px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Efecto de partículas */
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #00e5ff;
+      border-radius: 50%;
+      opacity: 0;
+      animation: float 3s infinite ease-in;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty));
+        opacity: 0;
+      }
     }
 
     /* Botón Iniciar */
     #startBtn {
-      background: #0066cc;
+      background: linear-gradient(to right, #0073e6, #00a1ff);
       color: white;
       border: none;
-      padding: 1em 2em;
-      font-size: 1em;
+      padding: 1em 2.5em;
+      font-size: 1.1em;
       font-weight: 600;
-      border-radius: 8px;
+      border-radius: 30px;
       cursor: pointer;
+      box-shadow: 
+        0 4px 15px rgba(0, 115, 230, 0.4),
+        0 0 10px rgba(0, 229, 255, 0.5);
       transition: all 0.3s ease;
       margin-top: 1em;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
     }
 
     #startBtn:hover {
-      background: #0055aa;
       transform: translateY(-2px);
+      box-shadow: 
+        0 6px 20px rgba(0, 115, 230, 0.6),
+        0 0 15px rgba(0, 229, 255, 0.7);
     }
 
     #startBtn:active {
-      transform: translateY(0);
+      transform: translateY(1px);
+    }
+
+    #startBtn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 55%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(30deg);
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% {
+        left: -50%;
+      }
+      100% {
+        left: 150%;
+      }
     }
 
     /* Tarjetas informativas */
     .info-wrapper {
       display: flex;
       justify-content: center;
-      gap: 1.5em;
+      gap: 2em;
       flex-wrap: wrap;
       margin-top: 2em;
       width: 100%;
@@ -245,62 +327,79 @@
     }
 
     .info-card {
-      background: white;
-      color: #333;
-      padding: 1.2em;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      min-width: 140px;
-      max-width: 160px;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+      color: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+      min-width: 160px;
+      max-width: 200px;
       text-align: center;
       transition: all 0.3s ease;
-      border: 1px solid #e0e0e0;
+      border: 1px solid rgba(0, 229, 255, 0.1);
+      position: relative;
+      overflow: hidden;
     }
 
     .info-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(244, 240, 240, 0.2);
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(to right, #00e5ff, #0062ff);
     }
 
     .info-card h3 {
-      font-size: 0.9em;
+      font-size: 1em;
       font-weight: 600;
       margin-bottom: 0.5em;
-      color: #0066cc;
+      color: #00e5ff;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .info-card .card-value {
-      font-size: 1.5em;
+      font-size: 2em;
       font-weight: bold;
-      color: #333;
-      margin: 8px 0;
+      color: #fff;
+      margin: 10px 0;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
     }
 
     .info-card .card-unit {
       font-size: 0.8em;
-      color: #666;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .card-icon {
-      font-size: 1em;
-      color: #0066cc;
+      font-size: 1.2em;
+      color: #00e5ff;
     }
 
     /* Estado de la prueba */
     .test-status {
       margin-top: 1em;
-      color: #666;
+      color: #aaa;
       font-size: 0.9em;
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #f0f4f8;
-      padding: 0.8em 1.2em;
-      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.8em 1.5em;
+      border-radius: 30px;
+      border: 1px solid rgba(0, 229, 255, 0.1);
     }
 
     /* Responsive */
@@ -309,9 +408,23 @@
         padding: 1em;
       }
       
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      
+      .header-left {
+        text-align: center;
+      }
+      
       .speedometer-container {
-        width: 240px;
-        height: 240px;
+        width: 280px;
+        height: 280px;
+      }
+      
+      .info-wrapper {
+        gap: 1em;
       }
       
       .info-card {
@@ -332,7 +445,7 @@
     <img src=".logo/favicon-96x96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Velocímetro sencillo -->
+  <!-- Velocímetro mejorado -->
   <div class="speedometer-container">
     <div class="speedometer" id="speedMeter">
       <div class="gauge" style="--progress: 0;">
@@ -348,6 +461,9 @@
       </div>
       <div class="needle" id="speedNeedle"></div>
       <div class="needle-center"></div>
+      
+      <!-- Efecto de partículas -->
+      <div id="particles"></div>
     </div>
   </div>
 
@@ -389,7 +505,7 @@
     const s = new Speedtest();
     let testInProgress = false;
 
-    // Crear escala del velocímetro
+    // Crear escala del velocímetro mejorado
     function createScale() {
       const scale = document.getElementById('scale');
       const marks = [];
@@ -404,9 +520,17 @@
         
         // Hacer marcas principales más grandes
         if (i % 10 === 0) {
-          mark.style.height = '12px';
+          mark.style.height = '20px';
+          mark.style.width = '3px';
+          mark.style.background = 'rgba(255, 255, 255, 0.9)';
+        } else if (i % 5 === 0) {
+          mark.style.height = '15px';
           mark.style.width = '2px';
-          mark.style.background = 'rgba(0, 0, 0, 0.4)';
+          mark.style.background = 'rgba(255, 255, 255, 0.7)';
+        } else {
+          mark.style.height = '10px';
+          mark.style.width = '1px';
+          mark.style.background = 'rgba(255, 255, 255, 0.5)';
         }
         
         marks.push(mark);
@@ -418,11 +542,24 @@
         const label = document.createElement('div');
         label.className = 'scale-label';
         label.textContent = value;
-        label.style.transform = `rotate(${angle}deg) translate(0, -110px) rotate(${-angle}deg)`;
+        label.style.transform = `rotate(${angle}deg) translate(0, -130px) rotate(${-angle}deg)`;
         
         // Ajustar posición para que no quede al revés
         if (angle > 90 || angle < -90) {
           label.style.transform += ' rotate(180deg)';
+        }
+        
+        // Cambiar color según la velocidad
+        if (value >= 400) {
+          label.style.color = '#ff0000';
+        } else if (value >= 300) {
+          label.style.color = '#ff00aa';
+        } else if (value >= 200) {
+          label.style.color = '#0062ff';
+        } else if (value >= 100) {
+          label.style.color = '#00e5ff';
+        } else {
+          label.style.color = '#00ff88';
         }
         
         marks.push(label);
@@ -432,8 +569,48 @@
       marks.forEach(mark => scale.appendChild(mark));
     }
 
+    // Crear efecto de partículas
+    function createParticles() {
+      const container = document.getElementById('particles');
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Posición aleatoria
+        const x = Math.random() * 300 - 150;
+        const y = Math.random() * 300 - 150;
+        
+        // Tamaño aleatorio
+        const size = Math.random() * 3 + 1;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Color aleatorio
+        const colors = ['#00e5ff', '#00ff88', '#0062ff', '#ff00aa'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Animación aleatoria
+        const tx = Math.random() * 100 - 50;
+        const ty = Math.random() * 100 - 50;
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${Math.random() * 2 + 2}s`;
+        
+        container.appendChild(particle);
+      }
+    }
+
     // Inicializar al cargar
-    window.onload = createScale;
+    window.onload = function() {
+      createScale();
+      createParticles();
+      
+      // Actualizar partículas cada 5 segundos
+      setInterval(createParticles, 5000);
+    };
 
     function startTest() {
       if (testInProgress) return;
@@ -445,6 +622,9 @@
       document.getElementById('testStatus').textContent = 'Iniciando prueba...';
       document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Preparando prueba de velocidad...';
 
+      // Efecto visual al iniciar
+      document.querySelector('.gauge').style.boxShadow = '0 0 30px rgba(0, 229, 255, 0.8)';
+      
       s.onupdate = function(data) {
         let dl = parseFloat(data.dlStatus || 0).toFixed(1);
         let ul = parseFloat(data.ulStatus || 0).toFixed(1);
@@ -466,6 +646,15 @@
         // Rotar la aguja (máximo 500 Mbps = 270 grados, desde -135 a +135)
         let degrees = (Math.min(avg, 500) * 0.54) - 135;
         document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+
+        // Cambiar color del borde según la velocidad
+        let borderColor = '#00ff88';
+        if (avg >= 400) borderColor = '#ff0000';
+        else if (avg >= 300) borderColor = '#ff00aa';
+        else if (avg >= 200) borderColor = '#0062ff';
+        else if (avg >= 100) borderColor = '#00e5ff';
+        
+        document.querySelector('.speedometer').style.boxShadow = `0 0 30px ${borderColor}, inset 0 0 20px rgba(0, 0, 0, 0.8)`;
 
         // Actualizar estado
         let statusText = '';
@@ -494,6 +683,7 @@
         
         if (!aborted) {
           document.getElementById('testStatus').textContent = 'Prueba completada';
+          document.querySelector('.gauge').style.boxShadow = '0 0 30px rgba(0, 229, 255, 0.5)';
         }
       };
 
