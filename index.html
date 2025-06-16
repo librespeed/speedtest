@@ -10,7 +10,7 @@
   <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,33 +19,67 @@
   <script src="https://cdn.jsdelivr.net/gh/librespeed/speedtest@latest/speedtest.js"></script>
 
   <style>
+    :root {
+      --primary: #0f32a3;
+      --secondary: #13ccd9;
+      --dark-blue: #120170;
+      --accent: #ff3366;
+      --light: #ffffff;
+      --dark: #0a1a4a;
+      --success: #00ff88;
+    }
+    
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #0f32a3; 
-      color: white;
-      padding: 2em;
+      background: linear-gradient(135deg, var(--dark), var(--primary));
+      color: var(--light);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      padding: 2em;
+      position: relative;
+      overflow-x: hidden;
     }
 
+    /* Efecto de partículas de fondo */
+    .particles-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Header moderno */
     header {
       width: 100%;
       max-width: 1000px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1em 2em;
-      background-color: rgb(18, 1, 112);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(19, 204, 217, 0.3);
-      margin-bottom: 2em;
+      padding: 1.5em 2em;
+      background: rgba(18, 1, 112, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(19, 204, 217, 0.3);
+      margin-bottom: 2.5em;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(19, 204, 217, 0.4);
     }
 
     .header-left {
@@ -53,26 +87,39 @@
     }
 
     .header-left h1 {
-      font-size: 1.8em;
-      color: #ffffff;
+      font-size: 2em;
+      font-weight: 700;
+      color: var(--light);
       margin: 0;
+      background: linear-gradient(to right, var(--light), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .header-left .subtitle {
-      font-size: 0.95em;
-      color: #ffffff;
+      font-size: 1em;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 0.3em;
+      font-weight: 300;
     }
 
     .logo {
-      height: 60px;
+      height: 70px;
+      transition: transform 0.3s ease;
     }
 
-    /* Velocímetro mejorado */
+    .logo:hover {
+      transform: scale(1.05) rotate(5deg);
+    }
+
+    /* Velocímetro futurista */
     .speedometer-container {
       position: relative;
-      width: 350px;
-      height: 350px;
-      margin-bottom: 2em;
+      width: 380px;
+      height: 380px;
+      margin-bottom: 3em;
+      perspective: 1000px;
     }
 
     .speedometer {
@@ -82,58 +129,72 @@
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 30px rgba(0, 229, 255, 0.5),
-        inset 0 0 20px rgba(0, 0, 0, 0.8);
+        0 0 40px rgba(19, 204, 217, 0.6),
+        inset 0 0 30px rgba(0, 0, 0, 0.9);
       overflow: hidden;
-      border: 8px solid #0a1a4a;
+      border: 10px solid var(--dark-blue);
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+    }
+
+    .speedometer:hover {
+      transform: rotateY(5deg) rotateX(5deg);
     }
 
     .gauge {
       position: absolute;
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      bottom: 15px;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
       border-radius: 50%;
       background: conic-gradient(
-        #00ff88 0%,
-        #00ff88 20%,
-        #00e5ff 40%,
+        var(--success) 0%,
+        var(--success) 20%,
+        var(--secondary) 40%,
         #0062ff 60%,
-        #ff00aa 80%,
+        var(--accent) 80%,
         #ff0000 100%
       );
       display: flex;
       align-items: center;
       justify-content: center;
-      filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5));
+      filter: drop-shadow(0 0 15px rgba(19, 204, 217, 0.7));
+      animation: pulse 3s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { filter: drop-shadow(0 0 15px rgba(19, 204, 217, 0.7)); }
+      100% { filter: drop-shadow(0 0 25px rgba(19, 204, 217, 0.9)); }
     }
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - 30px);
-      height: calc(100% - 30px);
+      width: calc(100% - 40px);
+      height: calc(100% - 40px);
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
         transparent calc(var(--progress) * 1%),
-        rgba(0, 0, 0, 0.8) calc(var(--progress) * 1%),
-        rgba(0, 0, 0, 0.8) 100%
+        rgba(0, 0, 0, 0.85) calc(var(--progress) * 1%),
+        rgba(0, 0, 0, 0.85) 100%
       );
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .gauge-inner {
-      width: calc(100% - 60px);
-      height: calc(100% - 60px);
+      width: calc(100% - 80px);
+      height: calc(100% - 80px);
       border-radius: 50%;
-      background: radial-gradient(circle at center, #0a1a4a 0%, #000 100%);
+      background: radial-gradient(circle at center, var(--dark-blue) 0%, #000 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
-      border: 2px solid rgba(0, 229, 255, 0.2);
+      box-shadow: 
+        inset 0 0 30px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(19, 204, 217, 0.5);
+      border: 3px solid rgba(19, 204, 217, 0.3);
     }
 
     .scale {
@@ -149,16 +210,16 @@
       left: 50%;
       width: 2px;
       height: 15px;
-      background: rgba(255, 255, 255, 0.7);
-      transform-origin: 50% 175px;
+      background: rgba(255, 255, 255, 0.8);
+      transform-origin: 50% 190px;
     }
 
     .scale-label {
       position: absolute;
       color: white;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
-      transform-origin: 50% 150px;
+      transform-origin: 50% 160px;
     }
 
     .needle {
@@ -166,30 +227,36 @@
       top: 50%;
       left: 50%;
       width: 4px;
-      height: 140px;
-      background: linear-gradient(to bottom, #fff, #ff3366);
+      height: 150px;
+      background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
       transform: rotate(-135deg);
       z-index: 10;
-      box-shadow: 0 0 15px rgba(255, 0, 102, 0.7);
-      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.8);
+      transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .needle-center {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
       box-shadow: 
-        0 0 15px rgba(255, 255, 255, 0.7),
-        inset 0 0 5px rgba(0, 0, 0, 0.5);
-      border: 2px solid #ff3366;
+        0 0 20px rgba(255, 255, 255, 0.8),
+        inset 0 0 10px rgba(0, 0, 0, 0.6);
+      border: 3px solid var(--accent);
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+      100% { box-shadow: 0 0 30px rgba(255, 255, 255, 1); }
     }
 
     .value-display {
@@ -203,84 +270,63 @@
     }
 
     .value-display #avgSpeed {
-      font-size: 3em;
-      font-weight: bold;
+      font-size: 3.2em;
+      font-weight: 800;
       color: #fff;
-      text-shadow: 0 0 15px rgba(0, 229, 255, 0.9);
+      text-shadow: 0 0 20px rgba(19, 204, 217, 1);
       margin-bottom: 5px;
       font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom, #fff, #ddd);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .value-display .unit {
-      font-size: 1.2em;
-      color: #00e5ff;
+      font-size: 1.3em;
+      color: var(--secondary);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       font-weight: 600;
+      margin-bottom: 10px;
     }
 
     .value-display .status {
-      font-size: 0.9em;
-      color: #aaa;
+      font-size: 1em;
+      color: rgba(255, 255, 255, 0.8);
       margin-top: 15px;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
     }
 
-    /* Efecto de partículas */
-    .particle {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #00e5ff;
-      border-radius: 50%;
-      opacity: 0;
-      animation: float 3s infinite ease-in;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translate(0, 0);
-        opacity: 0;
-      }
-      10% {
-        opacity: 1;
-      }
-      90% {
-        opacity: 1;
-      }
-      100% {
-        transform: translate(var(--tx), var(--ty));
-        opacity: 0;
-      }
-    }
-
-    /* Botón Iniciar */
+    /* Botón Iniciar mejorado */
     #startBtn {
-      background: linear-gradient(to right, #0073e6, #00a1ff);
+      background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 1em 2.5em;
+      padding: 1.2em 3em;
       font-size: 1.1em;
       font-weight: 600;
-      border-radius: 30px;
+      border-radius: 50px;
       cursor: pointer;
       box-shadow: 
-        0 4px 15px rgba(0, 115, 230, 0.4),
-        0 0 10px rgba(0, 229, 255, 0.5);
-      transition: all 0.3s ease;
-      margin-top: 1em;
+        0 6px 20px rgba(15, 50, 163, 0.5),
+        0 0 15px rgba(19, 204, 217, 0.6);
+      transition: all 0.4s ease;
+      margin-top: 1.5em;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       position: relative;
       overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     #startBtn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px) scale(1.03);
       box-shadow: 
-        0 6px 20px rgba(0, 115, 230, 0.6),
-        0 0 15px rgba(0, 229, 255, 0.7);
+        0 8px 25px rgba(15, 50, 163, 0.7),
+        0 0 20px rgba(19, 204, 217, 0.8);
     }
 
     #startBtn:active {
@@ -290,61 +336,55 @@
     #startBtn::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
       background: linear-gradient(
-        to bottom right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0) 45%,
-        rgba(255, 255, 255, 0.3) 50%,
-        rgba(255, 255, 255, 0) 55%,
-        rgba(255, 255, 255, 0) 100%
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
       );
-      transform: rotate(30deg);
-      animation: shine 3s infinite;
+      transition: 0.5s;
     }
 
-    @keyframes shine {
-      0% {
-        left: -50%;
-      }
-      100% {
-        left: 150%;
-      }
+    #startBtn:hover::before {
+      left: 100%;
     }
 
-    /* Tarjetas informativas */
+    #startBtn i {
+      transition: transform 0.3s ease;
+    }
+
+    #startBtn:hover i {
+      transform: scale(1.2);
+    }
+
+    /* Tarjetas informativas futuristas */
     .info-wrapper {
-      display: flex;
-      justify-content: center;
-      gap: 2em;
-      flex-wrap: wrap;
-      margin-top: 2em;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5em;
+      margin-top: 2.5em;
       width: 100%;
       max-width: 800px;
     }
 
     .info-card {
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+      background: rgba(10, 26, 74, 0.6);
+      backdrop-filter: blur(10px);
       color: white;
-      padding: 1.5em;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-      min-width: 160px;
-      max-width: 200px;
-      text-align: center;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(0, 229, 255, 0.1);
+      padding: 1.8em 1.5em;
+      border-radius: 16px;
+      box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 0 20px rgba(19, 204, 217, 0.2);
+      transition: all 0.4s ease;
+      border: 1px solid rgba(19, 204, 217, 0.2);
       position: relative;
       overflow: hidden;
-    }
-
-    .info-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(244, 240, 240, 0.2);
-      border-color: rgba(0, 229, 255, 0.3);
+      text-align: center;
     }
 
     .info-card::before {
@@ -354,87 +394,189 @@
       left: 0;
       width: 100%;
       height: 4px;
-      background: linear-gradient(to right, #00e5ff, #0062ff);
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+    }
+
+    .info-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        inset 0 0 25px rgba(19, 204, 217, 0.3);
+      border-color: rgba(19, 204, 217, 0.4);
     }
 
     .info-card h3 {
-      font-size: 1em;
+      font-size: 1.1em;
       font-weight: 600;
-      margin-bottom: 0.5em;
-      color: #00e5ff;
+      margin-bottom: 0.8em;
+      color: var(--secondary);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .info-card .card-value {
-      font-size: 2em;
-      font-weight: bold;
+      font-size: 2.2em;
+      font-weight: 700;
       color: #fff;
-      margin: 10px 0;
-      text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+      margin: 15px 0;
+      text-shadow: 0 0 15px rgba(19, 204, 217, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover .card-value {
+      transform: scale(1.1);
     }
 
     .info-card .card-unit {
-      font-size: 0.8em;
-      color: #ffffff;
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.8);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
     }
 
     .card-icon {
-      font-size: 1.2em;
-      color: #00e5ff;
+      font-size: 1.3em;
+      color: var(--secondary);
+      transition: transform 0.3s ease;
     }
 
-    /* Estado de la prueba */
+    .info-card:hover .card-icon {
+      transform: rotate(15deg) scale(1.2);
+    }
+
+    /* Estado de la prueba mejorado */
     .test-status {
-      margin-top: 1em;
-      color: #aaa;
-      font-size: 0.9em;
+      margin-top: 2em;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1em;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 0.8em 1.5em;
-      border-radius: 30px;
-      border: 1px solid rgba(0, 229, 255, 0.1);
+      justify-content: center;
+      gap: 12px;
+      background: rgba(10, 26, 74, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 1.2em 2em;
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(19, 204, 217, 0.2);
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .test-status:hover {
+      background: rgba(10, 26, 74, 0.8);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .test-status i {
+      color: var(--secondary);
+      font-size: 1.2em;
+    }
+
+    /* Efecto de partículas */
+    .particles-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--secondary);
+      border-radius: 50%;
+      opacity: 0;
+      animation: float 4s infinite ease-in;
+      filter: drop-shadow(0 0 5px var(--secondary));
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty));
+        opacity: 0;
+      }
     }
 
     /* Responsive */
     @media (max-width: 768px) {
       body {
-        padding: 1em;
+        padding: 1.5em;
       }
       
       header {
         flex-direction: column;
         text-align: center;
-        gap: 10px;
+        gap: 15px;
+        padding: 1.5em;
       }
       
       .header-left {
         text-align: center;
       }
       
+      .logo {
+        height: 60px;
+      }
+      
       .speedometer-container {
-        width: 280px;
-        height: 280px;
+        width: 300px;
+        height: 300px;
       }
       
       .info-wrapper {
-        gap: 1em;
+        grid-template-columns: repeat(2, 1fr);
       }
       
-      .info-card {
-        min-width: 120px;
+      #startBtn {
+        padding: 1em 2em;
+        font-size: 1em;
+      }
+      
+      .test-status {
         padding: 1em;
+        border-radius: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .speedometer-container {
+        width: 260px;
+        height: 260px;
+      }
+      
+      .info-wrapper {
+        grid-template-columns: 1fr;
+      }
+      
+      .header-left h1 {
+        font-size: 1.6em;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- Efecto de partículas de fondo -->
+  <div class="particles-bg" id="particles-bg"></div>
 
   <!-- Header con Logo y Título -->
   <header>
@@ -445,7 +587,7 @@
     <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Velocímetro mejorado -->
+  <!-- Velocímetro futurista -->
   <div class="speedometer-container">
     <div class="speedometer" id="speedMeter">
       <div class="gauge" style="--progress: 0;">
@@ -461,15 +603,12 @@
       </div>
       <div class="needle" id="speedNeedle"></div>
       <div class="needle-center"></div>
-      
-      <!-- Efecto de partículas -->
-      <div id="particles"></div>
     </div>
   </div>
 
   <!-- Botón Iniciar -->
   <button id="startBtn" onclick="startTest()">
-    <i class="fas fa-play"></i> Iniciar prueba
+    <i class="fas fa-bolt"></i> Iniciar prueba
   </button>
 
   <div class="test-status" id="detailedStatus">
@@ -500,66 +639,77 @@
     </div>
   </div>
 
-  <!-- Lógica JS -->
+  <!-- Lógica JS Mejorada -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
-
+    
+    // Configuración mejorada del test
+    s.setParameter("server_ping", "auto"); // Selección automática del mejor servidor para ping
+    s.setParameter("telemetry_level", "basic"); // Nivel de telemetría básico
+    s.setParameter("time_ul_max", 15); // Tiempo máximo prueba subida (segundos)
+    s.setParameter("time_dl_max", 15); // Tiempo máximo prueba descarga (segundos)
+    
     // Crear escala del velocímetro mejorado
     function createScale() {
       const scale = document.getElementById('scale');
       const marks = [];
       const labels = [0, 100, 200, 300, 400, 500];
       
-      // Crear marcas de escala
+      // Crear marcas de escala con mejor visualización
       for (let i = 0; i <= 100; i++) {
         const angle = (i * 2.7) - 135;
         const mark = document.createElement('div');
         mark.className = 'scale-mark';
         mark.style.transform = `rotate(${angle}deg)`;
         
-        // Hacer marcas principales más grandes
+        // Marcas principales y secundarias diferenciadas
         if (i % 10 === 0) {
-          mark.style.height = '20px';
+          mark.style.height = '22px';
           mark.style.width = '3px';
-          mark.style.background = 'rgba(255, 255, 255, 0.9)';
+          mark.style.background = 'rgba(255, 255, 255, 0.95)';
         } else if (i % 5 === 0) {
-          mark.style.height = '15px';
+          mark.style.height = '16px';
           mark.style.width = '2px';
-          mark.style.background = 'rgba(255, 255, 255, 0.7)';
+          mark.style.background = 'rgba(255, 255, 255, 0.8)';
         } else {
           mark.style.height = '10px';
           mark.style.width = '1px';
-          mark.style.background = 'rgba(255, 255, 255, 0.5)';
+          mark.style.background = 'rgba(255, 255, 255, 0.6)';
         }
         
         marks.push(mark);
       }
       
-      // Crear etiquetas
+      // Crear etiquetas con mejor legibilidad
       labels.forEach((value, index) => {
         const angle = (index * 54) - 135;
         const label = document.createElement('div');
         label.className = 'scale-label';
         label.textContent = value;
-        label.style.transform = `rotate(${angle}deg) translate(0, -130px) rotate(${-angle}deg)`;
+        label.style.transform = `rotate(${angle}deg) translate(0, -140px) rotate(${-angle}deg)`;
         
-        // Ajustar posición para que no quede al revés
+        // Ajustar posición para mejor orientación
         if (angle > 90 || angle < -90) {
           label.style.transform += ' rotate(180deg)';
         }
         
-        // Cambiar color según la velocidad
+        // Color dinámico basado en el rango de velocidad
         if (value >= 400) {
           label.style.color = '#ff0000';
+          label.style.textShadow = '0 0 8px rgba(255, 0, 0, 0.7)';
         } else if (value >= 300) {
           label.style.color = '#ff00aa';
+          label.style.textShadow = '0 0 8px rgba(255, 0, 170, 0.6)';
         } else if (value >= 200) {
           label.style.color = '#0062ff';
+          label.style.textShadow = '0 0 8px rgba(0, 98, 255, 0.5)';
         } else if (value >= 100) {
-          label.style.color = '#00e5ff';
+          label.style.color = '#13ccd9';
+          label.style.textShadow = '0 0 8px rgba(19, 204, 217, 0.5)';
         } else {
           label.style.color = '#00ff88';
+          label.style.textShadow = '0 0 8px rgba(0, 255, 136, 0.5)';
         }
         
         marks.push(label);
@@ -569,35 +719,41 @@
       marks.forEach(mark => scale.appendChild(mark));
     }
 
-    // Crear efecto de partículas
+    // Crear efecto de partículas de fondo
     function createParticles() {
-      const container = document.getElementById('particles');
+      const container = document.getElementById('particles-bg');
       container.innerHTML = '';
       
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 30; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
         // Posición aleatoria
-        const x = Math.random() * 300 - 150;
-        const y = Math.random() * 300 - 150;
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
         
         // Tamaño aleatorio
-        const size = Math.random() * 3 + 1;
+        const size = Math.random() * 4 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
         
-        // Color aleatorio
-        const colors = ['#00e5ff', '#00ff88', '#0062ff', '#ff00aa'];
+        // Opacidad aleatoria
+        const opacity = Math.random() * 0.6 + 0.2;
+        particle.style.opacity = opacity;
+        
+        // Color basado en el tema
+        const colors = ['#13ccd9', '#00ff88', '#0062ff', '#ff00aa'];
         particle.style.background = colors[Math.floor(Math.random() * colors.length)];
         
         // Animación aleatoria
-        const tx = Math.random() * 100 - 50;
-        const ty = Math.random() * 100 - 50;
+        const tx = (Math.random() - 0.5) * 200;
+        const ty = (Math.random() - 0.5) * 200;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.animationDelay = `${Math.random() * 3}s`;
-        particle.style.animationDuration = `${Math.random() * 2 + 2}s`;
+        particle.style.animationDelay = `${Math.random() * 4}s`;
+        particle.style.animationDuration = `${Math.random() * 3 + 3}s`;
         
         container.appendChild(particle);
       }
@@ -608,88 +764,156 @@
       createScale();
       createParticles();
       
-      // Actualizar partículas cada 5 segundos
-      setInterval(createParticles, 5000);
+      // Actualizar partículas cada 6 segundos
+      setInterval(createParticles, 6000);
+      
+      // Verificar si hay resultados previos en localStorage
+      const lastTest = JSON.parse(localStorage.getItem('lastSpeedTest'));
+      if (lastTest) {
+        updateResults(lastTest);
+      }
     };
 
+    // Función para actualizar los resultados en la UI
+    function updateResults(data) {
+      const dl = parseFloat(data.dlStatus || 0).toFixed(1);
+      const ul = parseFloat(data.ulStatus || 0).toFixed(1);
+      const ping = parseFloat(data.ping || 0).toFixed(1);
+      const jitter = parseFloat(data.jitter || 0).toFixed(1);
+      const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
+
+      // Actualizar tarjetas
+      document.getElementById("dlSpeed").textContent = dl;
+      document.getElementById("ulSpeed").textContent = ul;
+      document.getElementById("pingText").textContent = ping;
+      document.getElementById("jitterText").textContent = jitter;
+      document.getElementById("avgSpeed").textContent = avg;
+
+      // Actualizar velocímetro
+      const progress = Math.min(avg, 500) / 500 * 100;
+      document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
+
+      // Rotar la aguja
+      const degrees = (Math.min(avg, 500) * 0.54) - 135;
+      document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+
+      // Cambiar color del borde según la velocidad
+      let borderColor = '#00ff88';
+      if (avg >= 400) borderColor = '#ff0000';
+      else if (avg >= 300) borderColor = '#ff00aa';
+      else if (avg >= 200) borderColor = '#0062ff';
+      else if (avg >= 100) borderColor = '#13ccd9';
+      
+      document.querySelector('.speedometer').style.boxShadow = 
+        `0 0 40px ${borderColor}, inset 0 0 30px rgba(0, 0, 0, 0.8)`;
+    }
+
+    // Función para manejar errores
+    function handleTestError(error) {
+      console.error("Error en la prueba de velocidad:", error);
+      document.getElementById('testStatus').textContent = "Error en la prueba";
+      document.getElementById('detailedStatus').innerHTML = 
+        '<i class="fas fa-exclamation-triangle"></i> Ocurrió un error durante la prueba. Intenta nuevamente.';
+      
+      const startBtn = document.getElementById('startBtn');
+      startBtn.disabled = false;
+      startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Reintentar';
+    }
+
+    // Función principal para iniciar la prueba
     function startTest() {
       if (testInProgress) return;
       
       testInProgress = true;
       const startBtn = document.getElementById('startBtn');
+      const statusText = document.getElementById('testStatus');
+      const detailedStatus = document.getElementById('detailedStatus');
+      
+      // Estado inicial
       startBtn.disabled = true;
       startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
-      document.getElementById('testStatus').textContent = 'Iniciando prueba...';
-      document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Preparando prueba de velocidad...';
+      statusText.textContent = 'Iniciando prueba...';
+      detailedStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Preparando prueba de velocidad...';
+      
+      // Resetear valores previos
+      document.getElementById("dlSpeed").textContent = "0";
+      document.getElementById("ulSpeed").textContent = "0";
+      document.getElementById("pingText").textContent = "0";
+      document.getElementById("jitterText").textContent = "0";
+      document.getElementById("avgSpeed").textContent = "0";
+      document.querySelector(".gauge-mask").style.setProperty("--progress", "0");
+      document.getElementById("speedNeedle").style.transform = "rotate(-135deg)";
 
       // Efecto visual al iniciar
-      document.querySelector('.gauge').style.boxShadow = '0 0 30px rgba(0, 229, 255, 0.8)';
+      document.querySelector('.speedometer').style.boxShadow = 
+        '0 0 40px rgba(19, 204, 217, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.8)';
       
+      // Configurar manejadores de eventos
       s.onupdate = function(data) {
-        let dl = parseFloat(data.dlStatus || 0).toFixed(1);
-        let ul = parseFloat(data.ulStatus || 0).toFixed(1);
-        let ping = parseFloat(data.ping || 0).toFixed(1);
-        let jitter = parseFloat(data.jitter || 0).toFixed(1);
-        let avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
+        try {
+          const dl = parseFloat(data.dlStatus || 0).toFixed(1);
+          const ul = parseFloat(data.ulStatus || 0).toFixed(1);
+          const ping = parseFloat(data.ping || 0).toFixed(1);
+          const jitter = parseFloat(data.jitter || 0).toFixed(1);
+          const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-        // Actualizar tarjetas
-        document.getElementById("dlSpeed").textContent = dl;
-        document.getElementById("ulSpeed").textContent = ul;
-        document.getElementById("pingText").textContent = ping;
-        document.getElementById("jitterText").textContent = jitter;
-        document.getElementById("avgSpeed").textContent = avg;
+          // Actualizar UI
+          updateResults(data);
 
-        // Actualizar velocímetro
-        const progress = Math.min(avg, 500) / 500 * 100;
-        document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
-
-        // Rotar la aguja (máximo 500 Mbps = 270 grados, desde -135 a +135)
-        let degrees = (Math.min(avg, 500) * 0.54) - 135;
-        document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
-
-        // Cambiar color del borde según la velocidad
-        let borderColor = '#00ff88';
-        if (avg >= 400) borderColor = '#ff0000';
-        else if (avg >= 300) borderColor = '#ff00aa';
-        else if (avg >= 200) borderColor = '#0062ff';
-        else if (avg >= 100) borderColor = '#00e5ff';
-        
-        document.querySelector('.speedometer').style.boxShadow = `0 0 30px ${borderColor}, inset 0 0 20px rgba(0, 0, 0, 0.8)`;
-
-        // Actualizar estado
-        let statusText = '';
-        if (data.testState === 1) {
-          statusText = `Probando descarga: ${dl} Mbps`;
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-download fa-fw"></i> Probando velocidad de descarga... ${dl} Mbps`;
-        } else if (data.testState === 2) {
-          statusText = `Probando subida: ${ul} Mbps`;
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-upload fa-fw"></i> Probando velocidad de subida... ${ul} Mbps`;
-        } else if (data.testState === 3) {
-          statusText = `Probando ping: ${ping} ms`;
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-network-wired fa-fw"></i> Probando latencia... ${ping} ms`;
-        } else if (data.testState === 4) {
-          statusText = `Prueba completada`;
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-check-circle"></i> Prueba completada - Descarga: ${dl} Mbps, Subida: ${ul} Mbps`;
+          // Actualizar estado según la fase de prueba
+          if (data.testState === 1) {
+            statusText.textContent = `Probando descarga: ${dl} Mbps`;
+            detailedStatus.innerHTML = `<i class="fas fa-download fa-fw"></i> Probando velocidad de descarga... ${dl} Mbps`;
+          } else if (data.testState === 2) {
+            statusText.textContent = `Probando subida: ${ul} Mbps`;
+            detailedStatus.innerHTML = `<i class="fas fa-upload fa-fw"></i> Probando velocidad de subida... ${ul} Mbps`;
+          } else if (data.testState === 3) {
+            statusText.textContent = `Probando ping: ${ping} ms`;
+            detailedStatus.innerHTML = `<i class="fas fa-network-wired fa-fw"></i> Probando latencia... ${ping} ms`;
+          }
+        } catch (error) {
+          handleTestError(error);
         }
-        
-        document.getElementById('testStatus').textContent = statusText;
       };
 
       s.onend = function(aborted) {
         testInProgress = false;
         const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = false;
-        startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
         
         if (!aborted) {
-          document.getElementById('testStatus').textContent = 'Prueba completada';
-          document.querySelector('.gauge').style.boxShadow = '0 0 30px rgba(0, 229, 255, 0.5)';
+          try {
+            // Guardar resultados en localStorage
+            const testData = {
+              dlStatus: document.getElementById("dlSpeed").textContent,
+              ulStatus: document.getElementById("ulSpeed").textContent,
+              ping: document.getElementById("pingText").textContent,
+              jitter: document.getElementById("jitterText").textContent,
+              timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('lastSpeedTest', JSON.stringify(testData));
+            
+            statusText.textContent = 'Prueba completada';
+            detailedStatus.innerHTML = `
+              <i class="fas fa-check-circle"></i> Prueba completada - 
+              Descarga: ${testData.dlStatus} Mbps, 
+              Subida: ${testData.ulStatus} Mbps
+            `;
+          } catch (error) {
+            handleTestError(error);
+          }
         }
+        
+        startBtn.disabled = false;
+        startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
       };
 
-      s.start();
+      // Manejo de errores
+      try {
+        s.start();
+      } catch (error) {
+        handleTestError(error);
+      }
     }
   </script>
-
 </body>
 </html>
