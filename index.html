@@ -27,6 +27,10 @@
       --light: #ffffff;
       --dark: #0a1a4a;
       --success: #00ff88;
+      --download: #00ff88;
+      --upload: #0062ff;
+      --ping: #ffcc00;
+      --jitter: #ff00aa;
     }
     
     * {
@@ -48,54 +52,63 @@
       overflow-x: hidden;
     }
 
-    /* Header responsive */
+    /* Header con icono personalizado */
     header {
       width: 100%;
       max-width: 500px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 1em;
-      background: rgba(18, 1, 112, 0.8);
+      justify-content: space-between;
+      padding: 1em 1.5em;
+      background: rgba(18, 1, 112, 0.9);
       backdrop-filter: blur(10px);
-      border-radius: 12px;
+      border-radius: 15px;
       margin-bottom: 1.5em;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       z-index: 10;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     }
 
-    .header-left {
-      text-align: center;
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
     }
 
     .header-left h1 {
-      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      font-size: clamp(1.5rem, 5vw, 2rem);
       font-weight: 700;
       background: linear-gradient(to right, var(--light), var(--secondary));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      text-shadow: 0 0 10px rgba(19, 204, 217, 0.5);
     }
 
     .header-left .subtitle {
-      font-size: clamp(0.7rem, 3vw, 0.9rem);
-      color: rgba(255, 255, 255, 0.9);
-      margin-top: 0.2em;
-      font-weight: 300;
+      font-size: clamp(0.8rem, 3vw, 1rem);
+      color: var(--light);
+      margin-top: 0.3em;
+      font-weight: 400;
+      letter-spacing: 0.5px;
     }
 
     .logo {
-      height: clamp(35px, 8vw, 50px);
-      margin-top: 0.5em;
-      transition: transform 0.3s;
+      height: clamp(40px, 9vw, 55px);
+      transition: transform 0.3s, filter 0.3s;
+      filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.7));
     }
 
     .logo:hover {
-      transform: scale(1.05);
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 12px rgba(19, 204, 217, 0.9));
     }
 
-    /* Contenedor principal responsive */
+    /* Contenedor principal */
     .main-content {
       display: flex;
       flex-direction: column;
@@ -118,10 +131,10 @@
     /* Velocímetro responsive */
     .speedometer-container {
       position: relative;
-      width: clamp(160px, 40vw, 200px);
-      height: clamp(160px, 40vw, 200px);
-      min-width: 160px;
-      min-height: 160px;
+      width: clamp(150px, 40vw, 190px);
+      height: clamp(150px, 40vw, 190px);
+      min-width: 150px;
+      min-height: 150px;
       z-index: 5;
       flex-shrink: 0;
     }
@@ -132,8 +145,8 @@
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 15px rgba(19, 204, 217, 0.6),
-        inset 0 0 10px rgba(0, 0, 0, 0.9);
+        0 0 20px rgba(19, 204, 217, 0.7),
+        inset 0 0 15px rgba(0, 0, 0, 0.9);
       border: clamp(5px, 1.5vw, 8px) solid var(--dark-blue);
     }
 
@@ -148,7 +161,7 @@
         var(--success) 0%,
         var(--success) 20%,
         var(--secondary) 40%,
-        #0062ff 60%,
+        var(--upload) 60%,
         var(--accent) 80%,
         #ff0000 100%
       );
@@ -187,7 +200,7 @@
       top: 50%;
       left: 50%;
       width: clamp(2px, 0.5vw, 3px);
-      height: clamp(60px, 15vw, 70px);
+      height: clamp(55px, 15vw, 65px);
       background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
@@ -207,6 +220,7 @@
       transform: translate(-50%, -50%);
       z-index: 11;
       border: clamp(1px, 0.3vw, 2px) solid var(--accent);
+      box-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
     }
 
     .value-display {
@@ -220,134 +234,187 @@
     }
 
     .value-display #avgSpeed {
-      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-size: clamp(1.4rem, 5vw, 2rem);
       font-weight: 800;
       color: #fff;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
       background: linear-gradient(to bottom, #fff, #ddd);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 15px rgba(19, 204, 217, 0.8);
     }
 
     .value-display .unit {
-      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+      font-size: clamp(0.8rem, 3vw, 1rem);
       color: var(--secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
-      font-weight: 600;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(19, 204, 217, 0.5);
     }
 
     .value-display .status {
-      font-size: clamp(0.55rem, 2vw, 0.7rem);
-      color: rgba(255, 255, 255, 0.8);
-      margin-top: 3px;
+      font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 5px;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
     }
 
-    /* Etiquetas laterales responsive */
+    /* Etiquetas laterales con colores vibrantes */
     .side-labels {
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
-      height: 100%;
-      min-height: clamp(160px, 40vw, 200px);
-      gap: 0.5em;
+      justify-content: space-between;
+      height: clamp(150px, 40vw, 190px);
+      gap: 0.8em;
     }
 
     .side-label {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: rgba(10, 26, 74, 0.6);
-      padding: 0.6em 0.4em;
-      border-radius: 8px;
-      min-width: clamp(50px, 12vw, 70px);
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(19, 204, 217, 0.1);
+      background: rgba(10, 26, 74, 0.7);
+      padding: 0.8em 0.6em;
+      border-radius: 12px;
+      min-width: clamp(65px, 18vw, 85px);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       flex: 1;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .side-label:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     .side-label h3 {
-      font-size: clamp(0.6rem, 2.5vw, 0.8rem);
-      font-weight: 600;
-      margin-bottom: 0.3em;
-      color: var(--secondary);
+      font-size: clamp(0.7rem, 3vw, 0.9rem);
+      font-weight: 700;
+      margin-bottom: 0.4em;
+      color: var(--light);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 6px;
       text-align: center;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
     }
 
     .side-label .card-value {
-      font-size: clamp(0.9rem, 3vw, 1.2rem);
-      font-weight: 700;
-      color: #fff;
-      margin: 2px 0;
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-weight: 800;
+      margin: 5px 0;
+      text-shadow: 0 0 10px currentColor;
     }
+
+    #dlSpeed { color: var(--download); }
+    #ulSpeed { color: var(--upload); }
+    #pingText { color: var(--ping); }
+    #jitterText { color: var(--jitter); }
 
     .side-label .card-unit {
-      font-size: clamp(0.5rem, 2vw, 0.7rem);
-      color: rgba(255, 255, 255, 0.8);
+      font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
     }
 
-    /* Botón responsive */
+    /* Iconos personalizados con colores */
+    .card-icon {
+      font-size: clamp(1rem, 4vw, 1.4rem);
+      margin-bottom: 5px;
+      transition: transform 0.3s, filter 0.3s;
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+
+    .download-icon { color: var(--download); }
+    .upload-icon { color: var(--upload); }
+    .ping-icon { color: var(--ping); }
+    .jitter-icon { color: var(--jitter); }
+    .title-icon { color: var(--secondary); }
+
+    .side-label:hover .card-icon {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 8px currentColor);
+    }
+
+    /* Botón con icono y efectos */
     #startBtn {
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 0.8em 1.5em;
-      font-size: clamp(0.8rem, 3vw, 1rem);
-      font-weight: 600;
+      padding: 1em 2em;
+      font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+      font-weight: 700;
       border-radius: 50px;
       cursor: pointer;
-      margin: 1em 0;
+      margin: 1.5em 0;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
       width: 90%;
-      max-width: 250px;
+      max-width: 280px;
       justify-content: center;
       z-index: 5;
-      box-shadow: 0 4px 15px rgba(15, 50, 163, 0.5);
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 5px 20px rgba(15, 50, 163, 0.6);
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #startBtn i {
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      transition: transform 0.3s;
+      color: var(--light);
     }
 
     #startBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(15, 50, 163, 0.7);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(15, 50, 163, 0.8);
+      background: linear-gradient(135deg, var(--dark-blue), var(--primary));
+    }
+
+    #startBtn:hover i {
+      transform: scale(1.2);
+      color: var(--secondary);
     }
 
     #startBtn:active {
-      transform: translateY(0);
+      transform: translateY(1px);
     }
 
-    /* Estado responsive */
+    /* Estado con icono y efectos */
     .test-status {
       margin-top: 0.5em;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+      color: var(--light);
+      font-size: clamp(0.75rem, 3vw, 0.95rem);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      background: rgba(10, 26, 74, 0.6);
-      padding: 0.8em;
-      border-radius: 10px;
+      gap: 12px;
+      background: rgba(10, 26, 74, 0.7);
+      padding: 1em 1.5em;
+      border-radius: 12px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       text-align: center;
       z-index: 5;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(19, 204, 217, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(19, 204, 217, 0.2);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      font-weight: 500;
     }
 
     .test-status i {
       color: var(--secondary);
-      font-size: clamp(0.8rem, 3vw, 1rem);
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      filter: drop-shadow(0 0 5px rgba(19, 204, 217, 0.5));
     }
 
-    /* Efectos de partículas */
+    /* Efectos de partículas mejorados */
     .particles-container {
       position: fixed;
       top: 0;
@@ -360,55 +427,68 @@
 
     .particle {
       position: absolute;
-      width: clamp(1px, 0.3vw, 2px);
-      height: clamp(1px, 0.3vw, 2px);
+      width: clamp(1px, 0.4vw, 3px);
+      height: clamp(1px, 0.4vw, 3px);
       background: var(--secondary);
       border-radius: 50%;
       opacity: 0;
-      animation: float 4s infinite ease-in;
-      filter: drop-shadow(0 0 3px var(--secondary));
+      animation: float 5s infinite ease-in-out;
+      filter: drop-shadow(0 0 5px var(--secondary));
     }
 
     @keyframes float {
       0% {
-        transform: translate(0, 0);
+        transform: translate(0, 0) rotate(0deg);
         opacity: 0;
       }
       10% {
-        opacity: 0.6;
+        opacity: 0.8;
       }
       90% {
-        opacity: 0.6;
+        opacity: 0.8;
       }
       100% {
-        transform: translate(var(--tx), var(--ty));
+        transform: translate(var(--tx), var(--ty)) rotate(360deg);
         opacity: 0;
       }
     }
 
     /* Media queries para ajustes específicos */
-    @media (max-width: 350px) {
+    @media (max-width: 400px) {
       .speedometer-wrapper {
         flex-direction: column;
+        gap: 0.8em;
       }
       .side-labels {
         flex-direction: row;
         width: 100%;
-        min-height: auto;
-        margin-top: 0.5em;
+        height: auto;
+        justify-content: space-around;
       }
       .side-label {
         min-width: 45%;
+        padding: 0.7em 0.4em;
+      }
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5em;
+      }
+      .header-content {
+        flex-direction: column;
       }
     }
 
     @media (min-width: 768px) {
       .speedometer-container {
-        width: 220px;
-        height: 220px;
+        width: 200px;
+        height: 200px;
+      }
+      .side-labels {
+        height: 200px;
       }
       .side-label {
-        min-width: 80px;
+        min-width: 90px;
       }
     }
   </style>
@@ -418,28 +498,38 @@
   <!-- Contenedor de partículas -->
   <div class="particles-container" id="particles-container"></div>
 
-  <!-- Header responsive -->
+  <!-- Header con icono personalizado -->
   <header>
-    <div class="header-left">
-      <h1>TLAXICOM</h1>
-      <div class="subtitle">Internet a tu alcance</div>
+    <div class="header-content">
+      <div class="header-left">
+        <h1>
+          <i class="fas fa-network-wired title-icon"></i>
+          TLAXICOM
+        </h1>
+        <div class="subtitle">Internet a tu alcance</div>
+      </div>
     </div>
     <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Contenido principal responsive -->
+  <!-- Contenido principal -->
   <div class="main-content">
     <div class="speedometer-wrapper">
-      <!-- Etiqueta izquierda (Descarga) -->
+      <!-- Etiqueta izquierda (Descarga y Ping) -->
       <div class="side-labels">
         <div class="side-label">
-          <h3><i class="fas fa-download"></i>Descarga</h3>
+          <h3><i class="fas fa-cloud-download-alt card-icon download-icon"></i>Descarga</h3>
           <div class="card-value" id="dlSpeed">0</div>
           <div class="card-unit">Mbps</div>
         </div>
+        <div class="side-label">
+          <h3><i class="fas fa-stopwatch card-icon ping-icon"></i>Ping</h3>
+          <div class="card-value" id="pingText">0</div>
+          <div class="card-unit">ms</div>
+        </div>
       </div>
       
-      <!-- Velocímetro responsive -->
+      <!-- Velocímetro central -->
       <div class="speedometer-container">
         <div class="speedometer" id="speedMeter">
           <div class="gauge" style="--progress: 0;">
@@ -457,42 +547,33 @@
         </div>
       </div>
       
-      <!-- Etiqueta derecha (Subida) -->
+      <!-- Etiqueta derecha (Subida y Jitter) -->
       <div class="side-labels">
         <div class="side-label">
-          <h3><i class="fas fa-upload"></i>Subida</h3>
+          <h3><i class="fas fa-cloud-upload-alt card-icon upload-icon"></i>Subida</h3>
           <div class="card-value" id="ulSpeed">0</div>
           <div class="card-unit">Mbps</div>
+        </div>
+        <div class="side-label">
+          <h3><i class="fas fa-random card-icon jitter-icon"></i>Jitter</h3>
+          <div class="card-value" id="jitterText">0</div>
+          <div class="card-unit">ms</div>
         </div>
       </div>
     </div>
 
-    <!-- Segunda fila de etiquetas (Ping y Jitter) -->
-    <div class="speedometer-wrapper" style="justify-content: center; gap: 1em; margin-top: 0.5em;">
-      <div class="side-label">
-        <h3><i class="fas fa-network-wired"></i>Ping</h3>
-        <div class="card-value" id="pingText">0</div>
-        <div class="card-unit">ms</div>
-      </div>
-      <div class="side-label">
-        <h3><i class="fas fa-tachometer-alt"></i>Jitter</h3>
-        <div class="card-value" id="jitterText">0</div>
-        <div class="card-unit">ms</div>
-      </div>
-    </div>
-
-    <!-- Botón responsive -->
+    <!-- Botón con icono -->
     <button id="startBtn" onclick="startTest()">
       <i class="fas fa-bolt"></i> INICIAR PRUEBA
     </button>
 
-    <!-- Estado responsive -->
+    <!-- Estado con icono -->
     <div class="test-status" id="detailedStatus">
-      <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba
+      <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba de velocidad
     </div>
   </div>
 
-  <!-- Lógica JS optimizada -->
+  <!-- Lógica JS mejorada -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
@@ -503,13 +584,16 @@
     s.setParameter("time_ul_max", 10);
     s.setParameter("time_dl_max", 10);
     
-    // Función para crear partículas
+    // Función para crear partículas dinámicas
     function createParticles() {
       const container = document.getElementById('particles-container');
       container.innerHTML = '';
       
-      // Cantidad dinámica de partículas según tamaño de pantalla
-      const particleCount = Math.floor(window.innerWidth / 20);
+      // Cantidad basada en el tamaño de pantalla
+      const particleCount = Math.min(Math.floor(window.innerWidth / 15), 50);
+      
+      // Colores de partículas
+      const colors = ['#13ccd9', '#00ff88', '#0062ff', '#ffcc00', '#ff00aa'];
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -520,28 +604,27 @@
         particle.style.top = `${Math.random() * 100}%`;
         
         // Tamaño y opacidad aleatorios
-        const size = Math.random() * 2 + 1;
+        const size = Math.random() * 3 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        particle.style.opacity = Math.random() * 0.5 + 0.2;
+        particle.style.opacity = Math.random() * 0.6 + 0.2;
         
-        // Color basado en el tema
-        const colors = ['#13ccd9', '#00ff88', '#0062ff'];
+        // Color aleatorio
         particle.style.background = colors[Math.floor(Math.random() * colors.length)];
         
-        // Animación aleatoria
-        const tx = (Math.random() - 0.5) * 100;
-        const ty = (Math.random() - 0.5) * 100;
+        // Animación única para cada partícula
+        const tx = (Math.random() - 0.5) * 150;
+        const ty = (Math.random() - 0.5) * 150;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.animationDelay = `${Math.random() * 4}s`;
-        particle.style.animationDuration = `${Math.random() * 3 + 3}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particle.style.animationDuration = `${Math.random() * 4 + 4}s`;
         
         container.appendChild(particle);
       }
     }
     
-    // Función para actualizar resultados
+    // Función para actualizar resultados con animaciones
     function updateResults(data) {
       try {
         const dl = parseFloat(data.dlStatus || 0).toFixed(1);
@@ -550,21 +633,51 @@
         const jitter = parseFloat(data.jitter || 0).toFixed(1);
         const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-        // Actualizar valores
-        document.getElementById("dlSpeed").textContent = dl;
-        document.getElementById("ulSpeed").textContent = ul;
-        document.getElementById("pingText").textContent = ping;
-        document.getElementById("jitterText").textContent = jitter;
-        document.getElementById("avgSpeed").textContent = avg;
+        // Animación de los valores
+        animateValue("dlSpeed", dl);
+        animateValue("ulSpeed", ul);
+        animateValue("pingText", ping);
+        animateValue("jitterText", jitter);
+        animateValue("avgSpeed", avg);
 
         // Actualizar velocímetro
         const progress = Math.min(avg, 500) / 500 * 100;
         document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
         const degrees = (Math.min(avg, 500) * 0.54) - 135;
         document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+        
+        // Actualizar estado según fase de prueba
+        if (data.testState === 1) {
+          document.getElementById('testStatus').textContent = `Probando descarga: ${dl} Mbps`;
+        } else if (data.testState === 2) {
+          document.getElementById('testStatus').textContent = `Probando subida: ${ul} Mbps`;
+        } else if (data.testState === 3) {
+          document.getElementById('testStatus').textContent = `Probando ping: ${ping} ms`;
+        }
       } catch (error) {
         console.error("Error updating results:", error);
       }
+    }
+
+    // Función para animar cambios de valor
+    function animateValue(id, target) {
+      const element = document.getElementById(id);
+      const current = parseFloat(element.textContent) || 0;
+      const duration = 800;
+      const start = Date.now();
+      
+      const update = () => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = current + (target - current) * progress;
+        element.textContent = value.toFixed(1);
+        
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      };
+      
+      update();
     }
 
     // Función para manejar errores
@@ -588,33 +701,34 @@
       startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
       document.getElementById("testStatus").textContent = 'Iniciando prueba...';
       
-      // Resetear valores
-      document.getElementById("dlSpeed").textContent = "0";
-      document.getElementById("ulSpeed").textContent = "0";
-      document.getElementById("pingText").textContent = "0";
-      document.getElementById("jitterText").textContent = "0";
-      document.getElementById("avgSpeed").textContent = "0";
+      // Resetear valores con animación
+      animateValue("dlSpeed", 0);
+      animateValue("ulSpeed", 0);
+      animateValue("pingText", 0);
+      animateValue("jitterText", 0);
+      animateValue("avgSpeed", 0);
+      
       document.querySelector(".gauge-mask").style.setProperty("--progress", "0");
       document.getElementById("speedNeedle").style.transform = "rotate(-135deg)";
       
       // Configurar manejadores de eventos
-      s.onupdate = function(data) {
-        updateResults(data);
-        
-        if (data.testState === 1) {
-          document.getElementById('testStatus').textContent = `Descarga: ${parseFloat(data.dlStatus || 0).toFixed(1)} Mbps`;
-        } else if (data.testState === 2) {
-          document.getElementById('testStatus').textContent = `Subida: ${parseFloat(data.ulStatus || 0).toFixed(1)} Mbps`;
-        } else if (data.testState === 3) {
-          document.getElementById('testStatus').textContent = `Ping: ${parseFloat(data.ping || 0).toFixed(1)} ms`;
-        }
-      };
+      s.onupdate = updateResults;
 
       s.onend = function() {
         testInProgress = false;
         startBtn.disabled = false;
         startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
         document.getElementById('testStatus').textContent = 'Prueba completada';
+        
+        // Guardar resultados
+        const testData = {
+          dlStatus: document.getElementById("dlSpeed").textContent,
+          ulStatus: document.getElementById("ulSpeed").textContent,
+          ping: document.getElementById("pingText").textContent,
+          jitter: document.getElementById("jitterText").textContent,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('lastSpeedTest', JSON.stringify(testData));
       };
 
       // Iniciar prueba con manejo de errores
@@ -625,14 +739,30 @@
       }
     }
 
-    // Inicialización optimizada
+    // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
-      // Cargar partículas y configurar eventos
+      // Cargar partículas
       createParticles();
       window.addEventListener('resize', createParticles);
       
-      // Actualizar partículas cada 5 segundos
-      const particleInterval = setInterval(createParticles, 5000);
+      // Actualizar partículas periódicamente
+      const particleInterval = setInterval(createParticles, 6000);
+      
+      // Cargar resultados previos si existen
+      const lastTest = localStorage.getItem('lastSpeedTest');
+      if (lastTest) {
+        try {
+          const testData = JSON.parse(lastTest);
+          document.getElementById("dlSpeed").textContent = testData.dlStatus;
+          document.getElementById("ulSpeed").textContent = testData.ulStatus;
+          document.getElementById("pingText").textContent = testData.ping;
+          document.getElementById("jitterText").textContent = testData.jitter;
+          document.getElementById("avgSpeed").textContent = 
+            ((parseFloat(testData.dlStatus) + parseFloat(testData.ulStatus)) / 2).toFixed(1);
+        } catch (e) {
+          console.log("No se pudieron cargar resultados previos");
+        }
+      }
       
       // Limpiar intervalo al salir
       window.addEventListener('beforeunload', () => {
