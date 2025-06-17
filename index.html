@@ -47,36 +47,36 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1em;
+      padding: 2em;
       position: relative;
       overflow-x: hidden;
     }
 
-    /* Header con icono personalizado */
+    /* Header más grande para desktop */
     header {
       width: 100%;
-      max-width: 500px;
+      max-width: 800px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1em 1.5em;
+      padding: 1.5em 2em;
       background: rgba(18, 1, 112, 0.9);
       backdrop-filter: blur(10px);
-      border-radius: 15px;
-      margin-bottom: 1.5em;
+      border-radius: 20px;
+      margin-bottom: 2em;
       border: 1px solid rgba(255, 255, 255, 0.2);
       z-index: 10;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
     .header-content {
       display: flex;
       align-items: center;
-      gap: 0.8em;
+      gap: 1em;
     }
 
     .header-left h1 {
-      font-size: clamp(1.5rem, 5vw, 2rem);
+      font-size: 2.2rem;
       font-weight: 700;
       background: linear-gradient(to right, var(--light), var(--secondary));
       -webkit-background-clip: text;
@@ -85,56 +85,54 @@
       margin: 0;
       display: flex;
       align-items: center;
-      gap: 0.5em;
-      text-shadow: 0 0 10px rgba(19, 204, 217, 0.5);
+      gap: 0.8em;
+      text-shadow: 0 0 15px rgba(19, 204, 217, 0.6);
     }
 
     .header-left .subtitle {
-      font-size: clamp(0.8rem, 3vw, 1rem);
+      font-size: 1.1rem;
       color: var(--light);
-      margin-top: 0.3em;
+      margin-top: 0.4em;
       font-weight: 400;
       letter-spacing: 0.5px;
     }
 
     .logo {
-      height: clamp(40px, 9vw, 55px);
+      height: 70px;
       transition: transform 0.3s, filter 0.3s;
-      filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.7));
+      filter: drop-shadow(0 0 10px rgba(19, 204, 217, 0.8));
     }
 
     .logo:hover {
       transform: scale(1.1);
-      filter: drop-shadow(0 0 12px rgba(19, 204, 217, 0.9));
+      filter: drop-shadow(0 0 15px rgba(19, 204, 217, 1));
     }
 
-    /* Contenedor principal */
+    /* Contenedor principal más grande para desktop */
     .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
       width: 100%;
-      max-width: 500px;
+      max-width: 900px;
     }
 
-    /* Velocímetro y etiquetas laterales */
+    /* Velocímetro y etiquetas laterales - tamaño desktop */
     .speedometer-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       position: relative;
-      margin-bottom: 1em;
-      gap: 0.5em;
+      margin-bottom: 2em;
+      gap: 1.5em;
     }
 
-    /* Velocímetro responsive */
+    /* Velocímetro grande para desktop */
     .speedometer-container {
       position: relative;
-      width: clamp(150px, 40vw, 190px);
-      height: clamp(150px, 40vw, 190px);
-      min-width: 150px;
-      min-height: 150px;
+      width: 300px;
+      height: 300px;
       z-index: 5;
       flex-shrink: 0;
     }
@@ -145,17 +143,17 @@
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 20px rgba(19, 204, 217, 0.7),
-        inset 0 0 15px rgba(0, 0, 0, 0.9);
-      border: clamp(5px, 1.5vw, 8px) solid var(--dark-blue);
+        0 0 30px rgba(19, 204, 217, 0.8),
+        inset 0 0 20px rgba(0, 0, 0, 0.9);
+      border: 10px solid var(--dark-blue);
     }
 
     .gauge {
       position: absolute;
-      top: clamp(10px, 2.5vw, 12px);
-      left: clamp(10px, 2.5vw, 12px);
-      right: clamp(10px, 2.5vw, 12px);
-      bottom: clamp(10px, 2.5vw, 12px);
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
       border-radius: 50%;
       background: conic-gradient(
         var(--success) 0%,
@@ -172,8 +170,8 @@
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - clamp(20px, 5vw, 24px));
-      height: calc(100% - clamp(20px, 5vw, 24px));
+      width: calc(100% - 40px);
+      height: calc(100% - 40px);
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
@@ -185,8 +183,8 @@
     }
 
     .gauge-inner {
-      width: calc(100% - clamp(40px, 10vw, 50px));
-      height: calc(100% - clamp(40px, 10vw, 50px));
+      width: calc(100% - 80px);
+      height: calc(100% - 80px);
       border-radius: 50%;
       background: radial-gradient(circle at center, var(--dark-blue) 0%, #000 100%);
       display: flex;
@@ -199,8 +197,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: clamp(2px, 0.5vw, 3px);
-      height: clamp(55px, 15vw, 65px);
+      width: 4px;
+      height: 120px;
       background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
@@ -213,14 +211,14 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: clamp(12px, 3vw, 14px);
-      height: clamp(12px, 3vw, 14px);
+      width: 20px;
+      height: 20px;
       background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
-      border: clamp(1px, 0.3vw, 2px) solid var(--accent);
-      box-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.8);
     }
 
     .value-display {
@@ -234,40 +232,40 @@
     }
 
     .value-display #avgSpeed {
-      font-size: clamp(1.4rem, 5vw, 2rem);
+      font-size: 2.8rem;
       font-weight: 800;
       color: #fff;
-      margin-bottom: 3px;
+      margin-bottom: 5px;
       background: linear-gradient(to bottom, #fff, #ddd);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 15px rgba(19, 204, 217, 0.8);
+      text-shadow: 0 0 20px rgba(19, 204, 217, 0.9);
     }
 
     .value-display .unit {
-      font-size: clamp(0.8rem, 3vw, 1rem);
+      font-size: 1.2rem;
       color: var(--secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
       font-weight: 700;
-      text-shadow: 0 0 8px rgba(19, 204, 217, 0.5);
+      text-shadow: 0 0 10px rgba(19, 204, 217, 0.6);
     }
 
     .value-display .status {
-      font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+      font-size: 0.9rem;
       color: rgba(255, 255, 255, 0.9);
-      margin-top: 5px;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+      margin-top: 8px;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
     }
 
-    /* Etiquetas laterales con colores vibrantes */
+    /* Etiquetas laterales grandes para desktop */
     .side-labels {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: clamp(150px, 40vw, 190px);
-      gap: 0.8em;
+      height: 300px;
+      gap: 1.5em;
     }
 
     .side-label {
@@ -275,39 +273,38 @@
       flex-direction: column;
       align-items: center;
       background: rgba(10, 26, 74, 0.7);
-      padding: 0.8em 0.6em;
-      border-radius: 12px;
-      min-width: clamp(65px, 18vw, 85px);
+      padding: 1.2em 1em;
+      border-radius: 15px;
+      min-width: 120px;
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      flex: 1;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
       transition: transform 0.3s, box-shadow 0.3s;
     }
 
     .side-label:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
     }
 
     .side-label h3 {
-      font-size: clamp(0.7rem, 3vw, 0.9rem);
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 0.4em;
+      margin-bottom: 0.5em;
       color: var(--light);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       text-align: center;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
     }
 
     .side-label .card-value {
-      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-size: 1.8rem;
       font-weight: 800;
-      margin: 5px 0;
-      text-shadow: 0 0 10px currentColor;
+      margin: 10px 0;
+      text-shadow: 0 0 15px currentColor;
     }
 
     #dlSpeed { color: var(--download); }
@@ -316,17 +313,17 @@
     #jitterText { color: var(--jitter); }
 
     .side-label .card-unit {
-      font-size: clamp(0.65rem, 2.5vw, 0.8rem);
+      font-size: 0.9rem;
       color: rgba(255, 255, 255, 0.9);
       font-weight: 600;
     }
 
-    /* Iconos personalizados con colores */
+    /* Iconos grandes para desktop */
     .card-icon {
-      font-size: clamp(1rem, 4vw, 1.4rem);
-      margin-bottom: 5px;
+      font-size: 1.8rem;
+      margin-bottom: 8px;
       transition: transform 0.3s, filter 0.3s;
-      filter: drop-shadow(0 0 5px currentColor);
+      filter: drop-shadow(0 0 8px currentColor);
     }
 
     .download-icon { color: var(--download); }
@@ -336,44 +333,58 @@
     .title-icon { color: var(--secondary); }
 
     .side-label:hover .card-icon {
-      transform: scale(1.15);
-      filter: drop-shadow(0 0 8px currentColor);
+      transform: scale(1.2);
+      filter: drop-shadow(0 0 12px currentColor);
     }
 
-    /* Botón con icono y efectos */
+    /* Botón alineado con las etiquetas laterales */
+    .button-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 2em 0;
+    }
+
+    .button-spacer {
+      width: 120px; /* Mismo ancho que las side-labels */
+      visibility: hidden;
+    }
+
     #startBtn {
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 1em 2em;
-      font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+      padding: 1.2em 2.5em;
+      font-size: 1.2rem;
       font-weight: 700;
       border-radius: 50px;
       cursor: pointer;
-      margin: 1.5em 0;
       display: flex;
       align-items: center;
-      gap: 12px;
-      width: 90%;
-      max-width: 280px;
+      gap: 15px;
+      max-width: 350px;
       justify-content: center;
       z-index: 5;
-      box-shadow: 0 5px 20px rgba(15, 50, 163, 0.6);
+      box-shadow: 0 8px 25px rgba(15, 50, 163, 0.7);
       transition: all 0.3s;
       text-transform: uppercase;
       letter-spacing: 1px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-grow: 1;
+      margin: 0 1.5em;
     }
 
     #startBtn i {
-      font-size: clamp(1rem, 4vw, 1.3rem);
+      font-size: 1.5rem;
       transition: transform 0.3s;
       color: var(--light);
     }
 
     #startBtn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(15, 50, 163, 0.8);
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(15, 50, 163, 0.9);
       background: linear-gradient(135deg, var(--dark-blue), var(--primary));
     }
 
@@ -383,35 +394,35 @@
     }
 
     #startBtn:active {
-      transform: translateY(1px);
+      transform: translateY(2px);
     }
 
-    /* Estado con icono y efectos */
+    /* Estado grande para desktop */
     .test-status {
-      margin-top: 0.5em;
+      margin-top: 1em;
       color: var(--light);
-      font-size: clamp(0.75rem, 3vw, 0.95rem);
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 15px;
       background: rgba(10, 26, 74, 0.7);
-      padding: 1em 1.5em;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 420px;
+      padding: 1.2em 2em;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 600px;
       text-align: center;
       z-index: 5;
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(19, 204, 217, 0.2);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(19, 204, 217, 0.25);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
       font-weight: 500;
     }
 
     .test-status i {
       color: var(--secondary);
-      font-size: clamp(1rem, 4vw, 1.3rem);
-      filter: drop-shadow(0 0 5px rgba(19, 204, 217, 0.5));
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.6));
     }
 
     /* Efectos de partículas mejorados */
@@ -427,13 +438,13 @@
 
     .particle {
       position: absolute;
-      width: clamp(1px, 0.4vw, 3px);
-      height: clamp(1px, 0.4vw, 3px);
+      width: 3px;
+      height: 3px;
       background: var(--secondary);
       border-radius: 50%;
       opacity: 0;
-      animation: float 5s infinite ease-in-out;
-      filter: drop-shadow(0 0 5px var(--secondary));
+      animation: float 6s infinite ease-in-out;
+      filter: drop-shadow(0 0 8px var(--secondary));
     }
 
     @keyframes float {
@@ -453,42 +464,94 @@
       }
     }
 
-    /* Media queries para ajustes específicos */
-    @media (max-width: 400px) {
-      .speedometer-wrapper {
+    /* Media queries para móvil */
+    @media (max-width: 768px) {
+      body {
+        padding: 1em;
+      }
+      
+      header {
+        max-width: 100%;
+        padding: 1em;
         flex-direction: column;
         gap: 0.8em;
+        text-align: center;
       }
+      
+      .header-content {
+        flex-direction: column;
+      }
+      
+      .header-left h1 {
+        font-size: 1.8rem;
+        flex-direction: column;
+        gap: 0.3em;
+      }
+      
+      .logo {
+        height: 50px;
+      }
+      
+      .speedometer-container {
+        width: 220px;
+        height: 220px;
+      }
+      
+      .side-labels {
+        height: 220px;
+        gap: 1em;
+      }
+      
+      .side-label {
+        min-width: 90px;
+        padding: 0.8em 0.6em;
+      }
+      
+      .value-display #avgSpeed {
+        font-size: 2rem;
+      }
+      
+      .button-container {
+        flex-direction: column;
+        gap: 1em;
+      }
+      
+      .button-spacer {
+        display: none;
+      }
+      
+      #startBtn {
+        width: 100%;
+        margin: 0;
+        padding: 1em 2em;
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .speedometer-wrapper {
+        flex-direction: column;
+        gap: 1em;
+      }
+      
       .side-labels {
         flex-direction: row;
         width: 100%;
         height: auto;
         justify-content: space-around;
       }
+      
       .side-label {
         min-width: 45%;
-        padding: 0.7em 0.4em;
+        padding: 0.8em 0.5em;
       }
-      header {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5em;
+      
+      .header-left h1 {
+        font-size: 1.5rem;
       }
-      .header-content {
-        flex-direction: column;
-      }
-    }
-
-    @media (min-width: 768px) {
-      .speedometer-container {
-        width: 200px;
-        height: 200px;
-      }
-      .side-labels {
-        height: 200px;
-      }
-      .side-label {
-        min-width: 90px;
+      
+      .header-left .subtitle {
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -498,7 +561,7 @@
   <!-- Contenedor de partículas -->
   <div class="particles-container" id="particles-container"></div>
 
-  <!-- Header con icono personalizado -->
+  <!-- Header con logo a la derecha -->
   <header>
     <div class="header-content">
       <div class="header-left">
@@ -562,10 +625,14 @@
       </div>
     </div>
 
-    <!-- Botón con icono -->
-    <button id="startBtn" onclick="startTest()">
-      <i class="fas fa-bolt"></i> INICIAR PRUEBA
-    </button>
+    <!-- Contenedor del botón alineado con las etiquetas -->
+    <div class="button-container">
+      <div class="button-spacer"></div> <!-- Espaciador izquierdo -->
+      <button id="startBtn" onclick="startTest()">
+        <i class="fas fa-bolt"></i> INICIAR PRUEBA
+      </button>
+      <div class="button-spacer"></div> <!-- Espaciador derecho -->
+    </div>
 
     <!-- Estado con icono -->
     <div class="test-status" id="detailedStatus">
@@ -573,7 +640,7 @@
     </div>
   </div>
 
-  <!-- Lógica JS mejorada -->
+  <!-- Lógica JS (igual que antes) -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
@@ -590,7 +657,7 @@
       container.innerHTML = '';
       
       // Cantidad basada en el tamaño de pantalla
-      const particleCount = Math.min(Math.floor(window.innerWidth / 15), 50);
+      const particleCount = Math.min(Math.floor(window.innerWidth / 10), 80);
       
       // Colores de partículas
       const colors = ['#13ccd9', '#00ff88', '#0062ff', '#ffcc00', '#ff00aa'];
@@ -604,21 +671,21 @@
         particle.style.top = `${Math.random() * 100}%`;
         
         // Tamaño y opacidad aleatorios
-        const size = Math.random() * 3 + 1;
+        const size = Math.random() * 4 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        particle.style.opacity = Math.random() * 0.6 + 0.2;
+        particle.style.opacity = Math.random() * 0.7 + 0.2;
         
         // Color aleatorio
         particle.style.background = colors[Math.floor(Math.random() * colors.length)];
         
         // Animación única para cada partícula
-        const tx = (Math.random() - 0.5) * 150;
-        const ty = (Math.random() - 0.5) * 150;
+        const tx = (Math.random() - 0.5) * 200;
+        const ty = (Math.random() - 0.5) * 200;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.animationDelay = `${Math.random() * 5}s`;
-        particle.style.animationDuration = `${Math.random() * 4 + 4}s`;
+        particle.style.animationDelay = `${Math.random() * 6}s`;
+        particle.style.animationDuration = `${Math.random() * 5 + 5}s`;
         
         container.appendChild(particle);
       }
@@ -746,7 +813,7 @@
       window.addEventListener('resize', createParticles);
       
       // Actualizar partículas periódicamente
-      const particleInterval = setInterval(createParticles, 6000);
+      const particleInterval = setInterval(createParticles, 7000);
       
       // Cargar resultados previos si existen
       const lastTest = localStorage.getItem('lastSpeedTest');
