@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>TLAXICOM</title>
 
   <!-- Favicon -->
@@ -43,54 +43,35 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2em;
+      padding: 1em;
       position: relative;
       overflow-x: hidden;
+      font-size: 14px;
     }
 
-    /* Efecto de partículas de fondo */
-    .particles-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    /* Header moderno */
+    /* Header compacto */
     header {
       width: 100%;
-      max-width: 1000px;
+      max-width: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 1.5em 2em;
+      padding: 1em;
       background: rgba(18, 1, 112, 0.8);
       backdrop-filter: blur(10px);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(19, 204, 217, 0.3);
-      margin-bottom: 2.5em;
+      border-radius: 12px;
+      margin-bottom: 1.5em;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
       z-index: 10;
     }
 
-    header:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(19, 204, 217, 0.4);
-    }
-
     .header-left {
-      text-align: left;
+      text-align: center;
     }
 
     .header-left h1 {
-      font-size: 2em;
+      font-size: 1.5em;
       font-weight: 700;
-      color: var(--light);
-      margin: 0;
       background: linear-gradient(to right, var(--light), var(--secondary));
       -webkit-background-clip: text;
       background-clip: text;
@@ -98,55 +79,43 @@
     }
 
     .header-left .subtitle {
-      font-size: 1em;
+      font-size: 0.8em;
       color: rgba(255, 255, 255, 0.9);
-      margin-top: 0.3em;
+      margin-top: 0.2em;
       font-weight: 300;
     }
 
     .logo {
-      height: 70px;
-      transition: transform 0.3s ease;
+      height: 40px;
+      margin-top: 0.5em;
     }
 
-    .logo:hover {
-      transform: scale(1.05) rotate(5deg);
-    }
-
-    /* Velocímetro futurista */
+    /* Velocímetro compacto */
     .speedometer-container {
       position: relative;
-      width: 380px;
-      height: 380px;
-      margin-bottom: 3em;
-      perspective: 1000px;
+      width: 220px;
+      height: 220px;
+      margin-bottom: 1.5em;
+      z-index: 5;
     }
 
     .speedometer {
-      position: relative;
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 40px rgba(19, 204, 217, 0.6),
-        inset 0 0 30px rgba(0, 0, 0, 0.9);
-      overflow: hidden;
-      border: 10px solid var(--dark-blue);
-      transform-style: preserve-3d;
-      transition: transform 0.5s ease;
-    }
-
-    .speedometer:hover {
-      transform: rotateY(5deg) rotateX(5deg);
+        0 0 20px rgba(19, 204, 217, 0.6),
+        inset 0 0 15px rgba(0, 0, 0, 0.9);
+      border: 8px solid var(--dark-blue);
     }
 
     .gauge {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      right: 20px;
-      bottom: 20px;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
       border-radius: 50%;
       background: conic-gradient(
         var(--success) 0%,
@@ -159,19 +128,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      filter: drop-shadow(0 0 15px rgba(19, 204, 217, 0.7));
-      animation: pulse 3s infinite alternate;
-    }
-
-    @keyframes pulse {
-      0% { filter: drop-shadow(0 0 15px rgba(19, 204, 217, 0.7)); }
-      100% { filter: drop-shadow(0 0 25px rgba(19, 204, 217, 0.9)); }
     }
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - 40px);
-      height: calc(100% - 40px);
+      width: calc(100% - 30px);
+      height: calc(100% - 30px);
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
@@ -183,57 +145,27 @@
     }
 
     .gauge-inner {
-      width: calc(100% - 80px);
-      height: calc(100% - 80px);
+      width: calc(100% - 60px);
+      height: calc(100% - 60px);
       border-radius: 50%;
       background: radial-gradient(circle at center, var(--dark-blue) 0%, #000 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: 
-        inset 0 0 30px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(19, 204, 217, 0.5);
-      border: 3px solid rgba(19, 204, 217, 0.3);
-    }
-
-    .scale {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-    }
-
-    .scale-mark {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 2px;
-      height: 15px;
-      background: rgba(255, 255, 255, 0.8);
-      transform-origin: 50% 190px;
-    }
-
-    .scale-label {
-      position: absolute;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-      transform-origin: 50% 160px;
     }
 
     .needle {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 4px;
-      height: 150px;
+      width: 3px;
+      height: 90px;
       background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
       transform: rotate(-135deg);
       z-index: 10;
-      box-shadow: 0 0 20px rgba(255, 51, 102, 0.8);
       transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
@@ -241,22 +173,13 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 26px;
-      height: 26px;
+      width: 18px;
+      height: 18px;
       background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
-      box-shadow: 
-        0 0 20px rgba(255, 255, 255, 0.8),
-        inset 0 0 10px rgba(0, 0, 0, 0.6);
-      border: 3px solid var(--accent);
-      animation: glow 2s infinite alternate;
-    }
-
-    @keyframes glow {
-      0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
-      100% { box-shadow: 0 0 30px rgba(255, 255, 255, 1); }
+      border: 2px solid var(--accent);
     }
 
     .value-display {
@@ -270,12 +193,10 @@
     }
 
     .value-display #avgSpeed {
-      font-size: 3.2em;
+      font-size: 1.8em;
       font-weight: 800;
       color: #fff;
-      text-shadow: 0 0 20px rgba(19, 204, 217, 1);
-      margin-bottom: 5px;
-      font-family: 'Inter', sans-serif;
+      margin-bottom: 3px;
       background: linear-gradient(to bottom, #fff, #ddd);
       -webkit-background-clip: text;
       background-clip: text;
@@ -283,220 +204,138 @@
     }
 
     .value-display .unit {
-      font-size: 1.3em;
+      font-size: 0.9em;
       color: var(--secondary);
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       font-weight: 600;
-      margin-bottom: 10px;
     }
 
     .value-display .status {
-      font-size: 1em;
+      font-size: 0.7em;
       color: rgba(255, 255, 255, 0.8);
-      margin-top: 15px;
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      margin-top: 5px;
     }
 
-    /* Botón Iniciar mejorado */
+    /* Botón compacto */
     #startBtn {
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 1.2em 3em;
-      font-size: 1.1em;
+      padding: 0.8em 1.5em;
+      font-size: 0.9em;
       font-weight: 600;
       border-radius: 50px;
       cursor: pointer;
-      box-shadow: 
-        0 6px 20px rgba(15, 50, 163, 0.5),
-        0 0 15px rgba(19, 204, 217, 0.6);
-      transition: all 0.4s ease;
-      margin-top: 1.5em;
+      margin: 1em 0;
       display: flex;
       align-items: center;
-      gap: 12px;
-      position: relative;
-      overflow: hidden;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    #startBtn:hover {
-      transform: translateY(-3px) scale(1.03);
-      box-shadow: 
-        0 8px 25px rgba(15, 50, 163, 0.7),
-        0 0 20px rgba(19, 204, 217, 0.8);
+      gap: 8px;
+      width: 90%;
+      max-width: 200px;
+      justify-content: center;
+      z-index: 5;
+      box-shadow: 0 4px 15px rgba(15, 50, 163, 0.5);
+      transition: transform 0.2s;
     }
 
     #startBtn:active {
-      transform: translateY(1px);
+      transform: scale(0.98);
     }
 
-    #startBtn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-      );
-      transition: 0.5s;
-    }
-
-    #startBtn:hover::before {
-      left: 100%;
-    }
-
-    #startBtn i {
-      transition: transform 0.3s ease;
-    }
-
-    #startBtn:hover i {
-      transform: scale(1.2);
-    }
-
-    /* Tarjetas informativas futuristas */
+    /* Tarjetas compactas */
     .info-wrapper {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5em;
-      margin-top: 2.5em;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8em;
+      margin-top: 1em;
       width: 100%;
-      max-width: 800px;
+      max-width: 300px;
+      z-index: 5;
     }
 
     .info-card {
       background: rgba(10, 26, 74, 0.6);
-      backdrop-filter: blur(10px);
       color: white;
-      padding: 1.8em 1.5em;
-      border-radius: 16px;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        inset 0 0 20px rgba(19, 204, 217, 0.2);
-      transition: all 0.4s ease;
-      border: 1px solid rgba(19, 204, 217, 0.2);
-      position: relative;
-      overflow: hidden;
+      padding: 0.8em;
+      border-radius: 10px;
       text-align: center;
-    }
-
-    .info-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--secondary), var(--primary));
-    }
-
-    .info-card:hover {
-      transform: translateY(-8px) scale(1.03);
-      box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.4),
-        inset 0 0 25px rgba(19, 204, 217, 0.3);
-      border-color: rgba(19, 204, 217, 0.4);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(19, 204, 217, 0.1);
     }
 
     .info-card h3 {
-      font-size: 1.1em;
+      font-size: 0.8em;
       font-weight: 600;
-      margin-bottom: 0.8em;
+      margin-bottom: 0.5em;
       color: var(--secondary);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 5px;
     }
 
     .info-card .card-value {
-      font-size: 2.2em;
+      font-size: 1.2em;
       font-weight: 700;
       color: #fff;
-      margin: 15px 0;
-      text-shadow: 0 0 15px rgba(19, 204, 217, 0.7);
-      transition: all 0.3s ease;
-    }
-
-    .info-card:hover .card-value {
-      transform: scale(1.1);
+      margin: 5px 0;
     }
 
     .info-card .card-unit {
-      font-size: 0.9em;
+      font-size: 0.7em;
       color: rgba(255, 255, 255, 0.8);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
     }
 
     .card-icon {
-      font-size: 1.3em;
+      font-size: 0.9em;
       color: var(--secondary);
-      transition: transform 0.3s ease;
     }
 
-    .info-card:hover .card-icon {
-      transform: rotate(15deg) scale(1.2);
-    }
-
-    /* Estado de la prueba mejorado */
+    /* Estado compacto */
     .test-status {
-      margin-top: 2em;
+      margin-top: 1em;
       color: rgba(255, 255, 255, 0.9);
-      font-size: 1em;
+      font-size: 0.8em;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 8px;
       background: rgba(10, 26, 74, 0.6);
-      backdrop-filter: blur(10px);
-      padding: 1.2em 2em;
-      border-radius: 50px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(19, 204, 217, 0.2);
-      max-width: 800px;
-      width: 100%;
+      padding: 0.8em;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 300px;
       text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .test-status:hover {
-      background: rgba(10, 26, 74, 0.8);
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+      z-index: 5;
+      backdrop-filter: blur(5px);
     }
 
     .test-status i {
       color: var(--secondary);
-      font-size: 1.2em;
+      font-size: 0.9em;
     }
 
-    /* Efecto de partículas */
+    /* Efectos de partículas */
     .particles-container {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+      position: fixed;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
-      z-index: -1;
+      z-index: 1;
     }
 
     .particle {
       position: absolute;
-      width: 3px;
-      height: 3px;
+      width: 2px;
+      height: 2px;
       background: var(--secondary);
       border-radius: 50%;
       opacity: 0;
       animation: float 4s infinite ease-in;
-      filter: drop-shadow(0 0 5px var(--secondary));
+      filter: drop-shadow(0 0 3px var(--secondary));
     }
 
     @keyframes float {
@@ -505,10 +344,10 @@
         opacity: 0;
       }
       10% {
-        opacity: 0.8;
+        opacity: 0.6;
       }
       90% {
-        opacity: 0.8;
+        opacity: 0.6;
       }
       100% {
         transform: translate(var(--tx), var(--ty));
@@ -516,69 +355,18 @@
       }
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      body {
-        padding: 1.5em;
-      }
-      
-      header {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-        padding: 1.5em;
-      }
-      
-      .header-left {
-        text-align: center;
-      }
-      
-      .logo {
-        height: 60px;
-      }
-      
-      .speedometer-container {
-        width: 300px;
-        height: 300px;
-      }
-      
-      .info-wrapper {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      #startBtn {
-        padding: 1em 2em;
-        font-size: 1em;
-      }
-      
-      .test-status {
-        padding: 1em;
-        border-radius: 16px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .speedometer-container {
-        width: 260px;
-        height: 260px;
-      }
-      
-      .info-wrapper {
-        grid-template-columns: 1fr;
-      }
-      
-      .header-left h1 {
-        font-size: 1.6em;
-      }
+    /* Ocultar elementos no esenciales en móvil */
+    .scale, .scale-mark, .scale-label {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Efecto de partículas de fondo -->
-  <div class="particles-bg" id="particles-bg"></div>
+  <!-- Contenedor de partículas -->
+  <div class="particles-container" id="particles-container"></div>
 
-  <!-- Header con Logo y Título -->
+  <!-- Header compacto -->
   <header>
     <div class="header-left">
       <h1>TLAXICOM</h1>
@@ -587,169 +375,103 @@
     <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Velocímetro futurista -->
-  <div class="speedometer-container">
-    <div class="speedometer" id="speedMeter">
-      <div class="gauge" style="--progress: 0;">
-        <div class="gauge-mask"></div>
-        <div class="gauge-inner">
-          <div class="scale" id="scale"></div>
-          <div class="value-display">
-            <div id="avgSpeed">0</div>
-            <div class="unit">Mbps</div>
-            <div class="status" id="testStatus">Listo para probar</div>
+  <!-- Contenido principal compacto -->
+  <main>
+    <!-- Velocímetro pequeño -->
+    <div class="speedometer-container">
+      <div class="speedometer" id="speedMeter">
+        <div class="gauge" style="--progress: 0;">
+          <div class="gauge-mask"></div>
+          <div class="gauge-inner">
+            <div class="value-display">
+              <div id="avgSpeed">0</div>
+              <div class="unit">Mbps</div>
+              <div class="status" id="testStatus">Listo para probar</div>
+            </div>
           </div>
         </div>
+        <div class="needle" id="speedNeedle"></div>
+        <div class="needle-center"></div>
       </div>
-      <div class="needle" id="speedNeedle"></div>
-      <div class="needle-center"></div>
     </div>
-  </div>
 
-  <!-- Botón Iniciar -->
-  <button id="startBtn" onclick="startTest()">
-    <i class="fas fa-bolt"></i> Iniciar prueba
-  </button>
+    <!-- Botón compacto -->
+    <button id="startBtn" onclick="startTest()">
+      <i class="fas fa-bolt"></i> INICIAR PRUEBA
+    </button>
 
-  <div class="test-status" id="detailedStatus">
-    <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba de velocidad
-  </div>
+    <!-- Tarjetas pequeñas -->
+    <div class="info-wrapper">
+      <div class="info-card">
+        <h3><i class="fas fa-download card-icon"></i>Descarga</h3>
+        <div class="card-value" id="dlSpeed">0</div>
+        <div class="card-unit">Mbps</div>
+      </div>
+      <div class="info-card">
+        <h3><i class="fas fa-upload card-icon"></i>Subida</h3>
+        <div class="card-value" id="ulSpeed">0</div>
+        <div class="card-unit">Mbps</div>
+      </div>
+      <div class="info-card">
+        <h3><i class="fas fa-network-wired card-icon"></i>Ping</h3>
+        <div class="card-value" id="pingText">0</div>
+        <div class="card-unit">ms</div>
+      </div>
+      <div class="info-card">
+        <h3><i class="fas fa-tachometer-alt card-icon"></i>Jitter</h3>
+        <div class="card-value" id="jitterText">0</div>
+        <div class="card-unit">ms</div>
+      </div>
+    </div>
 
-  <!-- Tarjetas informativas -->
-  <div class="info-wrapper">
-    <div class="info-card">
-      <h3><i class="fas fa-download card-icon"></i>Descarga</h3>
-      <div class="card-value" id="dlSpeed">0</div>
-      <div class="card-unit">Mbps</div>
+    <!-- Estado compacto -->
+    <div class="test-status" id="detailedStatus">
+      <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba
     </div>
-    <div class="info-card">
-      <h3><i class="fas fa-upload card-icon"></i>Subida</h3>
-      <div class="card-value" id="ulSpeed">0</div>
-      <div class="card-unit">Mbps</div>
-    </div>
-    <div class="info-card">
-      <h3><i class="fas fa-network-wired card-icon"></i>Ping</h3>
-      <div class="card-value" id="pingText">0</div>
-      <div class="card-unit">ms</div>
-    </div>
-    <div class="info-card">
-      <h3><i class="fas fa-tachometer-alt card-icon"></i>Jitter</h3>
-      <div class="card-value" id="jitterText">0</div>
-      <div class="card-unit">ms</div>
-    </div>
-  </div>
+  </main>
 
-  <!-- Lógica JS Mejorada -->
+  <!-- Lógica JS con partículas -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
     
-    // Configuración mejorada del test
-    s.setParameter("server_ping", "auto"); // Selección automática del mejor servidor para ping
-    s.setParameter("telemetry_level", "basic"); // Nivel de telemetría básico
-    s.setParameter("time_ul_max", 15); // Tiempo máximo prueba subida (segundos)
-    s.setParameter("time_dl_max", 15); // Tiempo máximo prueba descarga (segundos)
+    // Configuración del test
+    s.setParameter("server_ping", "auto");
+    s.setParameter("telemetry_level", "basic");
+    s.setParameter("time_ul_max", 10);
+    s.setParameter("time_dl_max", 10);
     
-    // Crear escala del velocímetro mejorado
-    function createScale() {
-      const scale = document.getElementById('scale');
-      const marks = [];
-      const labels = [0, 100, 200, 300, 400, 500];
-      
-      // Crear marcas de escala con mejor visualización
-      for (let i = 0; i <= 100; i++) {
-        const angle = (i * 2.7) - 135;
-        const mark = document.createElement('div');
-        mark.className = 'scale-mark';
-        mark.style.transform = `rotate(${angle}deg)`;
-        
-        // Marcas principales y secundarias diferenciadas
-        if (i % 10 === 0) {
-          mark.style.height = '22px';
-          mark.style.width = '3px';
-          mark.style.background = 'rgba(255, 255, 255, 0.95)';
-        } else if (i % 5 === 0) {
-          mark.style.height = '16px';
-          mark.style.width = '2px';
-          mark.style.background = 'rgba(255, 255, 255, 0.8)';
-        } else {
-          mark.style.height = '10px';
-          mark.style.width = '1px';
-          mark.style.background = 'rgba(255, 255, 255, 0.6)';
-        }
-        
-        marks.push(mark);
-      }
-      
-      // Crear etiquetas con mejor legibilidad
-      labels.forEach((value, index) => {
-        const angle = (index * 54) - 135;
-        const label = document.createElement('div');
-        label.className = 'scale-label';
-        label.textContent = value;
-        label.style.transform = `rotate(${angle}deg) translate(0, -140px) rotate(${-angle}deg)`;
-        
-        // Ajustar posición para mejor orientación
-        if (angle > 90 || angle < -90) {
-          label.style.transform += ' rotate(180deg)';
-        }
-        
-        // Color dinámico basado en el rango de velocidad
-        if (value >= 400) {
-          label.style.color = '#ff0000';
-          label.style.textShadow = '0 0 8px rgba(255, 0, 0, 0.7)';
-        } else if (value >= 300) {
-          label.style.color = '#ff00aa';
-          label.style.textShadow = '0 0 8px rgba(255, 0, 170, 0.6)';
-        } else if (value >= 200) {
-          label.style.color = '#0062ff';
-          label.style.textShadow = '0 0 8px rgba(0, 98, 255, 0.5)';
-        } else if (value >= 100) {
-          label.style.color = '#13ccd9';
-          label.style.textShadow = '0 0 8px rgba(19, 204, 217, 0.5)';
-        } else {
-          label.style.color = '#00ff88';
-          label.style.textShadow = '0 0 8px rgba(0, 255, 136, 0.5)';
-        }
-        
-        marks.push(label);
-      });
-      
-      // Añadir todas las marcas al scale
-      marks.forEach(mark => scale.appendChild(mark));
-    }
-
-    // Crear efecto de partículas de fondo
+    // Función para crear partículas
     function createParticles() {
-      const container = document.getElementById('particles-bg');
+      const container = document.getElementById('particles-container');
       container.innerHTML = '';
       
-      for (let i = 0; i < 30; i++) {
+      // Cantidad reducida de partículas para móvil
+      const particleCount = window.innerWidth < 480 ? 15 : 25;
+      
+      for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
         // Posición aleatoria
-        const x = Math.random() * window.innerWidth;
-        const y = Math.random() * window.innerHeight;
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
         
-        // Tamaño aleatorio
-        const size = Math.random() * 4 + 1;
+        // Tamaño aleatorio pequeño
+        const size = Math.random() * 2 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
         
         // Opacidad aleatoria
-        const opacity = Math.random() * 0.6 + 0.2;
-        particle.style.opacity = opacity;
+        particle.style.opacity = Math.random() * 0.5 + 0.2;
         
         // Color basado en el tema
-        const colors = ['#13ccd9', '#00ff88', '#0062ff', '#ff00aa'];
+        const colors = ['#13ccd9', '#00ff88', '#0062ff'];
         particle.style.background = colors[Math.floor(Math.random() * colors.length)];
         
         // Animación aleatoria
-        const tx = (Math.random() - 0.5) * 200;
-        const ty = (Math.random() - 0.5) * 200;
+        const tx = (Math.random() - 0.5) * 100;
+        const ty = (Math.random() - 0.5) * 100;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
         particle.style.animationDelay = `${Math.random() * 4}s`;
@@ -758,23 +480,8 @@
         container.appendChild(particle);
       }
     }
-
-    // Inicializar al cargar
-    window.onload = function() {
-      createScale();
-      createParticles();
-      
-      // Actualizar partículas cada 6 segundos
-      setInterval(createParticles, 6000);
-      
-      // Verificar si hay resultados previos en localStorage
-      const lastTest = JSON.parse(localStorage.getItem('lastSpeedTest'));
-      if (lastTest) {
-        updateResults(lastTest);
-      }
-    };
-
-    // Función para actualizar los resultados en la UI
+    
+    // Función para actualizar resultados
     function updateResults(data) {
       const dl = parseFloat(data.dlStatus || 0).toFixed(1);
       const ul = parseFloat(data.ulStatus || 0).toFixed(1);
@@ -782,60 +489,31 @@
       const jitter = parseFloat(data.jitter || 0).toFixed(1);
       const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-      // Actualizar tarjetas
       document.getElementById("dlSpeed").textContent = dl;
       document.getElementById("ulSpeed").textContent = ul;
       document.getElementById("pingText").textContent = ping;
       document.getElementById("jitterText").textContent = jitter;
       document.getElementById("avgSpeed").textContent = avg;
 
-      // Actualizar velocímetro
       const progress = Math.min(avg, 500) / 500 * 100;
       document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
 
-      // Rotar la aguja
       const degrees = (Math.min(avg, 500) * 0.54) - 135;
       document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
-
-      // Cambiar color del borde según la velocidad
-      let borderColor = '#00ff88';
-      if (avg >= 400) borderColor = '#ff0000';
-      else if (avg >= 300) borderColor = '#ff00aa';
-      else if (avg >= 200) borderColor = '#0062ff';
-      else if (avg >= 100) borderColor = '#13ccd9';
-      
-      document.querySelector('.speedometer').style.boxShadow = 
-        `0 0 40px ${borderColor}, inset 0 0 30px rgba(0, 0, 0, 0.8)`;
     }
 
-    // Función para manejar errores
-    function handleTestError(error) {
-      console.error("Error en la prueba de velocidad:", error);
-      document.getElementById('testStatus').textContent = "Error en la prueba";
-      document.getElementById('detailedStatus').innerHTML = 
-        '<i class="fas fa-exclamation-triangle"></i> Ocurrió un error durante la prueba. Intenta nuevamente.';
-      
-      const startBtn = document.getElementById('startBtn');
-      startBtn.disabled = false;
-      startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Reintentar';
-    }
-
-    // Función principal para iniciar la prueba
+    // Función para iniciar prueba
     function startTest() {
       if (testInProgress) return;
       
       testInProgress = true;
       const startBtn = document.getElementById('startBtn');
-      const statusText = document.getElementById('testStatus');
-      const detailedStatus = document.getElementById('detailedStatus');
       
-      // Estado inicial
       startBtn.disabled = true;
       startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
-      statusText.textContent = 'Iniciando prueba...';
-      detailedStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Preparando prueba de velocidad...';
+      document.getElementById("testStatus").textContent = 'Iniciando prueba...';
       
-      // Resetear valores previos
+      // Resetear valores
       document.getElementById("dlSpeed").textContent = "0";
       document.getElementById("ulSpeed").textContent = "0";
       document.getElementById("pingText").textContent = "0";
@@ -843,77 +521,36 @@
       document.getElementById("avgSpeed").textContent = "0";
       document.querySelector(".gauge-mask").style.setProperty("--progress", "0");
       document.getElementById("speedNeedle").style.transform = "rotate(-135deg)";
-
-      // Efecto visual al iniciar
-      document.querySelector('.speedometer').style.boxShadow = 
-        '0 0 40px rgba(19, 204, 217, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.8)';
       
-      // Configurar manejadores de eventos
       s.onupdate = function(data) {
-        try {
-          const dl = parseFloat(data.dlStatus || 0).toFixed(1);
-          const ul = parseFloat(data.ulStatus || 0).toFixed(1);
-          const ping = parseFloat(data.ping || 0).toFixed(1);
-          const jitter = parseFloat(data.jitter || 0).toFixed(1);
-          const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
-
-          // Actualizar UI
-          updateResults(data);
-
-          // Actualizar estado según la fase de prueba
-          if (data.testState === 1) {
-            statusText.textContent = `Probando descarga: ${dl} Mbps`;
-            detailedStatus.innerHTML = `<i class="fas fa-download fa-fw"></i> Probando velocidad de descarga... ${dl} Mbps`;
-          } else if (data.testState === 2) {
-            statusText.textContent = `Probando subida: ${ul} Mbps`;
-            detailedStatus.innerHTML = `<i class="fas fa-upload fa-fw"></i> Probando velocidad de subida... ${ul} Mbps`;
-          } else if (data.testState === 3) {
-            statusText.textContent = `Probando ping: ${ping} ms`;
-            detailedStatus.innerHTML = `<i class="fas fa-network-wired fa-fw"></i> Probando latencia... ${ping} ms`;
-          }
-        } catch (error) {
-          handleTestError(error);
+        updateResults(data);
+        
+        if (data.testState === 1) {
+          document.getElementById('testStatus').textContent = `Descarga: ${parseFloat(data.dlStatus || 0).toFixed(1)} Mbps`;
+        } else if (data.testState === 2) {
+          document.getElementById('testStatus').textContent = `Subida: ${parseFloat(data.ulStatus || 0).toFixed(1)} Mbps`;
+        } else if (data.testState === 3) {
+          document.getElementById('testStatus').textContent = `Ping: ${parseFloat(data.ping || 0).toFixed(1)} ms`;
         }
       };
 
-      s.onend = function(aborted) {
+      s.onend = function() {
         testInProgress = false;
-        const startBtn = document.getElementById('startBtn');
-        
-        if (!aborted) {
-          try {
-            // Guardar resultados en localStorage
-            const testData = {
-              dlStatus: document.getElementById("dlSpeed").textContent,
-              ulStatus: document.getElementById("ulSpeed").textContent,
-              ping: document.getElementById("pingText").textContent,
-              jitter: document.getElementById("jitterText").textContent,
-              timestamp: new Date().toISOString()
-            };
-            localStorage.setItem('lastSpeedTest', JSON.stringify(testData));
-            
-            statusText.textContent = 'Prueba completada';
-            detailedStatus.innerHTML = `
-              <i class="fas fa-check-circle"></i> Prueba completada - 
-              Descarga: ${testData.dlStatus} Mbps, 
-              Subida: ${testData.ulStatus} Mbps
-            `;
-          } catch (error) {
-            handleTestError(error);
-          }
-        }
-        
         startBtn.disabled = false;
         startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
+        document.getElementById('testStatus').textContent = 'Prueba completada';
       };
 
-      // Manejo de errores
-      try {
-        s.start();
-      } catch (error) {
-        handleTestError(error);
-      }
+      s.start();
     }
+
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+      createParticles();
+      // Actualizar partículas periódicamente y al redimensionar
+      setInterval(createParticles, 5000);
+      window.addEventListener('resize', createParticles);
+    });
   </script>
 </body>
 </html>
