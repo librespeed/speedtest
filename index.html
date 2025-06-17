@@ -46,13 +46,12 @@
       padding: 1em;
       position: relative;
       overflow-x: hidden;
-      font-size: 14px;
     }
 
-    /* Header compacto */
+    /* Header responsive */
     header {
       width: 100%;
-      max-width: 100%;
+      max-width: 500px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -70,33 +69,61 @@
     }
 
     .header-left h1 {
-      font-size: 1.5em;
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
       font-weight: 700;
       background: linear-gradient(to right, var(--light), var(--secondary));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
+      margin: 0;
     }
 
     .header-left .subtitle {
-      font-size: 0.8em;
+      font-size: clamp(0.7rem, 3vw, 0.9rem);
       color: rgba(255, 255, 255, 0.9);
       margin-top: 0.2em;
       font-weight: 300;
     }
 
     .logo {
-      height: 40px;
+      height: clamp(35px, 8vw, 50px);
       margin-top: 0.5em;
+      transition: transform 0.3s;
     }
 
-    /* Velocímetro compacto */
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    /* Contenedor principal responsive */
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    /* Velocímetro y etiquetas laterales */
+    .speedometer-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      position: relative;
+      margin-bottom: 1em;
+      gap: 0.5em;
+    }
+
+    /* Velocímetro responsive */
     .speedometer-container {
       position: relative;
-      width: 220px;
-      height: 220px;
-      margin-bottom: 1.5em;
+      width: clamp(160px, 40vw, 200px);
+      height: clamp(160px, 40vw, 200px);
+      min-width: 160px;
+      min-height: 160px;
       z-index: 5;
+      flex-shrink: 0;
     }
 
     .speedometer {
@@ -105,17 +132,17 @@
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 20px rgba(19, 204, 217, 0.6),
-        inset 0 0 15px rgba(0, 0, 0, 0.9);
-      border: 8px solid var(--dark-blue);
+        0 0 15px rgba(19, 204, 217, 0.6),
+        inset 0 0 10px rgba(0, 0, 0, 0.9);
+      border: clamp(5px, 1.5vw, 8px) solid var(--dark-blue);
     }
 
     .gauge {
       position: absolute;
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      bottom: 15px;
+      top: clamp(10px, 2.5vw, 12px);
+      left: clamp(10px, 2.5vw, 12px);
+      right: clamp(10px, 2.5vw, 12px);
+      bottom: clamp(10px, 2.5vw, 12px);
       border-radius: 50%;
       background: conic-gradient(
         var(--success) 0%,
@@ -132,8 +159,8 @@
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - 30px);
-      height: calc(100% - 30px);
+      width: calc(100% - clamp(20px, 5vw, 24px));
+      height: calc(100% - clamp(20px, 5vw, 24px));
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
@@ -145,8 +172,8 @@
     }
 
     .gauge-inner {
-      width: calc(100% - 60px);
-      height: calc(100% - 60px);
+      width: calc(100% - clamp(40px, 10vw, 50px));
+      height: calc(100% - clamp(40px, 10vw, 50px));
       border-radius: 50%;
       background: radial-gradient(circle at center, var(--dark-blue) 0%, #000 100%);
       display: flex;
@@ -159,8 +186,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 3px;
-      height: 90px;
+      width: clamp(2px, 0.5vw, 3px);
+      height: clamp(60px, 15vw, 70px);
       background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
@@ -173,13 +200,13 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 18px;
-      height: 18px;
+      width: clamp(12px, 3vw, 14px);
+      height: clamp(12px, 3vw, 14px);
       background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
-      border: 2px solid var(--accent);
+      border: clamp(1px, 0.3vw, 2px) solid var(--accent);
     }
 
     .value-display {
@@ -193,10 +220,10 @@
     }
 
     .value-display #avgSpeed {
-      font-size: 1.8em;
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
       font-weight: 800;
       color: #fff;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       background: linear-gradient(to bottom, #fff, #ddd);
       -webkit-background-clip: text;
       background-clip: text;
@@ -204,7 +231,7 @@
     }
 
     .value-display .unit {
-      font-size: 0.9em;
+      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
       color: var(--secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -212,18 +239,65 @@
     }
 
     .value-display .status {
-      font-size: 0.7em;
+      font-size: clamp(0.55rem, 2vw, 0.7rem);
       color: rgba(255, 255, 255, 0.8);
-      margin-top: 5px;
+      margin-top: 3px;
     }
 
-    /* Botón compacto */
+    /* Etiquetas laterales responsive */
+    .side-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      height: 100%;
+      min-height: clamp(160px, 40vw, 200px);
+      gap: 0.5em;
+    }
+
+    .side-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(10, 26, 74, 0.6);
+      padding: 0.6em 0.4em;
+      border-radius: 8px;
+      min-width: clamp(50px, 12vw, 70px);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(19, 204, 217, 0.1);
+      flex: 1;
+    }
+
+    .side-label h3 {
+      font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+      font-weight: 600;
+      margin-bottom: 0.3em;
+      color: var(--secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      text-align: center;
+    }
+
+    .side-label .card-value {
+      font-size: clamp(0.9rem, 3vw, 1.2rem);
+      font-weight: 700;
+      color: #fff;
+      margin: 2px 0;
+    }
+
+    .side-label .card-unit {
+      font-size: clamp(0.5rem, 2vw, 0.7rem);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Botón responsive */
     #startBtn {
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
       padding: 0.8em 1.5em;
-      font-size: 0.9em;
+      font-size: clamp(0.8rem, 3vw, 1rem);
       font-weight: 600;
       border-radius: 50px;
       cursor: pointer;
@@ -232,71 +306,27 @@
       align-items: center;
       gap: 8px;
       width: 90%;
-      max-width: 200px;
+      max-width: 250px;
       justify-content: center;
       z-index: 5;
       box-shadow: 0 4px 15px rgba(15, 50, 163, 0.5);
-      transition: transform 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #startBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(15, 50, 163, 0.7);
     }
 
     #startBtn:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
 
-    /* Tarjetas compactas */
-    .info-wrapper {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.8em;
-      margin-top: 1em;
-      width: 100%;
-      max-width: 300px;
-      z-index: 5;
-    }
-
-    .info-card {
-      background: rgba(10, 26, 74, 0.6);
-      color: white;
-      padding: 0.8em;
-      border-radius: 10px;
-      text-align: center;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(19, 204, 217, 0.1);
-    }
-
-    .info-card h3 {
-      font-size: 0.8em;
-      font-weight: 600;
-      margin-bottom: 0.5em;
-      color: var(--secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    .info-card .card-value {
-      font-size: 1.2em;
-      font-weight: 700;
-      color: #fff;
-      margin: 5px 0;
-    }
-
-    .info-card .card-unit {
-      font-size: 0.7em;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .card-icon {
-      font-size: 0.9em;
-      color: var(--secondary);
-    }
-
-    /* Estado compacto */
+    /* Estado responsive */
     .test-status {
-      margin-top: 1em;
+      margin-top: 0.5em;
       color: rgba(255, 255, 255, 0.9);
-      font-size: 0.8em;
+      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -305,15 +335,16 @@
       padding: 0.8em;
       border-radius: 10px;
       width: 90%;
-      max-width: 300px;
+      max-width: 400px;
       text-align: center;
       z-index: 5;
       backdrop-filter: blur(5px);
+      border: 1px solid rgba(19, 204, 217, 0.1);
     }
 
     .test-status i {
       color: var(--secondary);
-      font-size: 0.9em;
+      font-size: clamp(0.8rem, 3vw, 1rem);
     }
 
     /* Efectos de partículas */
@@ -329,8 +360,8 @@
 
     .particle {
       position: absolute;
-      width: 2px;
-      height: 2px;
+      width: clamp(1px, 0.3vw, 2px);
+      height: clamp(1px, 0.3vw, 2px);
       background: var(--secondary);
       border-radius: 50%;
       opacity: 0;
@@ -355,9 +386,30 @@
       }
     }
 
-    /* Ocultar elementos no esenciales en móvil */
-    .scale, .scale-mark, .scale-label {
-      display: none;
+    /* Media queries para ajustes específicos */
+    @media (max-width: 350px) {
+      .speedometer-wrapper {
+        flex-direction: column;
+      }
+      .side-labels {
+        flex-direction: row;
+        width: 100%;
+        min-height: auto;
+        margin-top: 0.5em;
+      }
+      .side-label {
+        min-width: 45%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .speedometer-container {
+        width: 220px;
+        height: 220px;
+      }
+      .side-label {
+        min-width: 80px;
+      }
     }
   </style>
 </head>
@@ -366,7 +418,7 @@
   <!-- Contenedor de partículas -->
   <div class="particles-container" id="particles-container"></div>
 
-  <!-- Header compacto -->
+  <!-- Header responsive -->
   <header>
     <div class="header-left">
       <h1>TLAXICOM</h1>
@@ -375,62 +427,72 @@
     <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
-  <!-- Contenido principal compacto -->
-  <main>
-    <!-- Velocímetro pequeño -->
-    <div class="speedometer-container">
-      <div class="speedometer" id="speedMeter">
-        <div class="gauge" style="--progress: 0;">
-          <div class="gauge-mask"></div>
-          <div class="gauge-inner">
-            <div class="value-display">
-              <div id="avgSpeed">0</div>
-              <div class="unit">Mbps</div>
-              <div class="status" id="testStatus">Listo para probar</div>
+  <!-- Contenido principal responsive -->
+  <div class="main-content">
+    <div class="speedometer-wrapper">
+      <!-- Etiqueta izquierda (Descarga) -->
+      <div class="side-labels">
+        <div class="side-label">
+          <h3><i class="fas fa-download"></i>Descarga</h3>
+          <div class="card-value" id="dlSpeed">0</div>
+          <div class="card-unit">Mbps</div>
+        </div>
+      </div>
+      
+      <!-- Velocímetro responsive -->
+      <div class="speedometer-container">
+        <div class="speedometer" id="speedMeter">
+          <div class="gauge" style="--progress: 0;">
+            <div class="gauge-mask"></div>
+            <div class="gauge-inner">
+              <div class="value-display">
+                <div id="avgSpeed">0</div>
+                <div class="unit">Mbps</div>
+                <div class="status" id="testStatus">Listo para probar</div>
+              </div>
             </div>
           </div>
+          <div class="needle" id="speedNeedle"></div>
+          <div class="needle-center"></div>
         </div>
-        <div class="needle" id="speedNeedle"></div>
-        <div class="needle-center"></div>
+      </div>
+      
+      <!-- Etiqueta derecha (Subida) -->
+      <div class="side-labels">
+        <div class="side-label">
+          <h3><i class="fas fa-upload"></i>Subida</h3>
+          <div class="card-value" id="ulSpeed">0</div>
+          <div class="card-unit">Mbps</div>
+        </div>
       </div>
     </div>
 
-    <!-- Botón compacto -->
-    <button id="startBtn" onclick="startTest()">
-      <i class="fas fa-bolt"></i> INICIAR PRUEBA
-    </button>
-
-    <!-- Tarjetas pequeñas -->
-    <div class="info-wrapper">
-      <div class="info-card">
-        <h3><i class="fas fa-download card-icon"></i>Descarga</h3>
-        <div class="card-value" id="dlSpeed">0</div>
-        <div class="card-unit">Mbps</div>
-      </div>
-      <div class="info-card">
-        <h3><i class="fas fa-upload card-icon"></i>Subida</h3>
-        <div class="card-value" id="ulSpeed">0</div>
-        <div class="card-unit">Mbps</div>
-      </div>
-      <div class="info-card">
-        <h3><i class="fas fa-network-wired card-icon"></i>Ping</h3>
+    <!-- Segunda fila de etiquetas (Ping y Jitter) -->
+    <div class="speedometer-wrapper" style="justify-content: center; gap: 1em; margin-top: 0.5em;">
+      <div class="side-label">
+        <h3><i class="fas fa-network-wired"></i>Ping</h3>
         <div class="card-value" id="pingText">0</div>
         <div class="card-unit">ms</div>
       </div>
-      <div class="info-card">
-        <h3><i class="fas fa-tachometer-alt card-icon"></i>Jitter</h3>
+      <div class="side-label">
+        <h3><i class="fas fa-tachometer-alt"></i>Jitter</h3>
         <div class="card-value" id="jitterText">0</div>
         <div class="card-unit">ms</div>
       </div>
     </div>
 
-    <!-- Estado compacto -->
+    <!-- Botón responsive -->
+    <button id="startBtn" onclick="startTest()">
+      <i class="fas fa-bolt"></i> INICIAR PRUEBA
+    </button>
+
+    <!-- Estado responsive -->
     <div class="test-status" id="detailedStatus">
       <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba
     </div>
-  </main>
+  </div>
 
-  <!-- Lógica JS con partículas -->
+  <!-- Lógica JS optimizada -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
@@ -446,8 +508,8 @@
       const container = document.getElementById('particles-container');
       container.innerHTML = '';
       
-      // Cantidad reducida de partículas para móvil
-      const particleCount = window.innerWidth < 480 ? 15 : 25;
+      // Cantidad dinámica de partículas según tamaño de pantalla
+      const particleCount = Math.floor(window.innerWidth / 20);
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
@@ -457,12 +519,10 @@
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100}%`;
         
-        // Tamaño aleatorio pequeño
+        // Tamaño y opacidad aleatorios
         const size = Math.random() * 2 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        
-        // Opacidad aleatoria
         particle.style.opacity = Math.random() * 0.5 + 0.2;
         
         // Color basado en el tema
@@ -483,23 +543,37 @@
     
     // Función para actualizar resultados
     function updateResults(data) {
-      const dl = parseFloat(data.dlStatus || 0).toFixed(1);
-      const ul = parseFloat(data.ulStatus || 0).toFixed(1);
-      const ping = parseFloat(data.ping || 0).toFixed(1);
-      const jitter = parseFloat(data.jitter || 0).toFixed(1);
-      const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
+      try {
+        const dl = parseFloat(data.dlStatus || 0).toFixed(1);
+        const ul = parseFloat(data.ulStatus || 0).toFixed(1);
+        const ping = parseFloat(data.ping || 0).toFixed(1);
+        const jitter = parseFloat(data.jitter || 0).toFixed(1);
+        const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-      document.getElementById("dlSpeed").textContent = dl;
-      document.getElementById("ulSpeed").textContent = ul;
-      document.getElementById("pingText").textContent = ping;
-      document.getElementById("jitterText").textContent = jitter;
-      document.getElementById("avgSpeed").textContent = avg;
+        // Actualizar valores
+        document.getElementById("dlSpeed").textContent = dl;
+        document.getElementById("ulSpeed").textContent = ul;
+        document.getElementById("pingText").textContent = ping;
+        document.getElementById("jitterText").textContent = jitter;
+        document.getElementById("avgSpeed").textContent = avg;
 
-      const progress = Math.min(avg, 500) / 500 * 100;
-      document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
+        // Actualizar velocímetro
+        const progress = Math.min(avg, 500) / 500 * 100;
+        document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
+        const degrees = (Math.min(avg, 500) * 0.54) - 135;
+        document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+      } catch (error) {
+        console.error("Error updating results:", error);
+      }
+    }
 
-      const degrees = (Math.min(avg, 500) * 0.54) - 135;
-      document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+    // Función para manejar errores
+    function handleError(error) {
+      console.error("Test error:", error);
+      document.getElementById('testStatus').textContent = "Error en la prueba";
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('startBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Reintentar';
+      testInProgress = false;
     }
 
     // Función para iniciar prueba
@@ -509,6 +583,7 @@
       testInProgress = true;
       const startBtn = document.getElementById('startBtn');
       
+      // Estado inicial
       startBtn.disabled = true;
       startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
       document.getElementById("testStatus").textContent = 'Iniciando prueba...';
@@ -522,6 +597,7 @@
       document.querySelector(".gauge-mask").style.setProperty("--progress", "0");
       document.getElementById("speedNeedle").style.transform = "rotate(-135deg)";
       
+      // Configurar manejadores de eventos
       s.onupdate = function(data) {
         updateResults(data);
         
@@ -541,15 +617,27 @@
         document.getElementById('testStatus').textContent = 'Prueba completada';
       };
 
-      s.start();
+      // Iniciar prueba con manejo de errores
+      try {
+        s.start();
+      } catch (error) {
+        handleError(error);
+      }
     }
 
-    // Inicializar al cargar
+    // Inicialización optimizada
     document.addEventListener('DOMContentLoaded', function() {
+      // Cargar partículas y configurar eventos
       createParticles();
-      // Actualizar partículas periódicamente y al redimensionar
-      setInterval(createParticles, 5000);
       window.addEventListener('resize', createParticles);
+      
+      // Actualizar partículas cada 5 segundos
+      const particleInterval = setInterval(createParticles, 5000);
+      
+      // Limpiar intervalo al salir
+      window.addEventListener('beforeunload', () => {
+        clearInterval(particleInterval);
+      });
     });
   </script>
 </body>
