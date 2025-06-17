@@ -337,7 +337,7 @@
       filter: drop-shadow(0 0 12px currentColor);
     }
 
-    /* Botón alineado con las etiquetas laterales */
+    /* Botón alineado con las etiquetas laterales - AHORA MÁS PEQUEÑO */
     .button-container {
       width: 100%;
       max-width: 900px;
@@ -356,15 +356,15 @@
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 1.2em 2.5em;
-      font-size: 1.2rem;
+      padding: 0.8em 1.8em; /* Reducido de 1.2em 2.5em */
+      font-size: 1rem; /* Reducido de 1.2rem */
       font-weight: 700;
       border-radius: 50px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 15px;
-      max-width: 350px;
+      gap: 10px; /* Reducido de 15px */
+      max-width: 300px; /* Reducido de 350px */
       justify-content: center;
       z-index: 5;
       box-shadow: 0 8px 25px rgba(15, 50, 163, 0.7);
@@ -377,7 +377,7 @@
     }
 
     #startBtn i {
-      font-size: 1.5rem;
+      font-size: 1.2rem; /* Reducido de 1.5rem */
       transition: transform 0.3s;
       color: var(--light);
     }
@@ -423,65 +423,6 @@
       color: var(--secondary);
       font-size: 1.5rem;
       filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.6));
-    }
-
-    /* Notificación de prueba terminada */
-    .notification {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background: rgba(10, 26, 74, 0.95);
-      color: white;
-      padding: 1.2em 2em;
-      border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      z-index: 100;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border: 1px solid rgba(19, 204, 217, 0.3);
-      backdrop-filter: blur(8px);
-      max-width: 350px;
-    }
-
-    .notification.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .notification i {
-      color: var(--success);
-      font-size: 1.8rem;
-      filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.7));
-    }
-
-    .notification-content h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3em;
-      color: var(--light);
-    }
-
-    .notification-content p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    .close-notification {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 1.2rem;
-      cursor: pointer;
-      margin-left: 15px;
-      transition: all 0.3s;
-    }
-
-    .close-notification:hover {
-      color: var(--light);
-      transform: scale(1.2);
     }
 
     /* Efectos de partículas mejorados */
@@ -582,15 +523,8 @@
       #startBtn {
         width: 100%;
         margin: 0;
-        padding: 1em 2em;
-        font-size: 1rem;
-      }
-      
-      .notification {
-        bottom: 20px;
-        right: 20px;
-        left: 20px;
-        max-width: calc(100% - 40px);
+        padding: 0.8em 1.5em; /* Ajustado para móvil */
+        font-size: 0.9rem; /* Ajustado para móvil */
       }
     }
 
@@ -627,18 +561,6 @@
   <!-- Contenedor de partículas -->
   <div class="particles-container" id="particles-container"></div>
 
-  <!-- Notificación de prueba terminada -->
-  <div class="notification" id="notification">
-    <i class="fas fa-check-circle"></i>
-    <div class="notification-content">
-      <h3>Prueba completada</h3>
-      <p>Los resultados están listos</p>
-    </div>
-    <button class="close-notification" onclick="hideNotification()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-
   <!-- Header con logo a la derecha -->
   <header>
     <div class="header-content">
@@ -650,7 +572,7 @@
         <div class="subtitle">Internet a tu alcance</div>
       </div>
     </div>
-    <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
+    <img src="logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
   <!-- Contenido principal -->
@@ -718,7 +640,7 @@
     </div>
   </div>
 
-  <!-- Lógica JS actualizada con notificación -->
+  <!-- Lógica JS (igual que antes) -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
@@ -728,23 +650,6 @@
     s.setParameter("telemetry_level", "basic");
     s.setParameter("time_ul_max", 10);
     s.setParameter("time_dl_max", 10);
-    
-    // Función para mostrar notificación
-    function showNotification() {
-      const notification = document.getElementById('notification');
-      notification.classList.add('show');
-      
-      // Ocultar automáticamente después de 5 segundos
-      setTimeout(() => {
-        hideNotification();
-      }, 5000);
-    }
-    
-    // Función para ocultar notificación
-    function hideNotification() {
-      const notification = document.getElementById('notification');
-      notification.classList.remove('show');
-    }
     
     // Función para crear partículas dinámicas
     function createParticles() {
@@ -881,9 +786,6 @@
         startBtn.disabled = false;
         startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
         document.getElementById('testStatus').textContent = 'Prueba completada';
-        
-        // Mostrar notificación
-        showNotification();
         
         // Guardar resultados
         const testData = {
