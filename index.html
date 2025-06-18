@@ -31,6 +31,12 @@
       --upload: #0062ff;
       --ping: #ffcc00;
       --jitter: #ff00aa;
+      --text-primary: rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.8);
+      --notification-success: rgba(0, 255, 136, 0.9);
+      --notification-info: rgba(19, 204, 217, 0.9);
+      --notification-warning: rgba(255, 204, 0, 0.9);
+      --notification-error: rgba(255, 51, 102, 0.9);
     }
     
     * {
@@ -47,36 +53,36 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2em;
+      padding: 1em;
       position: relative;
       overflow-x: hidden;
     }
 
-    /* Header más grande para desktop */
+    /* Header más compacto */
     header {
       width: 100%;
-      max-width: 800px;
+      max-width: 700px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.5em 2em;
+      padding: 1em 1.5em;
       background: rgba(18, 1, 112, 0.9);
       backdrop-filter: blur(10px);
-      border-radius: 20px;
-      margin-bottom: 2em;
+      border-radius: 16px;
+      margin-bottom: 1.5em;
       border: 1px solid rgba(255, 255, 255, 0.2);
       z-index: 10;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
 
     .header-content {
       display: flex;
       align-items: center;
-      gap: 1em;
+      gap: 0.8em;
     }
 
     .header-left h1 {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 700;
       background: linear-gradient(to right, var(--light), var(--secondary));
       -webkit-background-clip: text;
@@ -85,54 +91,48 @@
       margin: 0;
       display: flex;
       align-items: center;
-      gap: 0.8em;
-      text-shadow: 0 0 15px rgba(19, 204, 217, 0.6);
+      gap: 0.6em;
+      text-shadow: 0 0 12px rgba(19, 204, 217, 0.6);
     }
 
     .header-left .subtitle {
-      font-size: 1.1rem;
-      color: var(--light);
-      margin-top: 0.4em;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 0.3em;
       font-weight: 400;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
     }
 
     .logo {
-      height: 70px;
+      height: 50px;
       transition: transform 0.3s, filter 0.3s;
-      filter: drop-shadow(0 0 10px rgba(19, 204, 217, 0.8));
+      filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.8));
     }
 
-    .logo:hover {
-      transform: scale(1.1);
-      filter: drop-shadow(0 0 15px rgba(19, 204, 217, 1));
-    }
-
-    /* Contenedor principal más grande para desktop */
+    /* Contenedor principal más compacto */
     .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
       width: 100%;
-      max-width: 900px;
+      max-width: 700px;
     }
 
-    /* Velocímetro y etiquetas laterales - tamaño desktop */
+    /* Velocímetro más pequeño */
     .speedometer-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       position: relative;
-      margin-bottom: 2em;
-      gap: 1.5em;
+      margin-bottom: 1.5em;
+      gap: 1em;
     }
 
-    /* Velocímetro grande para desktop */
     .speedometer-container {
       position: relative;
-      width: 300px;
-      height: 300px;
+      width: 240px;
+      height: 240px;
       z-index: 5;
       flex-shrink: 0;
     }
@@ -143,17 +143,17 @@
       border-radius: 50%;
       background: radial-gradient(circle at center, #111 0%, #000 70%);
       box-shadow: 
-        0 0 30px rgba(19, 204, 217, 0.8),
-        inset 0 0 20px rgba(0, 0, 0, 0.9);
-      border: 10px solid var(--dark-blue);
+        0 0 20px rgba(19, 204, 217, 0.7),
+        inset 0 0 15px rgba(0, 0, 0, 0.9);
+      border: 8px solid var(--dark-blue);
     }
 
     .gauge {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      right: 20px;
-      bottom: 20px;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      bottom: 15px;
       border-radius: 50%;
       background: conic-gradient(
         var(--success) 0%,
@@ -170,8 +170,8 @@
 
     .gauge-mask {
       position: absolute;
-      width: calc(100% - 40px);
-      height: calc(100% - 40px);
+      width: calc(100% - 30px);
+      height: calc(100% - 30px);
       border-radius: 50%;
       background: conic-gradient(
         transparent 0%,
@@ -183,8 +183,8 @@
     }
 
     .gauge-inner {
-      width: calc(100% - 80px);
-      height: calc(100% - 80px);
+      width: calc(100% - 60px);
+      height: calc(100% - 60px);
       border-radius: 50%;
       background: radial-gradient(circle at center, var(--dark-blue) 0%, #000 100%);
       display: flex;
@@ -197,8 +197,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 4px;
-      height: 120px;
+      width: 3px;
+      height: 100px;
       background: linear-gradient(to bottom, #fff, var(--accent));
       border-radius: 4px;
       transform-origin: 50% 0;
@@ -211,14 +211,14 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       background: radial-gradient(circle at center, #fff 0%, #ccc 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       z-index: 11;
-      border: 3px solid var(--accent);
-      box-shadow: 0 0 15px rgba(255, 51, 102, 0.8);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 12px rgba(255, 51, 102, 0.8);
     }
 
     .value-display {
@@ -232,40 +232,29 @@
     }
 
     .value-display #avgSpeed {
-      font-size: 2.8rem;
+      font-size: 2.2rem;
       font-weight: 800;
-      color: #fff;
-      margin-bottom: 5px;
-      background: linear-gradient(to bottom, #fff, #ddd);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(19, 204, 217, 0.9);
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      text-shadow: 0 0 15px rgba(19, 204, 217, 0.8);
     }
 
     .value-display .unit {
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: var(--secondary);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       font-weight: 700;
-      text-shadow: 0 0 10px rgba(19, 204, 217, 0.6);
+      text-shadow: 0 0 8px rgba(19, 204, 217, 0.5);
     }
 
-    .value-display .status {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin-top: 8px;
-      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-    }
-
-    /* Etiquetas laterales grandes para desktop */
+    /* Etiquetas laterales más compactas */
     .side-labels {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 300px;
-      gap: 1.5em;
+      height: 240px;
+      gap: 1em;
     }
 
     .side-label {
@@ -273,159 +262,246 @@
       flex-direction: column;
       align-items: center;
       background: rgba(10, 26, 74, 0.7);
-      padding: 1.2em 1em;
-      border-radius: 15px;
-      min-width: 120px;
+      padding: 0.8em 0.8em;
+      border-radius: 12px;
+      min-width: 100px;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .side-label:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
     .side-label h3 {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 700;
-      margin-bottom: 0.5em;
-      color: var(--light);
+      margin-bottom: 0.4em;
+      color: var(--text-primary);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       text-align: center;
-      text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
     }
 
     .side-label .card-value {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
-      margin: 10px 0;
-      text-shadow: 0 0 15px currentColor;
+      margin: 8px 0;
+      color: var(--text-primary);
+      text-shadow: 0 0 12px currentColor;
     }
 
-    #dlSpeed { color: var(--download); }
-    #ulSpeed { color: var(--upload); }
-    #pingText { color: var(--ping); }
-    #jitterText { color: var(--jitter); }
-
     .side-label .card-unit {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
       font-weight: 600;
     }
 
-    /* Iconos grandes para desktop */
+    /* Iconos más pequeños */
     .card-icon {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
+      font-size: 1.5rem;
+      margin-bottom: 6px;
       transition: transform 0.3s, filter 0.3s;
-      filter: drop-shadow(0 0 8px currentColor);
+      filter: drop-shadow(0 0 6px currentColor);
     }
 
-    .download-icon { color: var(--download); }
-    .upload-icon { color: var(--upload); }
-    .ping-icon { color: var(--ping); }
-    .jitter-icon { color: var(--jitter); }
-    .title-icon { color: var(--secondary); }
-
-    .side-label:hover .card-icon {
-      transform: scale(1.2);
-      filter: drop-shadow(0 0 12px currentColor);
-    }
-
-    /* Botón alineado con las etiquetas laterales - AHORA MÁS PEQUEÑO */
+    /* Botón más compacto */
     .button-container {
       width: 100%;
-      max-width: 900px;
+      max-width: 700px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      margin: 2em 0;
-    }
-
-    .button-spacer {
-      width: 120px; /* Mismo ancho que las side-labels */
-      visibility: hidden;
+      margin: 1.5em 0;
     }
 
     #startBtn {
       background: linear-gradient(135deg, var(--primary), var(--dark-blue));
       color: white;
       border: none;
-      padding: 0.8em 1.8em; /* Reducido de 1.2em 2.5em */
-      font-size: 1rem; /* Reducido de 1.2rem */
-      font-weight: 700;
+      padding: 0.7em 1.8em;
+      font-size: 0.95rem;
+      font-weight: 600;
       border-radius: 50px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 10px; /* Reducido de 15px */
-      max-width: 300px; /* Reducido de 350px */
+      gap: 8px;
       justify-content: center;
       z-index: 5;
-      box-shadow: 0 8px 25px rgba(15, 50, 163, 0.7);
-      transition: all 0.3s;
+      box-shadow: 
+        0 3px 12px rgba(15, 50, 163, 0.7),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      flex-grow: 1;
-      margin: 0 1.5em;
+      position: relative;
+      overflow: hidden;
     }
 
     #startBtn i {
-      font-size: 1.2rem; /* Reducido de 1.5rem */
+      font-size: 1rem;
       transition: transform 0.3s;
-      color: var(--light);
     }
 
-    #startBtn:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(15, 50, 163, 0.9);
-      background: linear-gradient(135deg, var(--dark-blue), var(--primary));
-    }
-
-    #startBtn:hover i {
-      transform: scale(1.2);
-      color: var(--secondary);
-    }
-
-    #startBtn:active {
-      transform: translateY(2px);
-    }
-
-    /* Estado grande para desktop */
+    /* Estado más compacto */
     .test-status {
-      margin-top: 1em;
-      color: var(--light);
-      font-size: 1.1rem;
+      margin-top: 0.8em;
+      color: var(--text-primary);
+      font-size: 1rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 15px;
+      gap: 12px;
       background: rgba(10, 26, 74, 0.7);
-      padding: 1.2em 2em;
-      border-radius: 15px;
+      padding: 1em 1.5em;
+      border-radius: 12px;
       width: 100%;
-      max-width: 600px;
+      max-width: 500px;
       text-align: center;
       z-index: 5;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(19, 204, 217, 0.25);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
       font-weight: 500;
     }
 
     .test-status i {
       color: var(--secondary);
-      font-size: 1.5rem;
-      filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.6));
+      font-size: 1.3rem;
+      filter: drop-shadow(0 0 6px rgba(19, 204, 217, 0.5));
     }
 
-    /* Efectos de partículas mejorados */
+    /* Notificaciones más pequeñas */
+    .notification {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      padding: 0.8em 1.2em;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      transform: translateX(150%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      max-width: 280px;
+      font-size: 0.9rem;
+    }
+
+    .notification i {
+      font-size: 1.1rem;
+    }
+
+    .notification.success {
+      background: var(--notification-success);
+    }
+
+    .notification.info {
+      background: var(--notification-info);
+    }
+
+    .notification.warning {
+      background: var(--notification-warning);
+    }
+
+    .notification.error {
+      background: var(--notification-error);
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    /* Media queries para móvil */
+    @media (max-width: 768px) {
+      body {
+        padding: 0.8em;
+      }
+      
+      header {
+        padding: 0.8em 1em;
+        margin-bottom: 1em;
+      }
+      
+      .header-left h1 {
+        font-size: 1.5rem;
+        gap: 0.4em;
+      }
+      
+      .logo {
+        height: 40px;
+      }
+      
+      .speedometer-container {
+        width: 200px;
+        height: 200px;
+      }
+      
+      .side-labels {
+        height: 200px;
+        gap: 0.8em;
+      }
+      
+      .side-label {
+        min-width: 80px;
+        padding: 0.6em 0.5em;
+      }
+      
+      .value-display #avgSpeed {
+        font-size: 1.8rem;
+      }
+      
+      #startBtn {
+        padding: 0.6em 1.5em;
+        font-size: 0.9rem;
+      }
+
+      .test-status {
+        font-size: 0.9rem;
+        padding: 0.8em 1em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .speedometer-wrapper {
+        flex-direction: column;
+        gap: 0.8em;
+      }
+      
+      .side-labels {
+        flex-direction: row;
+        width: 100%;
+        height: auto;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+      
+      .side-label {
+        min-width: 45%;
+        padding: 0.6em 0.4em;
+        margin-bottom: 0.4em;
+      }
+      
+      .header-left h1 {
+        font-size: 1.3rem;
+      }
+      
+      .header-left .subtitle {
+        font-size: 0.8rem;
+      }
+      
+      .test-status {
+        font-size: 0.85rem;
+      }
+    }
+
+    /* Estilos para partículas */
     .particles-container {
       position: fixed;
       top: 0;
@@ -434,151 +510,50 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
+      overflow: hidden;
     }
 
     .particle {
       position: absolute;
-      width: 3px;
-      height: 3px;
-      background: var(--secondary);
       border-radius: 50%;
-      opacity: 0;
-      animation: float 6s infinite ease-in-out;
-      filter: drop-shadow(0 0 8px var(--secondary));
+      animation: float linear infinite;
     }
 
     @keyframes float {
       0% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0;
+        transform: translate(0, 0);
       }
-      10% {
-        opacity: 0.8;
-      }
-      90% {
-        opacity: 0.8;
+      50% {
+        transform: translate(var(--tx), var(--ty));
       }
       100% {
-        transform: translate(var(--tx), var(--ty)) rotate(360deg);
-        opacity: 0;
-      }
-    }
-
-    /* Media queries para móvil */
-    @media (max-width: 768px) {
-      body {
-        padding: 1em;
-      }
-      
-      header {
-        max-width: 100%;
-        padding: 1em;
-        flex-direction: column;
-        gap: 0.8em;
-        text-align: center;
-      }
-      
-      .header-content {
-        flex-direction: column;
-      }
-      
-      .header-left h1 {
-        font-size: 1.8rem;
-        flex-direction: column;
-        gap: 0.3em;
-      }
-      
-      .logo {
-        height: 50px;
-      }
-      
-      .speedometer-container {
-        width: 220px;
-        height: 220px;
-      }
-      
-      .side-labels {
-        height: 220px;
-        gap: 1em;
-      }
-      
-      .side-label {
-        min-width: 90px;
-        padding: 0.8em 0.6em;
-      }
-      
-      .value-display #avgSpeed {
-        font-size: 2rem;
-      }
-      
-      .button-container {
-        flex-direction: column;
-        gap: 1em;
-      }
-      
-      .button-spacer {
-        display: none;
-      }
-      
-      #startBtn {
-        width: 100%;
-        margin: 0;
-        padding: 0.8em 1.5em; /* Ajustado para móvil */
-        font-size: 0.9rem; /* Ajustado para móvil */
-      }
-    }
-
-    @media (max-width: 480px) {
-      .speedometer-wrapper {
-        flex-direction: column;
-        gap: 1em;
-      }
-      
-      .side-labels {
-        flex-direction: row;
-        width: 100%;
-        height: auto;
-        justify-content: space-around;
-      }
-      
-      .side-label {
-        min-width: 45%;
-        padding: 0.8em 0.5em;
-      }
-      
-      .header-left h1 {
-        font-size: 1.5rem;
-      }
-      
-      .header-left .subtitle {
-        font-size: 0.9rem;
+        transform: translate(0, 0);
       }
     }
   </style>
 </head>
 <body>
-
   <!-- Contenedor de partículas -->
   <div class="particles-container" id="particles-container"></div>
 
-  <!-- Header con logo a la derecha -->
+  <!-- Notificaciones -->
+  <div id="notificationContainer"></div>
+
+  <!-- Header -->
   <header>
     <div class="header-content">
       <div class="header-left">
-        <h1>
-          <i class="fas fa-network-wired title-icon"></i>
-          TLAXICOM
-        </h1>
+        <h1>TLAXICOM</h1>
         <div class="subtitle">Internet a tu alcance</div>
       </div>
     </div>
-    <img src="logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
+    <img src=".logo/favicon-96.png" alt="Logo TLAXICOM" class="logo" />
   </header>
 
   <!-- Contenido principal -->
   <div class="main-content">
     <div class="speedometer-wrapper">
-      <!-- Etiqueta izquierda (Descarga y Ping) -->
+      <!-- Etiqueta izquierda -->
       <div class="side-labels">
         <div class="side-label">
           <h3><i class="fas fa-cloud-download-alt card-icon download-icon"></i>Descarga</h3>
@@ -601,7 +576,6 @@
               <div class="value-display">
                 <div id="avgSpeed">0</div>
                 <div class="unit">Mbps</div>
-                <div class="status" id="testStatus">Listo para probar</div>
               </div>
             </div>
           </div>
@@ -610,7 +584,7 @@
         </div>
       </div>
       
-      <!-- Etiqueta derecha (Subida y Jitter) -->
+      <!-- Etiqueta derecha -->
       <div class="side-labels">
         <div class="side-label">
           <h3><i class="fas fa-cloud-upload-alt card-icon upload-icon"></i>Subida</h3>
@@ -625,22 +599,20 @@
       </div>
     </div>
 
-    <!-- Contenedor del botón alineado con las etiquetas -->
+    <!-- Botón -->
     <div class="button-container">
-      <div class="button-spacer"></div> <!-- Espaciador izquierdo -->
       <button id="startBtn" onclick="startTest()">
         <i class="fas fa-bolt"></i> INICIAR PRUEBA
       </button>
-      <div class="button-spacer"></div> <!-- Espaciador derecho -->
     </div>
 
-    <!-- Estado con icono -->
+    <!-- Estado -->
     <div class="test-status" id="detailedStatus">
-      <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba de velocidad
+      <i class="fas fa-info-circle"></i> Presiona el botón para comenzar la prueba
     </div>
   </div>
 
-  <!-- Lógica JS (igual que antes) -->
+  <!-- Lógica JS -->
   <script>
     const s = new Speedtest();
     let testInProgress = false;
@@ -651,47 +623,72 @@
     s.setParameter("time_ul_max", 10);
     s.setParameter("time_dl_max", 10);
     
+    // Función para mostrar notificaciones
+    function showNotification(type, message, duration = 3000) {
+      const container = document.getElementById('notificationContainer');
+      const icons = {
+        success: 'fa-check-circle',
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle',
+        error: 'fa-times-circle'
+      };
+      
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(notification);
+      
+      // Forzar reflow para activar la animación
+      void notification.offsetWidth;
+      
+      notification.classList.add('show');
+      
+      // Ocultar después de la duración
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          container.removeChild(notification);
+        }, 300);
+      }, duration);
+    }
+    
     // Función para crear partículas dinámicas
     function createParticles() {
       const container = document.getElementById('particles-container');
       container.innerHTML = '';
       
-      // Cantidad basada en el tamaño de pantalla
-      const particleCount = Math.min(Math.floor(window.innerWidth / 10), 80);
-      
-      // Colores de partículas
+      const particleCount = Math.min(Math.floor(window.innerWidth / 15), 60);
       const colors = ['#13ccd9', '#00ff88', '#0062ff', '#ffcc00', '#ff00aa'];
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
-        // Posición aleatoria
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100}%`;
         
-        // Tamaño y opacidad aleatorios
-        const size = Math.random() * 4 + 1;
+        const size = Math.random() * 3 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        particle.style.opacity = Math.random() * 0.7 + 0.2;
-        
-        // Color aleatorio
+        particle.style.opacity = Math.random() * 0.6 + 0.2;
         particle.style.background = colors[Math.floor(Math.random() * colors.length)];
         
-        // Animación única para cada partícula
-        const tx = (Math.random() - 0.5) * 200;
-        const ty = (Math.random() - 0.5) * 200;
+        const tx = (Math.random() - 0.5) * 150;
+        const ty = (Math.random() - 0.5) * 150;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
-        particle.style.animationDelay = `${Math.random() * 6}s`;
-        particle.style.animationDuration = `${Math.random() * 5 + 5}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particle.style.animationDuration = `${Math.random() * 4 + 4}s`;
         
         container.appendChild(particle);
       }
     }
     
-    // Función para actualizar resultados con animaciones
+    // Función para actualizar resultados
     function updateResults(data) {
       try {
         const dl = parseFloat(data.dlStatus || 0).toFixed(1);
@@ -700,26 +697,26 @@
         const jitter = parseFloat(data.jitter || 0).toFixed(1);
         const avg = ((parseFloat(dl) + parseFloat(ul)) / 2).toFixed(1);
 
-        // Animación de los valores
         animateValue("dlSpeed", dl);
         animateValue("ulSpeed", ul);
         animateValue("pingText", ping);
         animateValue("jitterText", jitter);
         animateValue("avgSpeed", avg);
 
-        // Actualizar velocímetro
         const progress = Math.min(avg, 500) / 500 * 100;
         document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
         const degrees = (Math.min(avg, 500) * 0.54) - 135;
         document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
         
-        // Actualizar estado según fase de prueba
         if (data.testState === 1) {
-          document.getElementById('testStatus').textContent = `Probando descarga: ${dl} Mbps`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-cloud-download-alt"></i> Probando descarga: ${dl} Mbps`;
+          showNotification('info', `Descarga: ${dl} Mbps`, 1500);
         } else if (data.testState === 2) {
-          document.getElementById('testStatus').textContent = `Probando subida: ${ul} Mbps`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Probando subida: ${ul} Mbps`;
+          showNotification('info', `Subida: ${ul} Mbps`, 1500);
         } else if (data.testState === 3) {
-          document.getElementById('testStatus').textContent = `Probando ping: ${ping} ms`;
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-stopwatch"></i> Probando latencia: ${ping} ms`;
+          showNotification('info', `Ping: ${ping} ms`, 1500);
         }
       } catch (error) {
         console.error("Error updating results:", error);
@@ -730,7 +727,7 @@
     function animateValue(id, target) {
       const element = document.getElementById(id);
       const current = parseFloat(element.textContent) || 0;
-      const duration = 800;
+      const duration = 700;
       const start = Date.now();
       
       const update = () => {
@@ -750,10 +747,11 @@
     // Función para manejar errores
     function handleError(error) {
       console.error("Test error:", error);
-      document.getElementById('testStatus').textContent = "Error en la prueba";
+      document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error en la prueba';
       document.getElementById('startBtn').disabled = false;
-      document.getElementById('startBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Reintentar';
+      document.getElementById('startBtn').innerHTML = '<i class="fas fa-sync-alt"></i> REINTENTAR';
       testInProgress = false;
+      showNotification('error', 'Error en la prueba', 3000);
     }
 
     // Función para iniciar prueba
@@ -763,12 +761,11 @@
       testInProgress = true;
       const startBtn = document.getElementById('startBtn');
       
-      // Estado inicial
       startBtn.disabled = true;
-      startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Probando...';
-      document.getElementById("testStatus").textContent = 'Iniciando prueba...';
+      startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROBANDO...';
+      document.getElementById("detailedStatus").innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando prueba...';
+      showNotification('info', 'Iniciando prueba...', 1500);
       
-      // Resetear valores con animación
       animateValue("dlSpeed", 0);
       animateValue("ulSpeed", 0);
       animateValue("pingText", 0);
@@ -778,19 +775,21 @@
       document.querySelector(".gauge-mask").style.setProperty("--progress", "0");
       document.getElementById("speedNeedle").style.transform = "rotate(-135deg)";
       
-      // Configurar manejadores de eventos
       s.onupdate = updateResults;
 
       s.onend = function() {
         testInProgress = false;
         startBtn.disabled = false;
-        startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Repetir prueba';
-        document.getElementById('testStatus').textContent = 'Prueba completada';
+        startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> REPETIR PRUEBA';
+        document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-check-circle"></i> Prueba completada';
         
-        // Guardar resultados
+        const dl = document.getElementById("dlSpeed").textContent;
+        const ul = document.getElementById("ulSpeed").textContent;
+        showNotification('success', `Descarga: ${dl} Mbps | Subida: ${ul} Mbps`, 4000);
+        
         const testData = {
-          dlStatus: document.getElementById("dlSpeed").textContent,
-          ulStatus: document.getElementById("ulSpeed").textContent,
+          dlStatus: dl,
+          ulStatus: ul,
           ping: document.getElementById("pingText").textContent,
           jitter: document.getElementById("jitterText").textContent,
           timestamp: new Date().toISOString()
@@ -798,7 +797,6 @@
         localStorage.setItem('lastSpeedTest', JSON.stringify(testData));
       };
 
-      // Iniciar prueba con manejo de errores
       try {
         s.start();
       } catch (error) {
@@ -808,14 +806,11 @@
 
     // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
-      // Cargar partículas
       createParticles();
       window.addEventListener('resize', createParticles);
       
-      // Actualizar partículas periódicamente
-      const particleInterval = setInterval(createParticles, 7000);
+      const particleInterval = setInterval(createParticles, 6000);
       
-      // Cargar resultados previos si existen
       const lastTest = localStorage.getItem('lastSpeedTest');
       if (lastTest) {
         try {
@@ -824,14 +819,22 @@
           document.getElementById("ulSpeed").textContent = testData.ulStatus;
           document.getElementById("pingText").textContent = testData.ping;
           document.getElementById("jitterText").textContent = testData.jitter;
-          document.getElementById("avgSpeed").textContent = 
-            ((parseFloat(testData.dlStatus) + parseFloat(testData.ulStatus)) / 2).toFixed(1);
+          
+          const avg = ((parseFloat(testData.dlStatus) + parseFloat(testData.ulStatus)) / 2).toFixed(1);
+          document.getElementById("avgSpeed").textContent = avg;
+            
+          const progress = Math.min(avg, 500) / 500 * 100;
+          document.querySelector(".gauge-mask").style.setProperty("--progress", progress);
+          const degrees = (Math.min(avg, 500) * 0.54) - 135;
+          document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
+          
+          document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-history"></i> Últimos resultados cargados';
+          showNotification('info', 'Resultados anteriores cargados', 2500);
         } catch (e) {
           console.log("No se pudieron cargar resultados previos");
         }
       }
       
-      // Limpiar intervalo al salir
       window.addEventListener('beforeunload', () => {
         clearInterval(particleInterval);
       });
