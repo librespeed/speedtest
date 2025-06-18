@@ -58,7 +58,6 @@
       overflow-x: hidden;
     }
 
-    /* Header más compacto */
     header {
       width: 100%;
       max-width: 700px;
@@ -109,7 +108,6 @@
       filter: drop-shadow(0 0 8px rgba(19, 204, 217, 0.8));
     }
 
-    /* Contenedor principal más compacto */
     .main-content {
       display: flex;
       flex-direction: column;
@@ -118,7 +116,6 @@
       max-width: 700px;
     }
 
-    /* Velocímetro más pequeño */
     .speedometer-wrapper {
       display: flex;
       align-items: center;
@@ -248,7 +245,6 @@
       text-shadow: 0 0 8px rgba(19, 204, 217, 0.5);
     }
 
-    /* Etiquetas laterales más compactas */
     .side-labels {
       display: flex;
       flex-direction: column;
@@ -296,15 +292,32 @@
       font-weight: 600;
     }
 
-    /* Iconos más pequeños */
     .card-icon {
       font-size: 1.5rem;
       margin-bottom: 6px;
       transition: transform 0.3s, filter 0.3s;
-      filter: drop-shadow(0 0 6px currentColor);
+    }
+    
+    .download-icon {
+      color: var(--download);
+      filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.6));
+    }
+    
+    .upload-icon {
+      color: var(--upload);
+      filter: drop-shadow(0 0 8px rgba(0, 98, 255, 0.6));
+    }
+    
+    .ping-icon {
+      color: var(--ping);
+      filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.6));
+    }
+    
+    .jitter-icon {
+      color: var(--jitter);
+      filter: drop-shadow(0 0 8px rgba(255, 0, 170, 0.6));
     }
 
-    /* Botón más compacto */
     .button-container {
       width: 100%;
       max-width: 700px;
@@ -344,7 +357,6 @@
       transition: transform 0.3s;
     }
 
-    /* Estado más compacto */
     .test-status {
       margin-top: 0.8em;
       color: var(--text-primary);
@@ -372,7 +384,6 @@
       filter: drop-shadow(0 0 6px rgba(19, 204, 217, 0.5));
     }
 
-    /* Notificaciones más pequeñas */
     .notification {
       position: fixed;
       top: 15px;
@@ -418,7 +429,6 @@
       transform: translateX(0);
     }
 
-    /* Media queries para móvil */
     @media (max-width: 768px) {
       body {
         padding: 0.8em;
@@ -501,7 +511,6 @@
       }
     }
 
-    /* Estilos para partículas */
     .particles-container {
       position: fixed;
       top: 0;
@@ -556,12 +565,12 @@
       <!-- Etiqueta izquierda -->
       <div class="side-labels">
         <div class="side-label">
-          <h3><i class="fas fa-cloud-download-alt card-icon download-icon"></i>Descarga</h3>
+          <h3><i class="fas fa-tachometer-alt card-icon download-icon"></i>Descarga</h3>
           <div class="card-value" id="dlSpeed">0</div>
           <div class="card-unit">Mbps</div>
         </div>
         <div class="side-label">
-          <h3><i class="fas fa-stopwatch card-icon ping-icon"></i>Ping</h3>
+          <h3><i class="fas fa-bullseye card-icon ping-icon"></i>Ping</h3>
           <div class="card-value" id="pingText">0</div>
           <div class="card-unit">ms</div>
         </div>
@@ -587,12 +596,12 @@
       <!-- Etiqueta derecha -->
       <div class="side-labels">
         <div class="side-label">
-          <h3><i class="fas fa-cloud-upload-alt card-icon upload-icon"></i>Subida</h3>
+          <h3><i class="fas fa-upload card-icon upload-icon"></i>Subida</h3>
           <div class="card-value" id="ulSpeed">0</div>
           <div class="card-unit">Mbps</div>
         </div>
         <div class="side-label">
-          <h3><i class="fas fa-random card-icon jitter-icon"></i>Jitter</h3>
+          <h3><i class="fas fa-wave-square card-icon jitter-icon"></i>Jitter</h3>
           <div class="card-value" id="jitterText">0</div>
           <div class="card-unit">ms</div>
         </div>
@@ -709,14 +718,11 @@
         document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
         
         if (data.testState === 1) {
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-cloud-download-alt"></i> Probando descarga: ${dl} Mbps`;
-          showNotification('info', `Descarga: ${dl} Mbps`, 1500);
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-tachometer-alt"></i> Probando descarga: ${dl} Mbps`;
         } else if (data.testState === 2) {
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Probando subida: ${ul} Mbps`;
-          showNotification('info', `Subida: ${ul} Mbps`, 1500);
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-upload"></i> Probando subida: ${ul} Mbps`;
         } else if (data.testState === 3) {
-          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-stopwatch"></i> Probando latencia: ${ping} ms`;
-          showNotification('info', `Ping: ${ping} ms`, 1500);
+          document.getElementById('detailedStatus').innerHTML = `<i class="fas fa-bullseye"></i> Probando latencia: ${ping} ms`;
         }
       } catch (error) {
         console.error("Error updating results:", error);
@@ -751,7 +757,7 @@
       document.getElementById('startBtn').disabled = false;
       document.getElementById('startBtn').innerHTML = '<i class="fas fa-sync-alt"></i> REINTENTAR';
       testInProgress = false;
-      showNotification('error', 'Error en la prueba', 3000);
+      showNotification('error', 'Error en la prueba de velocidad', 4000);
     }
 
     // Función para iniciar prueba
@@ -764,7 +770,6 @@
       startBtn.disabled = true;
       startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROBANDO...';
       document.getElementById("detailedStatus").innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando prueba...';
-      showNotification('info', 'Iniciando prueba...', 1500);
       
       animateValue("dlSpeed", 0);
       animateValue("ulSpeed", 0);
@@ -783,13 +788,11 @@
         startBtn.innerHTML = '<i class="fas fa-sync-alt"></i> REPETIR PRUEBA';
         document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-check-circle"></i> Prueba completada';
         
-        const dl = document.getElementById("dlSpeed").textContent;
-        const ul = document.getElementById("ulSpeed").textContent;
-        showNotification('success', `Descarga: ${dl} Mbps | Subida: ${ul} Mbps`, 4000);
+        showNotification('success', 'Prueba completada', 3000);
         
         const testData = {
-          dlStatus: dl,
-          ulStatus: ul,
+          dlStatus: document.getElementById("dlSpeed").textContent,
+          ulStatus: document.getElementById("ulSpeed").textContent,
           ping: document.getElementById("pingText").textContent,
           jitter: document.getElementById("jitterText").textContent,
           timestamp: new Date().toISOString()
@@ -829,7 +832,6 @@
           document.getElementById("speedNeedle").style.transform = `rotate(${degrees}deg)`;
           
           document.getElementById('detailedStatus').innerHTML = '<i class="fas fa-history"></i> Últimos resultados cargados';
-          showNotification('info', 'Resultados anteriores cargados', 2500);
         } catch (e) {
           console.log("No se pudieron cargar resultados previos");
         }
