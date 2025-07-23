@@ -1,32 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full">
 <head>
 <link rel="shortcut icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
 <meta charset="UTF-8" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                animation: {
+                    'pulse-slow': 'pulse 3s ease-in-out infinite',
+                    'spin-slow': 'spin 3s linear infinite',
+                }
+            }
+        }
+    }
+</script>
 <script type="text/javascript" src="speedtest.js"></script>
 <script type="text/javascript">
 function I(i){return document.getElementById(i);}
 
 //LIST OF TEST SERVERS. Leave empty if you're doing a standalone installation. See documentation for details
 var SPEEDTEST_SERVERS=[
-	/*{	//this server doesn't actually exist, remove it
-		name:"Example Server 1", //user friendly name for the server
-		server:"//test1.mydomain.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+	{	//this server doesn't actually exist, remove it
+		name:"netflakes (local)", //user friendly name for the server
+		server:"//192.168.2.195:9000", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
 		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
 		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
 		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
 		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
 	},
 	{	//this server doesn't actually exist, remove it
-		name:"Example Server 2", //user friendly name for the server
-		server:"//test2.example.com/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		dlURL:"garbage.php",  //path to download test on this server (garbage.php or replacement)
-		ulURL:"empty.php",  //path to upload test on this server (empty.php or replacement)
-		pingURL:"empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		getIpURL:"getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	}*/
-	//add other servers here, comma separated
+		name:"netflakes (public)", //user friendly name for the server
+		server:"https://netflakes.fyi/speedtest", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	}
 ];
 
 //INITIALIZE SPEEDTEST
@@ -200,318 +213,385 @@ function initUI(){
 }
 </script>
 <style type="text/css">
-	html,body{
-		border:none; padding:0; margin:0;
-		background:#FFFFFF;
-		color:#202020;
+	/* Modern canvas meter styling */
+	.meter-container {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
-	body{
-		text-align:center;
-		font-family:"Roboto",sans-serif;
+	
+	/* Maintain existing canvas functionality */
+	div.testArea canvas {
+		position: absolute;
+		top: 50%;
+		left: 50%; 
+		width: 100%; 
+		height: 100%;
+		transform: translate(-50%, -50%);
+		z-index: 1;
 	}
-	h1{
-		color:#404040;
+	
+	/* Animation keyframes */
+	@keyframes fadeIn {
+		0% { opacity: 0; transform: translateY(10px); }
+		100% { opacity: 1; transform: translateY(0); }
 	}
-	#loading{
-		background-color:#FFFFFF;
-		color:#404040;
-		text-align:center;
+	
+	@keyframes fadeOut {
+		0% { opacity: 1; transform: translateY(0); }
+		100% { opacity: 0; transform: translateY(10px); }
 	}
-	span.loadCircle{
-		display:inline-block;
-		width:2em;
-		height:2em;
-		vertical-align:middle;
-		background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAP1BMVEUAAAB2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZyFzwnAAAAFHRSTlMAEvRFvX406baecwbf0casimhSHyiwmqgAAADpSURBVHja7dbJbQMxAENRahnN5lkc//5rDRAkDeRgHszXgACJoKiIiIiIiIiIiIiIiIiIiIj4HHspsrpAVhdVVguzrA4OWc10WcEqpwKbnBo0OU1Q5NSpsoJFTgOecrrdEag85DRgktNqfoEdTjnd7hrEHMEJvmRUYJbTYk5Agy6nau6Abp5Cm7mDBtRdPi9gyKdU7w4p1fsLvyqs8hl4z9/w3n/Hmr9WoQ65lAU4d7lMYOz//QboRR5jBZibLMZdAR6O/Vfa1PlxNr3XdS3HzK/HVPRu/KnLs8iAOh993VpRRERERMT/fAN60wwWaVyWwAAAAABJRU5ErkJggg==');
-		background-size:2em 2em;
-		margin-right:0.5em;
-		animation: spin 0.6s linear infinite;
+	
+	div.visible {
+		animation: fadeIn 0.4s ease-out;
+		display: block;
 	}
-	@keyframes spin{
-		0%{transform:rotate(0deg);}
-		100%{transform:rotate(359deg);}
+	
+	div.hidden {
+		animation: fadeOut 0.4s ease-out;
+		display: none;
 	}
-	#startStopBtn{
-		display:inline-block;
-		margin:0 auto;
-		color:#6060AA;
-		background-color:rgba(0,0,0,0);
-		border:0.15em solid #6060FF;
-		border-radius:0.3em;
-		transition:all 0.3s;
-		box-sizing:border-box;
-		width:8em; height:3em;
-		line-height:2.7em;
-		cursor:pointer;
-		box-shadow: 0 0 0 rgba(0,0,0,0.1), inset 0 0 0 rgba(0,0,0,0.1);
+	
+	/* Custom button styling */
+	#startStopBtn {
+		transition: all 0.3s ease;
 	}
-	#startStopBtn:hover{
-		box-shadow: 0 0 2em rgba(0,0,0,0.1), inset 0 0 1em rgba(0,0,0,0.1);
+	
+	#startStopBtn:before {
+		content: "Start Test";
 	}
-	#startStopBtn.running{
-		background-color:#FF3030;
-		border-color:#FF6060;
-		color:#FFFFFF;
+	
+	#startStopBtn.running {
+		background: linear-gradient(to right, #dc2626, #ef4444) !important;
+		color: white !important;
+		font-weight: 600 !important;
+		padding: 1rem 2rem !important;
+		border-radius: 9999px !important;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+		transition: all 0.2s !important;
 	}
-	#startStopBtn:before{
-		content:"Start";
+	
+	#startStopBtn.running:hover {
+		background: linear-gradient(to right, #b91c1c, #dc2626) !important;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+		transform: scale(1.05) !important;
 	}
-	#startStopBtn.running:before{
-		content:"Abort";
+	
+	#startStopBtn.running:before {
+		content: "Abort Test";
 	}
-	#serverArea{
-		margin-top:1em;
+	
+	/* Loading spinner */
+	.loadCircle {
+		display: inline-block;
+		width: 1.5rem;
+		height: 1.5rem;
+		border: 2px solid transparent;
+		border-top: 2px solid currentColor;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-right: 0.5rem;
 	}
-	#server{
-		font-size:1em;
-		padding:0.2em;
+	
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
-	#test{
-		margin-top:2em;
-		margin-bottom:12em;
+	
+	/* Privacy policy modal */
+	#privacyPolicy {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.8);
+		z-index: 999999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
 	}
-	div.testArea{
-		display:inline-block;
-		width:16em;
-		height:12.5em;
-		position:relative;
-		box-sizing:border-box;
+	
+	#privacyPolicy > div {
+		background: white;
+		max-height: 80vh;
+		overflow-y: auto;
+		border-radius: 0.5rem;
+		padding: 2rem;
+		max-width: 600px;
+		width: 100%;
 	}
-	div.testArea2{
-		display:inline-block;
-		width:14em;
-		height:7em;
-		position:relative;
-		box-sizing:border-box;
-		text-align:center;
-	}
-	div.testArea div.testName{
-		position:absolute;
-		top:0.1em; left:0;
-		width:100%;
-		font-size:1.4em;
-		z-index:9;
-	}
-	div.testArea2 div.testName{
-        display:block;
-        text-align:center;
-        font-size:1.4em;
-	}
-	div.testArea div.meterText{
-		position:absolute;
-		bottom:1.55em; left:0;
-		width:100%;
-		font-size:2.5em;
-		z-index:9;
-	}
-	div.testArea2 div.meterText{
-        display:inline-block;
-        font-size:2.5em;
-	}
-	div.meterText:empty:before{
-		content:"0.00";
-	}
-	div.testArea div.unit{
-		position:absolute;
-		bottom:2em; left:0;
-		width:100%;
-		z-index:9;
-	}
-	div.testArea2 div.unit{
-		display:inline-block;
-	}
-	div.testArea canvas{
-		position:absolute;
-		top:0; left:0; width:100%; height:100%;
-		z-index:1;
-	}
-	div.testGroup{
-		display:block;
-        margin: 0 auto;
-	}
-	#shareArea{
-		width:95%;
-		max-width:40em;
-		margin:0 auto;
-		margin-top:2em;
-	}
-	#shareArea > *{
-		display:block;
-		width:100%;
-		height:auto;
-		margin: 0.25em 0;
-	}
-	#privacyPolicy{
-        position:fixed;
-        top:2em;
-        bottom:2em;
-        left:2em;
-        right:2em;
-        overflow-y:auto;
-        width:auto;
-        height:auto;
-        box-shadow:0 0 3em 1em #000000;
-        z-index:999999;
-        text-align:left;
-        background-color:#FFFFFF;
-        padding:1em;
-	}
-	a.privacy{
-        text-align:center;
-        font-size:0.8em;
-        color:#808080;
-        padding: 0 3em;
-	}
-    div.closePrivacyPolicy {
-        width: 100%;
-        text-align: center;
-    }
-    div.closePrivacyPolicy a.privacy {
-        padding: 1em 3em;
-    }
-	@media all and (max-width:40em){
-		body{
-			font-size:0.8em;
-		}
-	}
-	div.visible{
-		animation: fadeIn 0.4s;
-		display:block;
-	}
-	div.hidden{
-		animation: fadeOut 0.4s;
-		display:none;
-	}
-	@keyframes fadeIn{
-		0%{
-			opacity:0;
-		}
-		100%{
-			opacity:1;
-		}
-	}
-	@keyframes fadeOut{
-		0%{
-			display:block;
-			opacity:1;
-		}
-		100%{
-			display:block;
-			opacity:0;
-		}
-	}
-	@media all and (prefers-color-scheme: dark){
-		html,body,#loading{
-			background:#202020;
-			color:#F4F4F4;
-			color-scheme:dark;
-		}
-		h1{
-			color:#E0E0E0;
-		}
-		a{
-			color:#9090FF;
-		}
-		#privacyPolicy{
-			background:#000000;
-		}
-		#resultsImg{
-			filter: invert(1);
-		}
+	
+	.dark #privacyPolicy > div {
+		background: rgb(31, 41, 55);
+		color: white;
 	}
 </style>
 <title>LibreSpeed</title>
 </head>
-<body onload="initServers()">
-<h1>LibreSpeed</h1>
-<div id="loading" class="visible">
-	<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
-</div>
-<div id="testWrapper" class="hidden">
-	<div id="startStopBtn" onclick="startStop()"></div><br/>
-	<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
-	<div id="serverArea">
-		Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
-	</div>
-	<div id="test">
-		<div class="testGroup">
-            <div class="testArea2">
-				<div class="testName">Ping</div>
-				<div id="pingText" class="meterText" style="color:#AA6060"></div>
-				<div class="unit">ms</div>
-			</div>
-			<div class="testArea2">
-				<div class="testName">Jitter</div>
-				<div id="jitText" class="meterText" style="color:#AA6060"></div>
-				<div class="unit">ms</div>
-			</div>
-		</div>
-		<div class="testGroup">
-			<div class="testArea">
-				<div class="testName">Download</div>
-				<canvas id="dlMeter" class="meter"></canvas>
-				<div id="dlText" class="meterText"></div>
-				<div class="unit">Mbit/s</div>
-			</div>
-			<div class="testArea">
-				<div class="testName">Upload</div>
-				<canvas id="ulMeter" class="meter"></canvas>
-				<div id="ulText" class="meterText"></div>
-				<div class="unit">Mbit/s</div>
-			</div>
-		</div>
-		<div id="ipArea">
-			<span id="ip"></span>
-		</div>
-		<div id="shareArea" style="display:none">
-			<h3>Share results</h3>
-			<p>Test ID: <span id="testId"></span></p>
-			<input type="text" value="" id="resultsURL" readonly="readonly" onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')"/>
-			<img src="" id="resultsImg" />
-		</div>
-	</div>
-	<a href="https://github.com/librespeed/speedtest">Source code</a>
-</div>
-<div id="privacyPolicy" style="display:none">
-    <h2>Privacy Policy</h2>
-    <p>This HTML5 speed test server is configured with telemetry enabled.</p>
-    <h4>What data we collect</h4>
-    <p>
-        At the end of the test, the following data is collected and stored:
-        <ul>
-            <li>Test ID</li>
-            <li>Time of testing</li>
-            <li>Test results (download and upload speed, ping and jitter)</li>
-            <li>IP address</li>
-            <li>ISP information</li>
-            <li>Approximate location (inferred from IP address, not GPS)</li>
-            <li>User agent and browser locale</li>
-            <li>Test log (contains no personal information)</li>
-        </ul>
-    </p>
-    <h4>How we use the data</h4>
-    <p>
-        Data collected through this service is used to:
-        <ul>
-            <li>Allow sharing of test results (sharable image for forums, etc.)</li>
-            <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
-        </ul>
-        No personal information is disclosed to third parties.
-    </p>
-    <h4>Your consent</h4>
-    <p>
-        By starting the test, you consent to the terms of this privacy policy.
-    </p>
-    <h4>Data removal</h4>
-    <p>
-        If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.<br/><br/>
-        Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
-    </p>
-    <br/><br/>
-    <div class="closePrivacyPolicy">
-        <a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+<body onload="initServers()" class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div class="min-h-full flex flex-col">
+        <!-- Header -->
+        <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">LibreSpeed</h1>
+                    </div>
+                    
+                    <!-- Dark mode toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading Screen -->
+        <div id="loading" class="visible flex-1 flex items-center justify-center">
+            <div class="text-center">
+                <div class="mb-4">
+                    <span class="loadCircle text-blue-500"></span>
+                </div>
+                <p id="message" class="text-lg text-gray-700 dark:text-gray-300">Selecting a server...</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main id="testWrapper" class="hidden flex-1 px-4 py-12">
+            <div class="w-full max-w-6xl mx-auto mt-16">
+                
+                <!-- Server Selection (when available) -->
+                <div id="serverArea" class="mb-6 text-center">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm inline-block">
+                        <label class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-3">Test Server:</label>
+                        <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])" 
+                                class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Speed Display Section -->
+                <section class="text-center mb-8">
+                    <!-- Start/Stop Button -->
+                    <button id="startStopBtn" onclick="startStop()" 
+                            class="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 mb-8">
+                    </button>
+                </section>
+
+                <!-- Test Results Grid -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="test">
+                    <!-- Download Speed -->
+                    <div class="testArea bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow relative">
+                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            Download
+                        </div>
+                        <div class="meter-container w-40 h-32 mx-auto mb-4 relative">
+                            <canvas id="dlMeter" class="w-full h-full"></canvas>
+                        </div>
+                        <div class="text-center">
+                            <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white mb-1"></div>
+                            <div class="unit text-sm text-gray-500 dark:text-gray-400">Mbit/s</div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Speed -->
+                    <div class="testArea bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow relative">
+                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            Upload
+                        </div>
+                        <div class="meter-container w-40 h-32 mx-auto mb-4 relative">
+                            <canvas id="ulMeter" class="w-full h-full"></canvas>
+                        </div>
+                        <div class="text-center">
+                            <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white mb-1"></div>
+                            <div class="unit text-sm text-gray-500 dark:text-gray-400">Mbit/s</div>
+                        </div>
+                    </div>
+
+                    <!-- Ping -->
+                    <div class="testArea2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Ping
+                        </div>
+                        <div class="text-center">
+                            <div id="pingText" class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2"></div>
+                            <div class="unit text-sm text-gray-500 dark:text-gray-400">ms</div>
+                        </div>
+                    </div>
+
+                    <!-- Jitter -->
+                    <div class="testArea2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Jitter
+                        </div>
+                        <div class="text-center">
+                            <div id="jitText" class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2"></div>
+                            <div class="unit text-sm text-gray-500 dark:text-gray-400">ms</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- IP Address Display -->
+                <section class="text-center mb-8" id="ipArea">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm inline-block">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Your IP Address
+                        </h3>
+                        <span id="ip" class="font-mono text-lg text-gray-900 dark:text-white"></span>
+                    </div>
+                </section>
+
+                <!-- Share Results -->
+                <div id="shareArea" class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm mx-auto max-w-2xl" style="display:none">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">Share Your Results</h3>
+                    <div class="space-y-4">
+                        <div class="text-center">
+                            <span class="text-sm text-gray-600 dark:text-gray-300">Test ID: </span>
+                            <span id="testId" class="font-mono text-gray-900 dark:text-white"></span>
+                        </div>
+                        <input type="text" value="" id="resultsURL" readonly="readonly" 
+                               onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm cursor-pointer focus:ring-2 focus:ring-blue-500"/>
+                        <div class="text-center">
+                            <img src="" id="resultsImg" class="mx-auto rounded-lg shadow-lg max-w-full h-auto" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600 dark:text-gray-300">
+                    <div class="flex space-x-4 mb-2 sm:mb-0">
+                        <a class="privacy hover:text-blue-500 transition-colors cursor-pointer" onclick="I('privacyPolicy').style.display='flex'">Privacy Policy</a>
+                        <a href="https://github.com/librespeed/speedtest" class="hover:text-blue-500 transition-colors">Source Code</a>
+                    </div>
+                    <p>&copy; 2024 LibreSpeed. Open source speed test.</p>
+                </div>
+            </div>
+        </footer>
     </div>
-    <br/>
-</div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyPolicy" style="display:none">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
+            </div>
+            <div class="p-6 space-y-4 text-gray-700 dark:text-gray-300">
+                <p>This HTML5 speed test server is configured with telemetry enabled.</p>
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">What data we collect</h4>
+                    <p>At the end of the test, the following data is collected and stored:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>Test ID</li>
+                        <li>Time of testing</li>
+                        <li>Test results (download and upload speed, ping and jitter)</li>
+                        <li>IP address</li>
+                        <li>ISP information</li>
+                        <li>Approximate location (inferred from IP address, not GPS)</li>
+                        <li>User agent and browser locale</li>
+                        <li>Test log (contains no personal information)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">How we use the data</h4>
+                    <p>Data collected through this service is used to:</p>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>Allow sharing of test results (sharable image for forums, etc.)</li>
+                        <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
+                    </ul>
+                    <p>No personal information is disclosed to third parties.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Your consent</h4>
+                    <p>By starting the test, you consent to the terms of this privacy policy.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Data removal</h4>
+                    <p>If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.</p>
+                    <p>Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE" class="text-blue-500 hover:text-blue-600">TO BE FILLED BY DEVELOPER</a>.</p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                <button onclick="I('privacyPolicy').style.display='none'" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dark Mode Script -->
+    <script>
+        // Dark mode functionality
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Check if dark mode is enabled
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+            document.documentElement.classList.add('dark');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+            // Toggle icons inside button
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+
+            // If set via local storage previously
+            if (localStorage.getItem('color-theme')) {
+                if (localStorage.getItem('color-theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                }
+            } else {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
