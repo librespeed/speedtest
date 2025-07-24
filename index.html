@@ -104,13 +104,17 @@ var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#E5E7
 var dlColor="#3B82F6",
 	ulColor="#8B5CF6";
 
-//CODE FOR SPEEDOMETER
-function drawMeter(c,amount,bk,fg){
+//CODE FOR ENHANCED SPEEDOMETER
+var lastDrawnAmount = 0;
+var animationId = null;
+
+function drawMeter(c, targetAmount, bk, fg, animated = true){
 	if(!c || !c.getContext) return;
 	
-	var ctx=c.getContext("2d");
-	var dp=window.devicePixelRatio||1;
-	var cw=c.clientWidth*dp, ch=c.clientHeight*dp;
+	var ctx = c.getContext("2d");
+	var dp = window.devicePixelRatio || 1;
+	var cw = c.clientWidth * dp;
+	var ch = c.clientHeight * dp;
 	
 	// Ensure canvas has dimensions
 	if(cw === 0 || ch === 0) {
@@ -118,37 +122,147 @@ function drawMeter(c,amount,bk,fg){
 		ch = 320 * dp;
 	}
 	
-	if(c.width==cw&&c.height==ch){
-		ctx.clearRect(0,0,cw,ch);
-	}else{
-		c.width=cw;
-		c.height=ch;
+	// Only resize canvas if dimensions changed
+	if(c.width !== cw || c.height !== ch){
+		c.width = cw;
+		c.height = ch;
 	}
 	
-	// Draw circular speedometer
 	var centerX = cw / 2;
 	var centerY = ch / 2;
-	var radius = Math.min(cw, ch) * 0.4;
-	var sizScale = Math.min(cw, ch) * 0.002;
+	var radius = Math.min(cw, ch) * 0.38;
+	var lineWidth = Math.max(6, Math.min(cw, ch) * 0.018);
 	
-	// Background circle
+	// Smooth animation
+	if(animated && Math.abs(targetAmount - lastDrawnAmount) > 0.01) {
+		if(animationId) cancelAnimationFrame(animationId);
+		
+		var startAmount = lastDrawnAmount;
+		var startTime = performance.now();
+		var duration = 300; // ms
+		
+		function animate(currentTime) {
+			var elapsed = currentTime - startTime;
+			var progress = Math.min(elapsed / duration, 1);
+			
+			// Easing function for smooth animation
+			var easeProgress = 1 - Math.pow(1 - progress, 3);
+			var currentAmount = startAmount + (targetAmount - startAmount) * easeProgress;
+			
+			drawSpeedometerFrame(ctx, currentAmount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch);
+			
+			if(progress < 1) {
+				animationId = requestAnimationFrame(animate);
+			} else {
+				lastDrawnAmount = targetAmount;
+				animationId = null;
+			}
+		}
+		
+		animationId = requestAnimationFrame(animate);
+	} else {
+		drawSpeedometerFrame(ctx, targetAmount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch);
+		lastDrawnAmount = targetAmount;
+	}
+}
+
+function drawSpeedometerFrame(ctx, amount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch) {
+	// Clear canvas efficiently
+	ctx.clearRect(0, 0, cw, ch);
+	
+	// Enable anti-aliasing for smoother lines
+	ctx.imageSmoothingEnabled = true;
+	ctx.imageSmoothingQuality = 'high';
+	
+	var startAngle = 0.75 * Math.PI;
+	var endAngle = 0.25 * Math.PI;
+	var totalAngle = 1.5 * Math.PI;
+	var currentAngle = startAngle + amount * totalAngle;
+	
+	// Background track with subtle gradient
+	var bgGradient = ctx.createLinearGradient(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+	bgGradient.addColorStop(0, bk);
+	bgGradient.addColorStop(1, bk + '80'); // Add slight transparency
+	
 	ctx.beginPath();
-	ctx.strokeStyle=bk;
-	ctx.lineWidth=Math.max(4, 8*sizScale);
-	ctx.arc(centerX, centerY, radius, 0.75*Math.PI, 0.25*Math.PI);
+	ctx.strokeStyle = bgGradient;
+	ctx.lineWidth = lineWidth;
+	ctx.lineCap = "round";
+	ctx.arc(centerX, centerY, radius, startAngle, endAngle);
 	ctx.stroke();
 	
-	// Progress circle
-	ctx.beginPath();
-	ctx.strokeStyle=fg;
-	ctx.lineWidth=Math.max(6, 10*sizScale);
-	ctx.lineCap="round";
-	var endAngle = 0.75*Math.PI + amount * 1.5 * Math.PI;
-	ctx.arc(centerX, centerY, radius, 0.75*Math.PI, endAngle);
-	ctx.stroke();
+	// Progress arc with gradient
+	if(amount > 0) {
+		var progressGradient = ctx.createLinearGradient(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+		progressGradient.addColorStop(0, fg);
+		progressGradient.addColorStop(0.5, fg + 'E6'); // Slightly more opaque
+		progressGradient.addColorStop(1, fg);
+		
+		ctx.beginPath();
+		ctx.strokeStyle = progressGradient;
+		ctx.lineWidth = lineWidth + 1;
+		ctx.lineCap = "round";
+		ctx.arc(centerX, centerY, radius, startAngle, currentAngle);
+		ctx.stroke();
+		
+		// Add glow effect for progress
+		ctx.shadowColor = fg;
+		ctx.shadowBlur = 8;
+		ctx.beginPath();
+		ctx.strokeStyle = fg;
+		ctx.lineWidth = lineWidth - 2;
+		ctx.arc(centerX, centerY, radius, startAngle, currentAngle);
+		ctx.stroke();
+		ctx.shadowBlur = 0;
+		
+		// Progress indicator dot
+		var dotX = centerX + radius * Math.cos(currentAngle);
+		var dotY = centerY + radius * Math.sin(currentAngle);
+		
+		ctx.beginPath();
+		ctx.fillStyle = fg;
+		ctx.arc(dotX, dotY, lineWidth / 3, 0, 2 * Math.PI);
+		ctx.fill();
+		
+		// Dot highlight
+		ctx.beginPath();
+		ctx.fillStyle = '#FFFFFF';
+		ctx.arc(dotX, dotY, lineWidth / 6, 0, 2 * Math.PI);
+		ctx.fill();
+	}
+	
+	// Speed range markers
+	drawSpeedMarkers(ctx, centerX, centerY, radius, lineWidth, startAngle, endAngle);
+}
+
+function drawSpeedMarkers(ctx, centerX, centerY, radius, lineWidth, startAngle, endAngle) {
+	var markerRadius = radius + lineWidth / 2 + 4;
+	var innerRadius = radius - lineWidth / 2 - 4;
+	
+	// Draw markers for speed ranges (0, 25, 50, 75, 100+ percentiles)
+	for(var i = 0; i <= 4; i++) {
+		var angle = startAngle + (i / 4) * 1.5 * Math.PI;
+		var outerX = centerX + markerRadius * Math.cos(angle);
+		var outerY = centerY + markerRadius * Math.sin(angle);
+		var innerX = centerX + innerRadius * Math.cos(angle);
+		var innerY = centerY + innerRadius * Math.sin(angle);
+		
+		ctx.beginPath();
+		ctx.strokeStyle = '#94A3B8';
+		ctx.lineWidth = 1;
+		ctx.moveTo(outerX, outerY);
+		ctx.lineTo(innerX, innerY);
+		ctx.stroke();
+	}
 }
 function mbpsToAmount(s){
-	return 1-(1/(Math.pow(1.3,Math.sqrt(s))));
+	if(isNaN(s) || s < 0) {
+		console.warn("Invalid speed value for mbpsToAmount:", s);
+		return 0;
+	}
+	var result = 1-(1/(Math.pow(1.3,Math.sqrt(s))));
+	console.log("mbpsToAmount - Input:", s, "Output:", result);
+	return result;
 }
 function format(d){
     d=Number(d);
@@ -206,16 +320,47 @@ function updateUI(forced){
 	var status=uiData.testState;
 	
 	// Update IP address and related info
-	I("ip").textContent=uiData.clientIp || "-";
+	var clientIpRaw = uiData.clientIp || "-";
+	var ipAddress = "-";
+	var ispName = "-";
 	
-	// Update ISP information if available
-	if(uiData.ispInfo) {
-		I("isp").textContent=uiData.ispInfo.rawIspInfo || uiData.ispInfo.processedString || "-";
+	// Parse combined IP and ISP info if it contains a separator
+	if(clientIpRaw && clientIpRaw !== "-") {
+		if(clientIpRaw.includes(" - ")) {
+			// Format: "192.168.1.1 - ISP Name"
+			var parts = clientIpRaw.split(" - ");
+			ipAddress = parts[0].trim();
+			ispName = parts[1].trim();
+		} else if(clientIpRaw.includes("-")) {
+			// Format: "192.168.1.1-ISP Name" or "192.168.1.1 -ISP Name"
+			var parts = clientIpRaw.split("-");
+			ipAddress = parts[0].trim();
+			ispName = parts[1] ? parts[1].trim() : "-";
+		} else if(clientIpRaw.includes(" ") && !clientIpRaw.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+			// Format: "192.168.1.1 ISP Company Name"
+			var parts = clientIpRaw.split(" ", 2);
+			ipAddress = parts[0].trim();
+			ispName = clientIpRaw.substring(parts[0].length).trim();
+		} else {
+			// Assume it's just the IP address
+			ipAddress = clientIpRaw;
+		}
+		
+		console.log("IP parsing - Raw:", clientIpRaw, "IP:", ipAddress, "ISP:", ispName);
+	}
+	
+	I("ip").textContent = ipAddress;
+	
+	// Update ISP information with extracted ISP or fallback to other sources
+	if(ispName && ispName !== "-") {
+		I("isp").textContent = ispName;
+	} else if(uiData.ispInfo) {
+		I("isp").textContent = uiData.ispInfo.rawIspInfo || uiData.ispInfo.processedString || "-";
 	} else if(uiData.clientIspInfo) {
-		I("isp").textContent=uiData.clientIspInfo || "-";
+		I("isp").textContent = uiData.clientIspInfo || "-";
 	} else {
 		// Try other possible ISP field names
-		I("isp").textContent=uiData.ispOrganization || uiData.isp || "-";
+		I("isp").textContent = uiData.ispOrganization || uiData.isp || "-";
 	}
 	
 	// Update location information if available
@@ -263,10 +408,46 @@ function updateUI(forced){
 	
 	
 	// Draw main speedometer
-	var currentSpeed = (status==1) ? uiData.dlStatus : (status==3) ? uiData.ulStatus : 0;
+	var currentSpeed = 0;
+	var speedColor = dlColor;
+	
+	// Determine current speed and color based on test state
+	if(status == 1) { // Download test - active
+		// Use actual download speed value, not the formatted text
+		currentSpeed = Number(uiData.dlStatus) || 0;
+		speedColor = dlColor;
+		console.log("Download - Status:", status, "Speed:", currentSpeed, "dlStatus:", uiData.dlStatus);
+	} else if(status == 3) { // Upload test - active  
+		currentSpeed = Number(uiData.ulStatus) || 0;
+		speedColor = ulColor;
+		console.log("Upload - Status:", status, "Speed:", currentSpeed, "ulStatus:", uiData.ulStatus);
+	} else if(status == 2) { // Ping test - active
+		currentSpeed = 0; // Don't show speed during ping
+		speedColor = dlColor;
+		console.log("Ping - Status:", status);
+	} else {
+		// Test not running or completed, show final download speed if available
+		currentSpeed = Number(uiData.dlStatus) || 0;
+		speedColor = dlColor;
+		console.log("Idle/Complete - Status:", status, "Speed:", currentSpeed);
+	}
+	
 	var speedometerCanvas = I("speedometer");
 	if(speedometerCanvas) {
-		drawMeter(speedometerCanvas,mbpsToAmount(Number(currentSpeed*(status>=1&&status<=3?oscillate():1))),meterBk,(status==1)?dlColor:ulColor);
+		var oscillation = (status >= 1 && status <= 3) ? oscillate() : 1;
+		var adjustedSpeed = Math.max(0, currentSpeed * oscillation); // Ensure non-negative
+		var speedAmount = mbpsToAmount(adjustedSpeed);
+		
+		// Additional debugging
+		console.log("Drawing speedometer - Status:", status, "Raw Speed:", currentSpeed, "Adjusted:", adjustedSpeed, "Amount:", speedAmount, "Color:", speedColor);
+		
+		// Ensure we have valid values
+		if(speedAmount >= 0 && speedAmount <= 1) {
+			drawMeter(speedometerCanvas, speedAmount, meterBk, speedColor, true);
+		} else {
+			console.warn("Invalid speedAmount:", speedAmount, "using 0 instead");
+			drawMeter(speedometerCanvas, 0, meterBk, speedColor, true);
+		}
 	}
 }
 function oscillate(){
@@ -330,11 +511,18 @@ function initThemeToggle() {
 }
 //function to (re)initialize UI
 function initUI(){
+	// Reset animation state
+	lastDrawnAmount = 0;
+	if(animationId) {
+		cancelAnimationFrame(animationId);
+		animationId = null;
+	}
+	
 	var speedometerCanvas = I("speedometer");
 	if(speedometerCanvas) {
-		// Force canvas to have visible dimensions
+		// Force canvas to have visible dimensions and initialize without animation
 		setTimeout(function() {
-			drawMeter(speedometerCanvas,0,meterBk,dlColor);
+			drawMeter(speedometerCanvas, 0, meterBk, dlColor, false);
 		}, 100);
 	}
 	I("dlText").textContent="0.00";
