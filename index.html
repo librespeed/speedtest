@@ -8,15 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
-        darkMode: 'class',
-        theme: {
-            extend: {
-                animation: {
-                    'pulse-slow': 'pulse 3s ease-in-out infinite',
-                    'spin-slow': 'spin 3s linear infinite',
-                }
-            }
-        }
+        darkMode: 'class'
     }
 </script>
 <script type="text/javascript" src="speedtest.js"></script>
@@ -25,22 +17,22 @@ function I(i){return document.getElementById(i);}
 
 //LIST OF TEST SERVERS. Leave empty if you're doing a standalone installation. See documentation for details
 var SPEEDTEST_SERVERS=[
-	// {	//this server doesn't actually exist, remove it
-	// 	name:"local", //user friendly name for the server
-	// 	server:"//192.168.2.195:9000", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-	// 	dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
-	// 	ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
-	// 	pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-	// 	getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	// },
-	// {	//this server doesn't actually exist, remove it
-	// 	name:"kamilszczepanski.com", //user friendly name for the server
-	// 	server:"//la.speedtest.clouvider.net/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-	// 	dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
-	// 	ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
-	// 	pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-	// 	getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	// }
+	{	//this server doesn't actually exist, remove it
+		name:"local", //user friendly name for the server
+		server:"//192.168.2.195:9000", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	},
+	{	//this server doesn't actually exist, remove it
+		name:"kamilszczepanski.com", //user friendly name for the server
+		server:"//la.speedtest.clouvider.net/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	}
 ];
 
 //INITIALIZE SPEEDTEST
@@ -111,10 +103,9 @@ function initServers(){
 var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#E5E7EB";
 var dlColor="#3B82F6",
 	ulColor="#8B5CF6";
-var progColor="#94A3B8";
 
-//CODE FOR GAUGES
-function drawMeter(c,amount,bk,fg,progress,prog){
+//CODE FOR SPEEDOMETER
+function drawMeter(c,amount,bk,fg){
 	if(!c || !c.getContext) return;
 	
 	var ctx=c.getContext("2d");
@@ -127,10 +118,6 @@ function drawMeter(c,amount,bk,fg,progress,prog){
 		ch = 320 * dp;
 	}
 	
-	// For the main speedometer, use a different approach
-	var isMainSpeedometer = (c.id === "speedometer");
-	var sizScale = isMainSpeedometer ? Math.min(cw, ch) * 0.002 : ch * 0.0055;
-	
 	if(c.width==cw&&c.height==ch){
 		ctx.clearRect(0,0,cw,ch);
 	}else{
@@ -138,44 +125,27 @@ function drawMeter(c,amount,bk,fg,progress,prog){
 		c.height=ch;
 	}
 	
-	if(isMainSpeedometer) {
-		// Draw circular speedometer for main display
-		var centerX = cw / 2;
-		var centerY = ch / 2;
-		var radius = Math.min(cw, ch) * 0.4;
-		
-		// Background circle
-		ctx.beginPath();
-		ctx.strokeStyle=bk;
-		ctx.lineWidth=Math.max(4, 8*sizScale);
-		ctx.arc(centerX, centerY, radius, 0.75*Math.PI, 0.25*Math.PI);
-		ctx.stroke();
-		
-		// Progress circle
-		ctx.beginPath();
-		ctx.strokeStyle=fg;
-		ctx.lineWidth=Math.max(6, 10*sizScale);
-		ctx.lineCap="round";
-		var endAngle = 0.75*Math.PI + amount * 1.5 * Math.PI;
-		ctx.arc(centerX, centerY, radius, 0.75*Math.PI, endAngle);
-		ctx.stroke();
-	} else {
-		// Original meter drawing for smaller gauges
-		ctx.beginPath();
-		ctx.strokeStyle=bk;
-		ctx.lineWidth=12*sizScale;
-		ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,Math.PI*0.1);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.strokeStyle=fg;
-		ctx.lineWidth=12*sizScale;
-		ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,amount*Math.PI*1.2-Math.PI*1.1);
-		ctx.stroke();
-		if(typeof progress !== "undefined"){
-			ctx.fillStyle=prog;
-			ctx.fillRect(c.width*0.3,c.height-16*sizScale,c.width*0.4*progress,4*sizScale);
-		}
-	}
+	// Draw circular speedometer
+	var centerX = cw / 2;
+	var centerY = ch / 2;
+	var radius = Math.min(cw, ch) * 0.4;
+	var sizScale = Math.min(cw, ch) * 0.002;
+	
+	// Background circle
+	ctx.beginPath();
+	ctx.strokeStyle=bk;
+	ctx.lineWidth=Math.max(4, 8*sizScale);
+	ctx.arc(centerX, centerY, radius, 0.75*Math.PI, 0.25*Math.PI);
+	ctx.stroke();
+	
+	// Progress circle
+	ctx.beginPath();
+	ctx.strokeStyle=fg;
+	ctx.lineWidth=Math.max(6, 10*sizScale);
+	ctx.lineCap="round";
+	var endAngle = 0.75*Math.PI + amount * 1.5 * Math.PI;
+	ctx.arc(centerX, centerY, radius, 0.75*Math.PI, endAngle);
+	ctx.stroke();
 }
 function mbpsToAmount(s){
 	return 1-(1/(Math.pow(1.3,Math.sqrt(s))));
@@ -291,15 +261,12 @@ function updateUI(forced){
 	I("pingText").textContent=format(uiData.pingStatus);
 	I("jitText").textContent=format(uiData.jitterStatus);
 	
-	// Draw meters (keeping original canvas functionality)
-	drawMeter(I("dlMeter"),mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))),meterBk,dlColor,Number(uiData.dlProgress),progColor);
-	drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColor,Number(uiData.ulProgress),progColor);
 	
 	// Draw main speedometer
 	var currentSpeed = (status==1) ? uiData.dlStatus : (status==3) ? uiData.ulStatus : 0;
 	var speedometerCanvas = I("speedometer");
 	if(speedometerCanvas) {
-		drawMeter(speedometerCanvas,mbpsToAmount(Number(currentSpeed*(status>=1&&status<=3?oscillate():1))),meterBk,(status==1)?dlColor:ulColor,0,progColor);
+		drawMeter(speedometerCanvas,mbpsToAmount(Number(currentSpeed*(status>=1&&status<=3?oscillate():1))),meterBk,(status==1)?dlColor:ulColor);
 	}
 }
 function oscillate(){
@@ -350,35 +317,24 @@ function initThemeToggle() {
         themeToggleDarkIcon.classList.toggle('hidden');
         themeToggleLightIcon.classList.toggle('hidden');
 
-        // If set via local storage previously
-        if (localStorage.getItem('color-theme')) {
-            if (localStorage.getItem('color-theme') === 'light') {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('color-theme', 'dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('color-theme', 'light');
-            }
+        // Toggle dark mode
+        var isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
         } else {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('color-theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('color-theme', 'dark');
-            }
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
         }
     });
 }
 //function to (re)initialize UI
 function initUI(){
-	drawMeter(I("dlMeter"),0,meterBk,dlColor,0);
-	drawMeter(I("ulMeter"),0,meterBk,ulColor,0);
 	var speedometerCanvas = I("speedometer");
 	if(speedometerCanvas) {
 		// Force canvas to have visible dimensions
 		setTimeout(function() {
-			drawMeter(speedometerCanvas,0,meterBk,dlColor,0);
+			drawMeter(speedometerCanvas,0,meterBk,dlColor);
 		}, 100);
 	}
 	I("dlText").textContent="0.00";
@@ -434,8 +390,6 @@ function initUI(){
         <!-- Main Content -->
         <main id="testWrapper" class="hidden flex-1 flex items-center justify-center px-4 py-8">
             <div class="w-full max-w-4xl mx-auto">
-                
-                
                 <!-- Speed Display -->
                 <section class="text-center mb-8">
                     <div class="relative inline-block">
@@ -473,7 +427,6 @@ function initUI(){
                         </div>
                         <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
-                        <canvas id="dlMeter" class="hidden"></canvas>
                     </div>
 
                     <!-- Upload Speed -->
@@ -486,7 +439,6 @@ function initUI(){
                         </div>
                         <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
-                        <canvas id="ulMeter" class="hidden"></canvas>
                     </div>
 
                     <!-- Ping -->
