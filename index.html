@@ -4,6 +4,7 @@
 <link rel="shortcut icon" href="favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
 <meta charset="UTF-8" />
+<title>LibreSpeed - Internet Speed Test</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
@@ -24,22 +25,22 @@ function I(i){return document.getElementById(i);}
 
 //LIST OF TEST SERVERS. Leave empty if you're doing a standalone installation. See documentation for details
 var SPEEDTEST_SERVERS=[
-	{	//this server doesn't actually exist, remove it
-		name:"netflakes (local)", //user friendly name for the server
-		server:"//192.168.2.195:9000", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
-		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
-		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	},
-	{	//this server doesn't actually exist, remove it
-		name:"netflakes (public)", //user friendly name for the server
-		server:"https://netflakes.fyi/speedtest", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
-		dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
-		ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
-		pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
-		getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
-	}
+	// {	//this server doesn't actually exist, remove it
+	// 	name:"local", //user friendly name for the server
+	// 	server:"//192.168.2.195:9000", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+	// 	dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+	// 	ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+	// 	pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+	// 	getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	// },
+	// {	//this server doesn't actually exist, remove it
+	// 	name:"kamilszczepanski.com", //user friendly name for the server
+	// 	server:"//la.speedtest.clouvider.net/", //URL to the server. // at the beginning will be replaced with http:// or https:// automatically
+	// 	dlURL:"backend/garbage.php",  //path to download test on this server (garbage.php or replacement)
+	// 	ulURL:"backend/empty.php",  //path to upload test on this server (empty.php or replacement)
+	// 	pingURL:"backend/empty.php",  //path to ping/jitter test on this server (empty.php or replacement)
+	// 	getIpURL:"backend/getIP.php"  //path to getIP on this server (getIP.php or replacement)
+	// }
 ];
 
 //INITIALIZE SPEEDTEST
@@ -48,11 +49,14 @@ s.setParameter("telemetry_level","basic"); //enable basic telemetry (for results
 
 //SERVER AUTO SELECTION
 function initServers(){
+	// Initialize theme toggle first
+	initThemeToggle();
+	
 	if(SPEEDTEST_SERVERS.length==0){ //standalone installation
 		//just make the UI visible
-		I("loading").className="hidden";
+		I("loading").style.display="none";
 		I("serverArea").style.display="none";
-		I("testWrapper").className="visible";
+		I("testWrapper").classList.remove("hidden");
 		initUI();
 	}else{ //multiple servers
 		var noServersAvailable=function(){
@@ -61,18 +65,25 @@ function initServers(){
 		var runServerSelect=function(){
 			s.selectServer(function(server){
 				if(server!=null){ //at least 1 server is available
-					I("loading").className="hidden"; //hide loading message
+					I("loading").style.display="none"; //hide loading message
 					//populate server list for manual selection
+					var serverSelect = I("server");
+					// Clear existing options except the first "Auto Selected"
+					serverSelect.innerHTML = '<option value="">Auto Selected</option>';
+					
 					for(var i=0;i<SPEEDTEST_SERVERS.length;i++){
 						if(SPEEDTEST_SERVERS[i].pingT==-1) continue;
 						var option=document.createElement("option");
 						option.value=i;
 						option.textContent=SPEEDTEST_SERVERS[i].name;
 						if(SPEEDTEST_SERVERS[i]===server) option.selected=true;
-						I("server").appendChild(option);
+						serverSelect.appendChild(option);
 					}
+					
+					// Initialize server info display
+					updateServerInfo();
 					//show test UI
-					I("testWrapper").className="visible";
+					I("testWrapper").classList.remove("hidden");
 					initUI();
 				}else{ //no servers are available, the test cannot proceed
 					noServersAvailable();
@@ -97,36 +108,73 @@ function initServers(){
 	}
 }
 
-var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
-var dlColor="#6060AA",
-	ulColor="#616161";
-var progColor=meterBk;
+var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#E5E7EB";
+var dlColor="#3B82F6",
+	ulColor="#8B5CF6";
+var progColor="#94A3B8";
 
 //CODE FOR GAUGES
 function drawMeter(c,amount,bk,fg,progress,prog){
+	if(!c || !c.getContext) return;
+	
 	var ctx=c.getContext("2d");
 	var dp=window.devicePixelRatio||1;
 	var cw=c.clientWidth*dp, ch=c.clientHeight*dp;
-	var sizScale=ch*0.0055;
+	
+	// Ensure canvas has dimensions
+	if(cw === 0 || ch === 0) {
+		cw = 320 * dp;
+		ch = 320 * dp;
+	}
+	
+	// For the main speedometer, use a different approach
+	var isMainSpeedometer = (c.id === "speedometer");
+	var sizScale = isMainSpeedometer ? Math.min(cw, ch) * 0.002 : ch * 0.0055;
+	
 	if(c.width==cw&&c.height==ch){
 		ctx.clearRect(0,0,cw,ch);
 	}else{
 		c.width=cw;
 		c.height=ch;
 	}
-	ctx.beginPath();
-	ctx.strokeStyle=bk;
-	ctx.lineWidth=12*sizScale;
-	ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,Math.PI*0.1);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.strokeStyle=fg;
-	ctx.lineWidth=12*sizScale;
-	ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,amount*Math.PI*1.2-Math.PI*1.1);
-	ctx.stroke();
-	if(typeof progress !== "undefined"){
-		ctx.fillStyle=prog;
-		ctx.fillRect(c.width*0.3,c.height-16*sizScale,c.width*0.4*progress,4*sizScale);
+	
+	if(isMainSpeedometer) {
+		// Draw circular speedometer for main display
+		var centerX = cw / 2;
+		var centerY = ch / 2;
+		var radius = Math.min(cw, ch) * 0.4;
+		
+		// Background circle
+		ctx.beginPath();
+		ctx.strokeStyle=bk;
+		ctx.lineWidth=Math.max(4, 8*sizScale);
+		ctx.arc(centerX, centerY, radius, 0.75*Math.PI, 0.25*Math.PI);
+		ctx.stroke();
+		
+		// Progress circle
+		ctx.beginPath();
+		ctx.strokeStyle=fg;
+		ctx.lineWidth=Math.max(6, 10*sizScale);
+		ctx.lineCap="round";
+		var endAngle = 0.75*Math.PI + amount * 1.5 * Math.PI;
+		ctx.arc(centerX, centerY, radius, 0.75*Math.PI, endAngle);
+		ctx.stroke();
+	} else {
+		// Original meter drawing for smaller gauges
+		ctx.beginPath();
+		ctx.strokeStyle=bk;
+		ctx.lineWidth=12*sizScale;
+		ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,Math.PI*0.1);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.strokeStyle=fg;
+		ctx.lineWidth=12*sizScale;
+		ctx.arc(c.width/2,c.height-58*sizScale,c.height/1.8-ctx.lineWidth,-Math.PI*1.1,amount*Math.PI*1.2-Math.PI*1.1);
+		ctx.stroke();
+		if(typeof progress !== "undefined"){
+			ctx.fillStyle=prog;
+			ctx.fillRect(c.width*0.3,c.height-16*sizScale,c.width*0.4*progress,4*sizScale);
+		}
 	}
 }
 function mbpsToAmount(s){
@@ -146,19 +194,22 @@ function startStop(){
 		//speed test is running, abort
 		s.abort();
 		data=null;
-		I("startStopBtn").className="";
+		I("startStopBtn").classList.remove("opacity-50");
+		I("button-text").textContent="Start Test";
 		I("server").disabled=false;
 		initUI();
 	}else{
 		//test is not running, begin
-		I("startStopBtn").className="running";
+		I("startStopBtn").classList.add("opacity-50");
+		I("button-text").textContent="Stop Test";
 		I("shareArea").style.display="none";
 		I("server").disabled=true;
 		s.onupdate=function(data){
             uiData=data;
 		};
 		s.onend=function(aborted){
-            I("startStopBtn").className="";
+            I("startStopBtn").classList.remove("opacity-50");
+            I("button-text").textContent="Start Test";
             I("server").disabled=false;
             updateUI(true);
             if(!aborted){
@@ -183,13 +234,73 @@ function updateUI(forced){
 	if(!forced&&s.getState()!=3) return;
 	if(uiData==null) return;
 	var status=uiData.testState;
-	I("ip").textContent=uiData.clientIp;
-	I("dlText").textContent=(status==1&&uiData.dlStatus==0)?"...":format(uiData.dlStatus);
-	drawMeter(I("dlMeter"),mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))),meterBk,dlColor,Number(uiData.dlProgress),progColor);
-	I("ulText").textContent=(status==3&&uiData.ulStatus==0)?"...":format(uiData.ulStatus);
-	drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColor,Number(uiData.ulProgress),progColor);
+	
+	// Update IP address and related info
+	I("ip").textContent=uiData.clientIp || "-";
+	
+	// Update ISP information if available
+	if(uiData.ispInfo) {
+		I("isp").textContent=uiData.ispInfo.rawIspInfo || uiData.ispInfo.processedString || "-";
+	} else if(uiData.clientIspInfo) {
+		I("isp").textContent=uiData.clientIspInfo || "-";
+	} else {
+		// Try other possible ISP field names
+		I("isp").textContent=uiData.ispOrganization || uiData.isp || "-";
+	}
+	
+	// Update location information if available
+	if(uiData.ispInfo && (uiData.ispInfo.country || uiData.ispInfo.region)) {
+		var location = "";
+		if(uiData.ispInfo.region) location += uiData.ispInfo.region;
+		if(uiData.ispInfo.country) {
+			if(location) location += ", ";
+			location += uiData.ispInfo.country;
+		}
+		I("location").textContent = location || "-";
+	} else if(uiData.clientLocation) {
+		I("location").textContent = uiData.clientLocation || "-";
+	} else {
+		// Try other possible location field combinations
+		var location = "";
+		if(uiData.city) location += uiData.city;
+		if(uiData.region || uiData.state) {
+			if(location) location += ", ";
+			location += (uiData.region || uiData.state);
+		}
+		if(uiData.country) {
+			if(location) location += ", ";
+			location += uiData.country;
+		}
+		I("location").textContent = location || "-";
+	}
+	
+	// Update download speed
+	var dlSpeed = (status==1&&uiData.dlStatus==0)?"...":format(uiData.dlStatus);
+	I("dlText").textContent=dlSpeed;
+	I("speed-value").textContent = (status==1) ? dlSpeed : (uiData.dlStatus ? format(uiData.dlStatus) : "0.00");
+	I("speed-type").textContent = (status==1) ? "Download" : (status==3) ? "Upload" : (status==2) ? "Ping" : "Ready";
+	
+	// Update upload speed
+	var ulSpeed = (status==3&&uiData.ulStatus==0)?"...":format(uiData.ulStatus);
+	I("ulText").textContent=ulSpeed;
+	if(status==3) {
+		I("speed-value").textContent = ulSpeed;
+	}
+	
+	// Update ping and jitter
 	I("pingText").textContent=format(uiData.pingStatus);
 	I("jitText").textContent=format(uiData.jitterStatus);
+	
+	// Draw meters (keeping original canvas functionality)
+	drawMeter(I("dlMeter"),mbpsToAmount(Number(uiData.dlStatus*(status==1?oscillate():1))),meterBk,dlColor,Number(uiData.dlProgress),progColor);
+	drawMeter(I("ulMeter"),mbpsToAmount(Number(uiData.ulStatus*(status==3?oscillate():1))),meterBk,ulColor,Number(uiData.ulProgress),progColor);
+	
+	// Draw main speedometer
+	var currentSpeed = (status==1) ? uiData.dlStatus : (status==3) ? uiData.ulStatus : 0;
+	var speedometerCanvas = I("speedometer");
+	if(speedometerCanvas) {
+		drawMeter(speedometerCanvas,mbpsToAmount(Number(currentSpeed*(status>=1&&status<=3?oscillate():1))),meterBk,(status==1)?dlColor:ulColor,0,progColor);
+	}
 }
 function oscillate(){
 	return 1+0.02*Math.sin(Date.now()/100);
@@ -201,137 +312,90 @@ function frame(){
 	updateUI();
 }
 frame(); //start frame loop
+
+// Function to update server info display
+function updateServerInfo() {
+	var serverSelect = I("server");
+	var selectedIndex = serverSelect.value;
+	if(selectedIndex && SPEEDTEST_SERVERS[selectedIndex]) {
+		var selectedServer = SPEEDTEST_SERVERS[selectedIndex];
+		I("server-distance").textContent = selectedServer.distance || "-";
+		I("server-sponsor").textContent = selectedServer.sponsor || "LibreSpeed";
+	} else {
+		I("server-distance").textContent = "-";
+		I("server-sponsor").textContent = "LibreSpeed";
+	}
+}
+
+// Dark Mode Script - initialize after DOM is loaded
+function initThemeToggle() {
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+    if (!themeToggleBtn || !themeToggleDarkIcon || !themeToggleLightIcon) {
+        return; // Elements not found, skip theme toggle setup
+    }
+
+    // Check if dark mode is enabled
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        themeToggleLightIcon.classList.remove('hidden');
+        document.documentElement.classList.add('dark');
+    } else {
+        themeToggleDarkIcon.classList.remove('hidden');
+    }
+
+    themeToggleBtn.addEventListener('click', function() {
+        // Toggle icons inside button
+        themeToggleDarkIcon.classList.toggle('hidden');
+        themeToggleLightIcon.classList.toggle('hidden');
+
+        // If set via local storage previously
+        if (localStorage.getItem('color-theme')) {
+            if (localStorage.getItem('color-theme') === 'light') {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            }
+        } else {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        }
+    });
+}
 //function to (re)initialize UI
 function initUI(){
 	drawMeter(I("dlMeter"),0,meterBk,dlColor,0);
 	drawMeter(I("ulMeter"),0,meterBk,ulColor,0);
-	I("dlText").textContent="";
-	I("ulText").textContent="";
-	I("pingText").textContent="";
-	I("jitText").textContent="";
-	I("ip").textContent="";
+	var speedometerCanvas = I("speedometer");
+	if(speedometerCanvas) {
+		// Force canvas to have visible dimensions
+		setTimeout(function() {
+			drawMeter(speedometerCanvas,0,meterBk,dlColor,0);
+		}, 100);
+	}
+	I("dlText").textContent="0.00";
+	I("ulText").textContent="0.00";
+	I("pingText").textContent="0";
+	I("jitText").textContent="0.0";
+	I("ip").textContent="-";
+	I("isp").textContent="-";
+	I("location").textContent="-";
+	I("speed-value").textContent="0.00";
+	I("speed-type").textContent="Ready";
+	// Reset button text
+	I("button-text").textContent="Start Test";
 }
 </script>
-<style type="text/css">
-	/* Modern canvas meter styling */
-	.meter-container {
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	
-	/* Maintain existing canvas functionality */
-	div.testArea canvas {
-		position: absolute;
-		top: 50%;
-		left: 50%; 
-		width: 100%; 
-		height: 100%;
-		transform: translate(-50%, -50%);
-		z-index: 1;
-	}
-	
-	/* Animation keyframes */
-	@keyframes fadeIn {
-		0% { opacity: 0; transform: translateY(10px); }
-		100% { opacity: 1; transform: translateY(0); }
-	}
-	
-	@keyframes fadeOut {
-		0% { opacity: 1; transform: translateY(0); }
-		100% { opacity: 0; transform: translateY(10px); }
-	}
-	
-	div.visible {
-		animation: fadeIn 0.4s ease-out;
-		display: block;
-	}
-	
-	div.hidden {
-		animation: fadeOut 0.4s ease-out;
-		display: none;
-	}
-	
-	/* Custom button styling */
-	#startStopBtn {
-		transition: all 0.3s ease;
-	}
-	
-	#startStopBtn:before {
-		content: "Start Test";
-	}
-	
-	#startStopBtn.running {
-		background: linear-gradient(to right, #dc2626, #ef4444) !important;
-		color: white !important;
-		font-weight: 600 !important;
-		padding: 1rem 2rem !important;
-		border-radius: 9999px !important;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-		transition: all 0.2s !important;
-	}
-	
-	#startStopBtn.running:hover {
-		background: linear-gradient(to right, #b91c1c, #dc2626) !important;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-		transform: scale(1.05) !important;
-	}
-	
-	#startStopBtn.running:before {
-		content: "Abort Test";
-	}
-	
-	/* Loading spinner */
-	.loadCircle {
-		display: inline-block;
-		width: 1.5rem;
-		height: 1.5rem;
-		border: 2px solid transparent;
-		border-top: 2px solid currentColor;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin-right: 0.5rem;
-	}
-	
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
-	
-	/* Privacy policy modal */
-	#privacyPolicy {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.8);
-		z-index: 999999;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-	}
-	
-	#privacyPolicy > div {
-		background: white;
-		max-height: 80vh;
-		overflow-y: auto;
-		border-radius: 0.5rem;
-		padding: 2rem;
-		max-width: 600px;
-		width: 100%;
-	}
-	
-	.dark #privacyPolicy > div {
-		background: rgb(31, 41, 55);
-		color: white;
-	}
-</style>
-<title>LibreSpeed</title>
 </head>
-<body onload="initServers()" class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+<body class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300" onload="initServers()">
     <div class="min-h-full flex flex-col">
         <!-- Header -->
         <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm">
@@ -362,130 +426,158 @@ function initUI(){
         <!-- Loading Screen -->
         <div id="loading" class="visible flex-1 flex items-center justify-center">
             <div class="text-center">
-                <div class="mb-4">
-                    <span class="loadCircle text-blue-500"></span>
-                </div>
-                <p id="message" class="text-lg text-gray-700 dark:text-gray-300">Selecting a server...</p>
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+                <p id="message" class="text-gray-600 dark:text-gray-300">Selecting a server...</p>
             </div>
         </div>
 
         <!-- Main Content -->
-        <main id="testWrapper" class="hidden flex-1 px-4 py-12">
-            <div class="w-full max-w-6xl mx-auto mt-16">
+        <main id="testWrapper" class="hidden flex-1 flex items-center justify-center px-4 py-8">
+            <div class="w-full max-w-4xl mx-auto">
                 
-                <!-- Server Selection (when available) -->
-                <div id="serverArea" class="mb-6 text-center">
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-sm inline-block">
-                        <label class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-3">Test Server:</label>
-                        <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])" 
-                                class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Speed Display Section -->
+                
+                <!-- Speed Display -->
                 <section class="text-center mb-8">
-                    <!-- Start/Stop Button -->
-                    <button id="startStopBtn" onclick="startStop()" 
-                            class="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 mb-8">
-                    </button>
+                    <div class="relative inline-block">
+                        <!-- Speedometer Circle -->
+                        <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto mb-6">
+                            <canvas id="speedometer" class="absolute inset-0 w-full h-full"></canvas>
+                            
+                            <!-- Speed Value -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+                                <div id="speed-value" class="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-2">0.00</div>
+                                <div id="speed-unit" class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-medium">Mbps</div>
+                                <div id="speed-type" class="text-sm text-gray-500 dark:text-gray-400 mt-1">Ready</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Test Button -->
+                        <div id="startStopBtn" onclick="startStop()" class="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 cursor-pointer inline-flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-2-14V3a2 2 0 00-2-2H9a2 2 0 00-2 2v1M7 7h10l4 4v6a2 2 0 01-2 2H5a2 2 0 01-2-2V11l4-4z"></path>
+                            </svg>
+                            <span id="button-text">Start Test</span>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- Test Results Grid -->
-                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="test">
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <!-- Download Speed -->
-                    <div class="testArea bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow relative">
-                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Download</h3>
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Download
                         </div>
-                        <div class="meter-container w-40 h-32 mx-auto mb-4 relative">
-                            <canvas id="dlMeter" class="w-full h-full"></canvas>
-                        </div>
-                        <div class="text-center">
-                            <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white mb-1"></div>
-                            <div class="unit text-sm text-gray-500 dark:text-gray-400">Mbit/s</div>
-                        </div>
+                        <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
+                        <canvas id="dlMeter" class="hidden"></canvas>
                     </div>
 
                     <!-- Upload Speed -->
-                    <div class="testArea bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow relative">
-                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Upload</h3>
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
-                            Upload
                         </div>
-                        <div class="meter-container w-40 h-32 mx-auto mb-4 relative">
-                            <canvas id="ulMeter" class="w-full h-full"></canvas>
-                        </div>
-                        <div class="text-center">
-                            <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white mb-1"></div>
-                            <div class="unit text-sm text-gray-500 dark:text-gray-400">Mbit/s</div>
-                        </div>
+                        <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
+                        <canvas id="ulMeter" class="hidden"></canvas>
                     </div>
 
                     <!-- Ping -->
-                    <div class="testArea2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Ping</h3>
+                            <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            Ping
                         </div>
-                        <div class="text-center">
-                            <div id="pingText" class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2"></div>
-                            <div class="unit text-sm text-gray-500 dark:text-gray-400">ms</div>
-                        </div>
+                        <div id="pingText" class="text-2xl font-bold text-gray-900 dark:text-white">0</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
                     </div>
 
                     <!-- Jitter -->
-                    <div class="testArea2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="testName text-sm font-medium text-gray-600 dark:text-gray-300 mb-4 flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Jitter</h3>
+                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            Jitter
                         </div>
-                        <div class="text-center">
-                            <div id="jitText" class="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2"></div>
-                            <div class="unit text-sm text-gray-500 dark:text-gray-400">ms</div>
-                        </div>
+                        <div id="jitText" class="text-2xl font-bold text-gray-900 dark:text-white">0.0</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
                     </div>
                 </section>
 
-                <!-- IP Address Display -->
-                <section class="text-center mb-8" id="ipArea">
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm inline-block">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center justify-center">
+                <!-- Connection Info -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <!-- IP Address & Location -->
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            Your IP Address
+                            Your Connection
                         </h3>
-                        <span id="ip" class="font-mono text-lg text-gray-900 dark:text-white"></span>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">IP Address</span>
+                                <span id="ip" class="font-mono text-gray-900 dark:text-white">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">ISP</span>
+                                <span id="isp" class="text-gray-900 dark:text-white">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">Location</span>
+                                <span id="location" class="text-gray-900 dark:text-white">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Server Info -->
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                            </svg>
+                            Test Server
+                        </h3>
+                        <div class="space-y-3">
+                            <div id="serverArea" class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">Server</span>
+                                <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value]); updateServerInfo()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-gray-900 dark:text-white text-sm min-w-0 flex-1 ml-4">
+                                    <option value="">Auto Selected</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">Distance</span>
+                                <span id="server-distance" class="text-gray-900 dark:text-white">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 dark:text-gray-300">Sponsor</span>
+                                <span id="server-sponsor" class="text-gray-900 dark:text-white">LibreSpeed</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Share Results -->
-                <div id="shareArea" class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm mx-auto max-w-2xl" style="display:none">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">Share Your Results</h3>
-                    <div class="space-y-4">
-                        <div class="text-center">
-                            <span class="text-sm text-gray-600 dark:text-gray-300">Test ID: </span>
-                            <span id="testId" class="font-mono text-gray-900 dark:text-white"></span>
-                        </div>
-                        <input type="text" value="" id="resultsURL" readonly="readonly" 
-                               onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm cursor-pointer focus:ring-2 focus:ring-blue-500"/>
-                        <div class="text-center">
-                            <img src="" id="resultsImg" class="mx-auto rounded-lg shadow-lg max-w-full h-auto" />
-                        </div>
+                <!-- Share Results Area -->
+                <div id="shareArea" style="display:none" class="mb-8">
+                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm text-center">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share Results</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-2">Test ID: <span id="testId" class="font-mono"></span></p>
+                        <input type="text" value="" id="resultsURL" readonly="readonly" onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')" class="w-full p-2 mb-4 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"/>
+                        <img src="" id="resultsImg" class="mx-auto max-w-full" />
                     </div>
                 </div>
+
             </div>
         </main>
 
@@ -493,105 +585,61 @@ function initUI(){
         <footer class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600 dark:text-gray-300">
-                    <div class="flex space-x-4 mb-2 sm:mb-0">
-                        <a class="privacy hover:text-blue-500 transition-colors cursor-pointer" onclick="I('privacyPolicy').style.display='flex'">Privacy Policy</a>
-                        <a href="https://github.com/librespeed/speedtest" class="hover:text-blue-500 transition-colors">Source Code</a>
+                    <p>&copy; 2025 LibreSpeed. Open source speed test.</p>
+                    <div class="flex space-x-4 mt-2 sm:mt-0">
+                        <a href="#" class="hover:text-blue-500 transition-colors" onclick="I('privacyPolicy').style.display=''">Privacy</a>
+                        <a href="https://github.com/librespeed/speedtest" class="hover:text-blue-500 transition-colors">GitHub</a>
                     </div>
-                    <p>&copy; 2024 LibreSpeed. Open source speed test.</p>
                 </div>
             </div>
         </footer>
     </div>
-
     <!-- Privacy Policy Modal -->
-    <div id="privacyPolicy" style="display:none">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
-            </div>
-            <div class="p-6 space-y-4 text-gray-700 dark:text-gray-300">
-                <p>This HTML5 speed test server is configured with telemetry enabled.</p>
-                <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">What data we collect</h4>
-                    <p>At the end of the test, the following data is collected and stored:</p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>Test ID</li>
-                        <li>Time of testing</li>
-                        <li>Test results (download and upload speed, ping and jitter)</li>
-                        <li>IP address</li>
-                        <li>ISP information</li>
-                        <li>Approximate location (inferred from IP address, not GPS)</li>
-                        <li>User agent and browser locale</li>
-                        <li>Test log (contains no personal information)</li>
-                    </ul>
+    <div id="privacyPolicy" style="display:none" class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black opacity-50"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto p-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h2>
+                <div class="text-gray-700 dark:text-gray-300 space-y-4">
+                    <p>This HTML5 speed test server is configured with telemetry enabled.</p>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">What data we collect</h4>
+                    <p>
+                        At the end of the test, the following data is collected and stored:
+                        <ul class="list-disc list-inside ml-4 space-y-1">
+                            <li>Test ID</li>
+                            <li>Time of testing</li>
+                            <li>Test results (download and upload speed, ping and jitter)</li>
+                            <li>IP address</li>
+                            <li>ISP information</li>
+                            <li>Approximate location (inferred from IP address, not GPS)</li>
+                            <li>User agent and browser locale</li>
+                            <li>Test log (contains no personal information)</li>
+                        </ul>
+                    </p>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">How we use the data</h4>
+                    <p>
+                        Data collected through this service is used to:
+                        <ul class="list-disc list-inside ml-4 space-y-1">
+                            <li>Allow sharing of test results (sharable image for forums, etc.)</li>
+                            <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
+                        </ul>
+                        No personal information is disclosed to third parties.
+                    </p>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Your consent</h4>
+                    <p>
+                        By starting the test, you consent to the terms of this privacy policy.
+                    </p>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Data removal</h4>
+                    <p>
+                        If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.<br/><br/>
+                        Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE" class="text-blue-500 hover:text-blue-600">TO BE FILLED BY DEVELOPER</a>.
+                    </p>
                 </div>
-                <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">How we use the data</h4>
-                    <p>Data collected through this service is used to:</p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>Allow sharing of test results (sharable image for forums, etc.)</li>
-                        <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
-                    </ul>
-                    <p>No personal information is disclosed to third parties.</p>
+                <div class="mt-6 text-center">
+                    <button onclick="I('privacyPolicy').style.display='none'" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">Close</button>
                 </div>
-                <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Your consent</h4>
-                    <p>By starting the test, you consent to the terms of this privacy policy.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Data removal</h4>
-                    <p>If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.</p>
-                    <p>Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE" class="text-blue-500 hover:text-blue-600">TO BE FILLED BY DEVELOPER</a>.</p>
-                </div>
-            </div>
-            <div class="p-6 border-t border-gray-200 dark:border-gray-700 text-center">
-                <button onclick="I('privacyPolicy').style.display='none'" 
-                        class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-                    Close
-                </button>
             </div>
         </div>
     </div>
-
-    <!-- Dark Mode Script -->
-    <script>
-        // Dark mode functionality
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-
-        // Check if dark mode is enabled
-        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            themeToggleLightIcon.classList.remove('hidden');
-            document.documentElement.classList.add('dark');
-        } else {
-            themeToggleDarkIcon.classList.remove('hidden');
-        }
-
-        themeToggleBtn.addEventListener('click', function() {
-            // Toggle icons inside button
-            themeToggleDarkIcon.classList.toggle('hidden');
-            themeToggleLightIcon.classList.toggle('hidden');
-
-            // If set via local storage previously
-            if (localStorage.getItem('color-theme')) {
-                if (localStorage.getItem('color-theme') === 'light') {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                }
-            } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                }
-            }
-        });
-    </script>
 </body>
 </html>
