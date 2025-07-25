@@ -14,12 +14,29 @@
             extend: {
                 animation: {
                     'pulse-slow': 'pulse 3s ease-in-out infinite',
-                    'fade-in': 'fadeIn 0.5s ease-in-out'
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                    'spin-slow': 'spin 3s linear infinite',
+                    'progress-fill': 'progressFill 2s ease-out',
+                    'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+                    'bounce-gentle': 'bounceGentle 0.6s ease-out'
                 },
                 keyframes: {
                     fadeIn: {
                         '0%': { opacity: '0', transform: 'translateY(10px)' },
                         '100%': { opacity: '1', transform: 'translateY(0)' }
+                    },
+                    progressFill: {
+                        '0%': { 'stroke-dashoffset': '283' },
+                        '100%': { 'stroke-dashoffset': 'var(--progress-offset)' }
+                    },
+                    glowPulse: {
+                        '0%, 100%': { filter: 'drop-shadow(0 0 8px currentColor)', opacity: '0.8' },
+                        '50%': { filter: 'drop-shadow(0 0 20px currentColor)', opacity: '1' }
+                    },
+                    bounceGentle: {
+                        '0%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.05)' },
+                        '100%': { transform: 'scale(1)' }
                     }
                 }
             }
@@ -119,156 +136,64 @@ var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#E5E7
 var dlColor="#3B82F6",
 	ulColor="#8B5CF6";
 
-//CODE FOR ENHANCED SPEEDOMETER
-var lastDrawnAmount = 0;
-var animationId = null;
+//CODE FOR ANIMATED SVG SPEEDOMETER
+var lastProgress = 0;
+var isTestActive = false;
 
-function drawMeter(c, targetAmount, bk, fg, animated = true){
-	if(!c || !c.getContext) return;
+function updateSpeedometer(targetAmount, color, animated = true) {
+	var progressCircle = document.getElementById('speed-progress');
 	
-	var ctx = c.getContext("2d");
-	var dp = window.devicePixelRatio || 1;
-	var cw = c.clientWidth * dp;
-	var ch = c.clientHeight * dp;
+	if (!progressCircle) return;
 	
-	// Ensure canvas has dimensions
-	if(cw === 0 || ch === 0) {
-		cw = 320 * dp;
-		ch = 320 * dp;
-	}
+	// Calculate stroke-dashoffset for progress (283 is full circumference)
+	var circumference = 283;
+	var offset = circumference - (targetAmount * circumference);
 	
-	// Only resize canvas if dimensions changed
-	if(c.width !== cw || c.height !== ch){
-		c.width = cw;
-		c.height = ch;
-	}
+	// Update progress circle
+	progressCircle.style.strokeDashoffset = offset;
 	
-	var centerX = cw / 2;
-	var centerY = ch / 2;
-	var radius = Math.min(cw, ch) * 0.38;
-	var lineWidth = Math.max(6, Math.min(cw, ch) * 0.018);
+	lastProgress = targetAmount;
+}
+
+function setSpeedometerColor(testType) {
+	var speedType = document.getElementById('speed-type');
 	
-	// Smooth animation
-	if(animated && Math.abs(targetAmount - lastDrawnAmount) > 0.01) {
-		if(animationId) cancelAnimationFrame(animationId);
-		
-		var startAmount = lastDrawnAmount;
-		var startTime = performance.now();
-		var duration = 300; // ms
-		
-		function animate(currentTime) {
-			var elapsed = currentTime - startTime;
-			var progress = Math.min(elapsed / duration, 1);
-			
-			// Easing function for smooth animation
-			var easeProgress = 1 - Math.pow(1 - progress, 3);
-			var currentAmount = startAmount + (targetAmount - startAmount) * easeProgress;
-			
-			drawSpeedometerFrame(ctx, currentAmount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch);
-			
-			if(progress < 1) {
-				animationId = requestAnimationFrame(animate);
-			} else {
-				lastDrawnAmount = targetAmount;
-				animationId = null;
-			}
+	// Update gradient colors based on test type
+	var gradient = document.getElementById('progressGradient');
+	if (gradient) {
+		var stops = gradient.querySelectorAll('stop');
+		if (testType === 'download') {
+			stops[0].style.stopColor = '#3B82F6'; // blue-500
+			stops[1].style.stopColor = '#6366F1'; // indigo-500  
+			stops[2].style.stopColor = '#8B5CF6'; // violet-500
+			if (speedType) speedType.style.color = '#3B82F6';
+		} else if (testType === 'upload') {
+			stops[0].style.stopColor = '#8B5CF6'; // violet-500
+			stops[1].style.stopColor = '#A855F7'; // purple-500
+			stops[2].style.stopColor = '#EC4899'; // pink-500
+			if (speedType) speedType.style.color = '#8B5CF6';
+		} else if (testType === 'ping') {
+			stops[0].style.stopColor = '#F59E0B'; // amber-500
+			stops[1].style.stopColor = '#EAB308'; // yellow-500
+			stops[2].style.stopColor = '#84CC16'; // lime-500
+			if (speedType) speedType.style.color = '#F59E0B';
 		}
-		
-		animationId = requestAnimationFrame(animate);
-	} else {
-		drawSpeedometerFrame(ctx, targetAmount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch);
-		lastDrawnAmount = targetAmount;
 	}
 }
 
-function drawSpeedometerFrame(ctx, amount, bk, fg, centerX, centerY, radius, lineWidth, cw, ch) {
-	// Clear canvas efficiently
-	ctx.clearRect(0, 0, cw, ch);
+function startSpeedometerAnimation() {
+	isTestActive = true;
+	var speedValue = document.getElementById('speed-value');
 	
-	// Enable anti-aliasing for smoother lines
-	ctx.imageSmoothingEnabled = true;
-	ctx.imageSmoothingQuality = 'high';
-	
-	var startAngle = 0.75 * Math.PI;
-	var endAngle = 0.25 * Math.PI;
-	var totalAngle = 1.5 * Math.PI;
-	var currentAngle = startAngle + amount * totalAngle;
-	
-	// Background track with subtle gradient
-	var bgGradient = ctx.createLinearGradient(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
-	bgGradient.addColorStop(0, bk);
-	bgGradient.addColorStop(1, bk + '80'); // Add slight transparency
-	
-	ctx.beginPath();
-	ctx.strokeStyle = bgGradient;
-	ctx.lineWidth = lineWidth;
-	ctx.lineCap = "round";
-	ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-	ctx.stroke();
-	
-	// Progress arc with gradient
-	if(amount > 0) {
-		var progressGradient = ctx.createLinearGradient(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
-		progressGradient.addColorStop(0, fg);
-		progressGradient.addColorStop(0.5, fg + 'E6'); // Slightly more opaque
-		progressGradient.addColorStop(1, fg);
-		
-		ctx.beginPath();
-		ctx.strokeStyle = progressGradient;
-		ctx.lineWidth = lineWidth + 1;
-		ctx.lineCap = "round";
-		ctx.arc(centerX, centerY, radius, startAngle, currentAngle);
-		ctx.stroke();
-		
-		// Add glow effect for progress
-		ctx.shadowColor = fg;
-		ctx.shadowBlur = 8;
-		ctx.beginPath();
-		ctx.strokeStyle = fg;
-		ctx.lineWidth = lineWidth - 2;
-		ctx.arc(centerX, centerY, radius, startAngle, currentAngle);
-		ctx.stroke();
-		ctx.shadowBlur = 0;
-		
-		// Progress indicator dot
-		var dotX = centerX + radius * Math.cos(currentAngle);
-		var dotY = centerY + radius * Math.sin(currentAngle);
-		
-		ctx.beginPath();
-		ctx.fillStyle = fg;
-		ctx.arc(dotX, dotY, lineWidth / 3, 0, 2 * Math.PI);
-		ctx.fill();
-		
-		// Dot highlight
-		ctx.beginPath();
-		ctx.fillStyle = '#FFFFFF';
-		ctx.arc(dotX, dotY, lineWidth / 6, 0, 2 * Math.PI);
-		ctx.fill();
+	// Add bounce animation to speed value
+	if (speedValue) {
+		speedValue.classList.add('animate-bounce-gentle');
+		setTimeout(() => speedValue.classList.remove('animate-bounce-gentle'), 600);
 	}
-	
-	// Speed range markers
-	drawSpeedMarkers(ctx, centerX, centerY, radius, lineWidth, startAngle, endAngle);
 }
 
-function drawSpeedMarkers(ctx, centerX, centerY, radius, lineWidth, startAngle, endAngle) {
-	var markerRadius = radius + lineWidth / 2 + 4;
-	var innerRadius = radius - lineWidth / 2 - 4;
-	
-	// Draw markers for speed ranges (0, 25, 50, 75, 100+ percentiles)
-	for(var i = 0; i <= 4; i++) {
-		var angle = startAngle + (i / 4) * 1.5 * Math.PI;
-		var outerX = centerX + markerRadius * Math.cos(angle);
-		var outerY = centerY + markerRadius * Math.sin(angle);
-		var innerX = centerX + innerRadius * Math.cos(angle);
-		var innerY = centerY + innerRadius * Math.sin(angle);
-		
-		ctx.beginPath();
-		ctx.strokeStyle = '#94A3B8';
-		ctx.lineWidth = 1;
-		ctx.moveTo(outerX, outerY);
-		ctx.lineTo(innerX, innerY);
-		ctx.stroke();
-	}
+function stopSpeedometerAnimation() {
+	isTestActive = false;
 }
 function mbpsToAmount(s){
 	if(isNaN(s) || s < 0) {
@@ -296,6 +221,7 @@ function startStop(){
 		I("startStopBtn").classList.remove("opacity-50");
 		I("button-text").textContent="Start Test";
 		I("server").disabled=false;
+		stopSpeedometerAnimation();
 		initUI();
 	}else{
 		//test is not running, begin
@@ -303,6 +229,7 @@ function startStop(){
 		I("button-text").textContent="Stop Test";
 		I("shareArea").style.display="none";
 		I("server").disabled=true;
+		startSpeedometerAnimation();
 		s.onupdate=function(data){
             uiData=data;
 		};
@@ -310,6 +237,7 @@ function startStop(){
             I("startStopBtn").classList.remove("opacity-50");
             I("button-text").textContent="Start Test";
             I("server").disabled=false;
+            stopSpeedometerAnimation();
             updateUI(true);
             if(!aborted){
                 //if testId is present, show sharing panel, otherwise do nothing
@@ -422,47 +350,45 @@ function updateUI(forced){
 	I("jitText").textContent=format(uiData.jitterStatus);
 	
 	
-	// Draw main speedometer
+	// Update animated speedometer
 	var currentSpeed = 0;
-	var speedColor = dlColor;
+	var testType = 'download';
 	
-	// Determine current speed and color based on test state
+	// Determine current speed and test type based on test state
 	if(status == 1) { // Download test - active
-		// Use actual download speed value, not the formatted text
 		currentSpeed = Number(uiData.dlStatus) || 0;
-		speedColor = dlColor;
+		testType = 'download';
 		console.log("Download - Status:", status, "Speed:", currentSpeed, "dlStatus:", uiData.dlStatus);
 	} else if(status == 3) { // Upload test - active  
 		currentSpeed = Number(uiData.ulStatus) || 0;
-		speedColor = ulColor;
+		testType = 'upload';
 		console.log("Upload - Status:", status, "Speed:", currentSpeed, "ulStatus:", uiData.ulStatus);
 	} else if(status == 2) { // Ping test - active
 		currentSpeed = 0; // Don't show speed during ping
-		speedColor = dlColor;
+		testType = 'ping';
 		console.log("Ping - Status:", status);
 	} else {
 		// Test not running or completed, show final download speed if available
 		currentSpeed = Number(uiData.dlStatus) || 0;
-		speedColor = dlColor;
+		testType = 'download';
 		console.log("Idle/Complete - Status:", status, "Speed:", currentSpeed);
 	}
 	
-	var speedometerCanvas = I("speedometer");
-	if(speedometerCanvas) {
-		var oscillation = (status >= 1 && status <= 3) ? oscillate() : 1;
-		var adjustedSpeed = Math.max(0, currentSpeed * oscillation); // Ensure non-negative
-		var speedAmount = mbpsToAmount(adjustedSpeed);
-		
-		// Additional debugging
-		console.log("Drawing speedometer - Status:", status, "Raw Speed:", currentSpeed, "Adjusted:", adjustedSpeed, "Amount:", speedAmount, "Color:", speedColor);
-		
-		// Ensure we have valid values
-		if(speedAmount >= 0 && speedAmount <= 1) {
-			drawMeter(speedometerCanvas, speedAmount, meterBk, speedColor, true);
-		} else {
-			console.warn("Invalid speedAmount:", speedAmount, "using 0 instead");
-			drawMeter(speedometerCanvas, 0, meterBk, speedColor, true);
-		}
+	// Update speedometer color scheme
+	setSpeedometerColor(testType);
+	
+	// Calculate progress amount with oscillation during active testing
+	var oscillation = (status >= 1 && status <= 3) ? oscillate() : 1;
+	var adjustedSpeed = Math.max(0, currentSpeed * oscillation);
+	var speedAmount = mbpsToAmount(adjustedSpeed);
+	
+	// Ensure valid progress value
+	if(speedAmount >= 0 && speedAmount <= 1) {
+		updateSpeedometer(speedAmount, testType, true);
+		console.log("Updating speedometer - Status:", status, "Raw Speed:", currentSpeed, "Adjusted:", adjustedSpeed, "Amount:", speedAmount, "Type:", testType);
+	} else {
+		console.warn("Invalid speedAmount:", speedAmount, "using 0 instead");
+		updateSpeedometer(0, testType, true);
 	}
 }
 function oscillate(){
@@ -526,20 +452,16 @@ function initThemeToggle() {
 }
 //function to (re)initialize UI
 function initUI(){
-	// Reset animation state
-	lastDrawnAmount = 0;
-	if(animationId) {
-		cancelAnimationFrame(animationId);
-		animationId = null;
-	}
+	// Reset speedometer state
+	lastProgress = 0;
+	isTestActive = false;
 	
-	var speedometerCanvas = I("speedometer");
-	if(speedometerCanvas) {
-		// Force canvas to have visible dimensions and initialize without animation
-		setTimeout(function() {
-			drawMeter(speedometerCanvas, 0, meterBk, dlColor, false);
-		}, 100);
-	}
+	// Initialize speedometer to zero state
+	updateSpeedometer(0, 'download', false);
+	setSpeedometerColor('download');
+	stopSpeedometerAnimation();
+	
+	// Reset all text values
 	I("dlText").textContent="0.00";
 	I("ulText").textContent="0.00";
 	I("pingText").textContent="0";
@@ -549,6 +471,7 @@ function initUI(){
 	I("location").textContent="-";
 	I("speed-value").textContent="0.00";
 	I("speed-type").textContent="Ready";
+	
 	// Reset button text
 	I("button-text").textContent="Start Test";
 }
@@ -601,15 +524,44 @@ function initUI(){
                 <!-- Speed Display -->
                 <section class="text-center mb-8" role="main" aria-label="Speed test display">
                     <div class="relative inline-block">
-                        <!-- Speedometer Circle -->
+                        <!-- Animated Speedometer -->
                         <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto mb-6" role="img" aria-label="Speed meter">
-                            <canvas id="speedometer" class="absolute inset-0 w-full h-full" width="320" height="320" aria-hidden="true"></canvas>
+                            <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <!-- Background track -->
+                                <circle 
+                                    cx="50" cy="50" r="45" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    stroke-width="6" 
+                                    class="text-gray-200 dark:text-gray-700" />
+                                
+                                <!-- Animated gradient definitions -->
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" class="text-blue-400" stop-color="currentColor" />
+                                        <stop offset="50%" class="text-indigo-500" stop-color="currentColor" />
+                                        <stop offset="100%" class="text-purple-600" stop-color="currentColor" />
+                                    </linearGradient>
+                                </defs>
+                                
+                                <!-- Main progress circle -->
+                                <circle 
+                                    id="speed-progress" 
+                                    cx="50" cy="50" r="45" 
+                                    fill="none" 
+                                    stroke="url(#progressGradient)" 
+                                    stroke-width="6" 
+                                    stroke-linecap="round" 
+                                    stroke-dasharray="283" 
+                                    stroke-dashoffset="283"
+                                    class="transition-all duration-1000 ease-out" />
+                            </svg>
                             
-                            <!-- Speed Value -->
+                            <!-- Speed Value Display -->
                             <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
-                                <div id="speed-value" class="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-2 tabular-nums" aria-live="polite">0.00</div>
+                                <div id="speed-value" class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-2 tabular-nums transition-all duration-300 ease-out" aria-live="polite">0.00</div>
                                 <div id="speed-unit" class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-medium">Mbps</div>
-                                <div id="speed-type" class="text-sm text-gray-500 dark:text-gray-400 mt-1" aria-live="polite">Ready</div>
+                                <div id="speed-type" class="text-sm text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300" aria-live="polite">Ready</div>
                             </div>
                         </div>
                         
