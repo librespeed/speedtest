@@ -1,14 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-<link rel="shortcut icon" href="favicon.ico">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LibreSpeed - Free, open-source internet speed test. Test your download, upload, ping and jitter speeds.">
 <title>LibreSpeed - Internet Speed Test</title>
+<link rel="shortcut icon" href="favicon.ico">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
-        darkMode: 'class'
+        darkMode: 'class',
+        theme: {
+            extend: {
+                animation: {
+                    'pulse-slow': 'pulse 3s ease-in-out infinite',
+                    'fade-in': 'fadeIn 0.5s ease-in-out'
+                },
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: '0', transform: 'translateY(10px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' }
+                    }
+                }
+            }
+        }
     }
 </script>
 <script type="text/javascript" src="speedtest.js"></script>
@@ -545,8 +560,8 @@ function initUI(){
         <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center" aria-hidden="true">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
@@ -555,11 +570,13 @@ function initUI(){
                     </div>
                     
                     <!-- Dark mode toggle -->
-                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <button id="theme-toggle" 
+                            class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" 
+                            aria-label="Toggle dark mode">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                         </svg>
-                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 text-gray-600 dark:text-gray-300" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
                         </svg>
                     </button>
@@ -568,10 +585,13 @@ function initUI(){
         </header>
 
         <!-- Loading Screen -->
-        <div id="loading" class="visible flex-1 flex items-center justify-center">
+        <div id="loading" class="visible flex-1 flex items-center justify-center animate-fade-in">
             <div class="text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                <p id="message" class="text-gray-600 dark:text-gray-300">Selecting a server...</p>
+                <div class="relative mx-auto mb-6">
+                    <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+                    <div class="animate-pulse-slow absolute inset-2 rounded-full bg-blue-500/20"></div>
+                </div>
+                <p id="message" class="text-lg text-gray-600 dark:text-gray-300 font-medium">Selecting a server...</p>
             </div>
         </div>
 
@@ -579,172 +599,226 @@ function initUI(){
         <main id="testWrapper" class="hidden flex-1 flex items-center justify-center px-4 py-8">
             <div class="w-full max-w-4xl mx-auto">
                 <!-- Speed Display -->
-                <section class="text-center mb-8">
+                <section class="text-center mb-8" role="main" aria-label="Speed test display">
                     <div class="relative inline-block">
                         <!-- Speedometer Circle -->
-                        <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto mb-6">
-                            <canvas id="speedometer" class="absolute inset-0 w-full h-full"></canvas>
+                        <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto mb-6" role="img" aria-label="Speed meter">
+                            <canvas id="speedometer" class="absolute inset-0 w-full h-full" width="320" height="320" aria-hidden="true"></canvas>
                             
                             <!-- Speed Value -->
                             <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
-                                <div id="speed-value" class="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-2">0.00</div>
+                                <div id="speed-value" class="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-2 tabular-nums" aria-live="polite">0.00</div>
                                 <div id="speed-unit" class="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-medium">Mbps</div>
-                                <div id="speed-type" class="text-sm text-gray-500 dark:text-gray-400 mt-1">Ready</div>
+                                <div id="speed-type" class="text-sm text-gray-500 dark:text-gray-400 mt-1" aria-live="polite">Ready</div>
                             </div>
                         </div>
                         
                         <!-- Test Button -->
-                        <div id="startStopBtn" onclick="startStop()" class="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 cursor-pointer inline-flex items-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button id="startStopBtn" 
+                                onclick="startStop()" 
+                                class="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 disabled:hover:scale-100 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 inline-flex items-center space-x-2"
+                                aria-describedby="test-status">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-2-14V3a2 2 0 00-2-2H9a2 2 0 00-2 2v1M7 7h10l4 4v6a2 2 0 01-2 2H5a2 2 0 01-2-2V11l4-4z"></path>
                             </svg>
                             <span id="button-text">Start Test</span>
-                        </div>
+                        </button>
+                        <div id="test-status" class="sr-only" aria-live="polite"></div>
                     </div>
                 </section>
 
                 <!-- Test Results Grid -->
-                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" role="region" aria-label="Speed test results">
                     <!-- Download Speed -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <header class="flex items-center justify-between mb-3">
                             <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Download</h3>
-                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
+                        </header>
+                        <div class="space-y-1">
+                            <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums" aria-live="polite">0.00</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
                         </div>
-                        <div id="dlText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
-                    </div>
+                    </article>
 
                     <!-- Upload Speed -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <header class="flex items-center justify-between mb-3">
                             <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Upload</h3>
-                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
+                        </header>
+                        <div class="space-y-1">
+                            <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums" aria-live="polite">0.00</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
                         </div>
-                        <div id="ulText" class="text-2xl font-bold text-gray-900 dark:text-white">0.00</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Mbps</div>
-                    </div>
+                    </article>
 
                     <!-- Ping -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <header class="flex items-center justify-between mb-3">
                             <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Ping</h3>
-                            <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
+                        </header>
+                        <div class="space-y-1">
+                            <div id="pingText" class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums" aria-live="polite">0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
                         </div>
-                        <div id="pingText" class="text-2xl font-bold text-gray-900 dark:text-white">0</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
-                    </div>
+                    </article>
 
                     <!-- Jitter -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-2">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <header class="flex items-center justify-between mb-3">
                             <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Jitter</h3>
-                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
+                        </header>
+                        <div class="space-y-1">
+                            <div id="jitText" class="text-2xl font-bold text-gray-900 dark:text-white tabular-nums" aria-live="polite">0.0</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
                         </div>
-                        <div id="jitText" class="text-2xl font-bold text-gray-900 dark:text-white">0.0</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">ms</div>
-                    </div>
+                    </article>
                 </section>
 
                 <!-- Connection Info -->
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" role="region" aria-label="Connection information">
                     <!-- IP Address & Location -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Your Connection
-                        </h3>
-                        <div class="space-y-3">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+                        <header class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Your Connection
+                            </h3>
+                        </header>
+                        <dl class="space-y-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">IP Address</span>
-                                <span id="ip" class="font-mono text-gray-900 dark:text-white">-</span>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">IP Address</dt>
+                                <dd id="ip" class="font-mono text-sm text-gray-900 dark:text-white">-</dd>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">ISP</span>
-                                <span id="isp" class="text-gray-900 dark:text-white">-</span>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">ISP</dt>
+                                <dd id="isp" class="text-sm text-gray-900 dark:text-white text-right">-</dd>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">Location</span>
-                                <span id="location" class="text-gray-900 dark:text-white">-</span>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">Location</dt>
+                                <dd id="location" class="text-sm text-gray-900 dark:text-white text-right">-</dd>
                             </div>
-                        </div>
-                    </div>
+                        </dl>
+                    </article>
 
                     <!-- Server Info -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
-                            </svg>
-                            Test Server
-                        </h3>
-                        <div class="space-y-3">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm">
+                        <header class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                                </svg>
+                                Test Server
+                            </h3>
+                        </header>
+                        <dl class="space-y-3">
                             <div id="serverArea" class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">Server</span>
-                                <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value]); updateServerInfo()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-gray-900 dark:text-white text-sm min-w-0 flex-1 ml-4">
-                                    <option value="">Auto Selected</option>
-                                </select>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">Server</dt>
+                                <dd class="flex-1 ml-4">
+                                    <select id="server" 
+                                            onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value]); updateServerInfo()" 
+                                            class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            aria-label="Select test server">
+                                        <option value="">Auto Selected</option>
+                                    </select>
+                                </dd>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">Distance</span>
-                                <span id="server-distance" class="text-gray-900 dark:text-white">-</span>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">Distance</dt>
+                                <dd id="server-distance" class="text-sm text-gray-900 dark:text-white">-</dd>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-300">Sponsor</span>
-                                <span id="server-sponsor" class="text-gray-900 dark:text-white">LibreSpeed</span>
+                                <dt class="text-sm text-gray-600 dark:text-gray-300">Sponsor</dt>
+                                <dd id="server-sponsor" class="text-sm text-gray-900 dark:text-white">LibreSpeed</dd>
                             </div>
-                        </div>
-                    </div>
+                        </dl>
+                    </article>
                 </section>
 
                 <!-- Share Results Area -->
-                <div id="shareArea" style="display:none" class="mb-8">
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm text-center">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share Results</h3>
-                        <p class="text-gray-600 dark:text-gray-300 mb-2">Test ID: <span id="testId" class="font-mono"></span></p>
-                        <input type="text" value="" id="resultsURL" readonly="readonly" onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')" class="w-full p-2 mb-4 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"/>
-                        <img src="" id="resultsImg" class="mx-auto max-w-full" />
-                    </div>
-                </div>
+                <section id="shareArea" style="display:none" class="mb-8" role="region" aria-label="Share test results">
+                    <article class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-sm text-center">
+                        <header class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Share Results</h3>
+                        </header>
+                        <div class="space-y-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                Test ID: <span id="testId" class="font-mono font-semibold"></span>
+                            </p>
+                            <div>
+                                <label for="resultsURL" class="sr-only">Results URL</label>
+                                <input type="text" 
+                                       value="" 
+                                       id="resultsURL" 
+                                       readonly="readonly" 
+                                       onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')" 
+                                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                                       placeholder="Results URL will appear here"/>
+                            </div>
+                            <img src="" id="resultsImg" class="mx-auto max-w-full rounded-lg shadow-sm" alt="Speed test results visualization" />
+                        </div>
+                    </article>
+                </section>
 
             </div>
         </main>
 
         <!-- Footer -->
         <footer class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600 dark:text-gray-300">
                     <p>&copy; 2025 LibreSpeed. Open source speed test.</p>
-                    <div class="flex space-x-4 mt-2 sm:mt-0">
-                        <a href="#" class="hover:text-blue-500 transition-colors" onclick="I('privacyPolicy').style.display=''">Privacy</a>
-                        <a href="https://github.com/librespeed/speedtest" class="hover:text-blue-500 transition-colors">GitHub</a>
-                    </div>
+                    <nav class="flex space-x-6 mt-3 sm:mt-0" aria-label="Footer navigation">
+                        <button onclick="I('privacyPolicy').style.display=''" 
+                                class="hover:text-blue-500 focus:text-blue-500 transition-colors focus:outline-none focus:underline">
+                            Privacy
+                        </button>
+                        <a href="https://github.com/librespeed/speedtest" 
+                           class="hover:text-blue-500 focus:text-blue-500 transition-colors focus:outline-none focus:underline"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            GitHub
+                        </a>
+                    </nav>
                 </div>
             </div>
         </footer>
     </div>
     <!-- Privacy Policy Modal -->
-    <div id="privacyPolicy" style="display:none" class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="fixed inset-0 bg-black opacity-50"></div>
-            <div class="relative bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto p-6">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h2>
-                <div class="text-gray-700 dark:text-gray-300 space-y-4">
+    <div id="privacyPolicy" 
+         style="display:none" 
+         class="fixed inset-0 z-50 overflow-y-auto" 
+         role="dialog" 
+         aria-modal="true" 
+         aria-labelledby="privacy-title">
+        <div class="flex items-center justify-center min-h-screen px-4 py-8">
+            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
+                 onclick="I('privacyPolicy').style.display='none'" 
+                 aria-hidden="true"></div>
+            <article class="relative bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+                <header class="mb-6">
+                    <h2 id="privacy-title" class="text-2xl font-bold text-gray-900 dark:text-white">Privacy Policy</h2>
+                </header>
+                <div class="text-gray-700 dark:text-gray-300 space-y-6 text-sm leading-relaxed">
                     <p>This HTML5 speed test server is configured with telemetry enabled.</p>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">What data we collect</h4>
-                    <p>
-                        At the end of the test, the following data is collected and stored:
+                    
+                    <section>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">What data we collect</h3>
+                        <p class="mb-2">At the end of the test, the following data is collected and stored:</p>
                         <ul class="list-disc list-inside ml-4 space-y-1">
                             <li>Test ID</li>
                             <li>Time of testing</li>
@@ -755,30 +829,44 @@ function initUI(){
                             <li>User agent and browser locale</li>
                             <li>Test log (contains no personal information)</li>
                         </ul>
-                    </p>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">How we use the data</h4>
-                    <p>
-                        Data collected through this service is used to:
-                        <ul class="list-disc list-inside ml-4 space-y-1">
+                    </section>
+                    
+                    <section>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">How we use the data</h3>
+                        <p class="mb-2">Data collected through this service is used to:</p>
+                        <ul class="list-disc list-inside ml-4 space-y-1 mb-2">
                             <li>Allow sharing of test results (sharable image for forums, etc.)</li>
                             <li>To improve the service offered to you (for instance, to detect problems on our side)</li>
                         </ul>
-                        No personal information is disclosed to third parties.
-                    </p>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Your consent</h4>
-                    <p>
-                        By starting the test, you consent to the terms of this privacy policy.
-                    </p>
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Data removal</h4>
-                    <p>
-                        If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.<br/><br/>
-                        Contact this email address for all deletion requests: <a href="mailto:PUT@YOUR_EMAIL.HERE" class="text-blue-500 hover:text-blue-600">TO BE FILLED BY DEVELOPER</a>.
-                    </p>
+                        <p>No personal information is disclosed to third parties.</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Your consent</h3>
+                        <p>By starting the test, you consent to the terms of this privacy policy.</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Data removal</h3>
+                        <p>
+                            If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.
+                        </p>
+                        <p class="mt-2">
+                            Contact this email address for all deletion requests: 
+                            <a href="mailto:PUT@YOUR_EMAIL.HERE" 
+                               class="text-blue-500 hover:text-blue-600 focus:text-blue-600 transition-colors focus:outline-none focus:underline">
+                                TO BE FILLED BY DEVELOPER
+                            </a>.
+                        </p>
+                    </section>
                 </div>
-                <div class="mt-6 text-center">
-                    <button onclick="I('privacyPolicy').style.display='none'" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">Close</button>
-                </div>
-            </div>
+                <footer class="mt-8 text-center">
+                    <button onclick="I('privacyPolicy').style.display='none'" 
+                            class="bg-blue-500 hover:bg-blue-600 focus:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-800">
+                        Close
+                    </button>
+                </footer>
+            </article>
         </div>
     </div>
 </body>
