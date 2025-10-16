@@ -78,6 +78,10 @@ if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone
 
   if [ "$ENABLE_ID_OBFUSCATION" == "true" ]; then
     sed -i s/\$enable_id_obfuscation\ =\ .*\;/\$enable_id_obfuscation\ =\ true\;/g /var/www/html/results/telemetry_settings.php
+    if [ ! -z "$OBFUSCATION_SALT" ]; then
+      echo "<?php" > /var/www/html/results/idObfuscation_salt.php
+      echo "\$OBFUSCATION_SALT = $OBFUSCATION_SALT;" >> /var/www/html/results/idObfuscation_salt.php
+    fi
   fi
 
   if [ "$REDACT_IP_ADDRESSES" == "true" ]; then
