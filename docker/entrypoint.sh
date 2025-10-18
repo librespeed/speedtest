@@ -78,6 +78,14 @@ if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone
 
   if [ "$ENABLE_ID_OBFUSCATION" == "true" ]; then
     sed -i s/\$enable_id_obfuscation\ =\ .*\;/\$enable_id_obfuscation\ =\ true\;/g /var/www/html/results/telemetry_settings.php
+    if [ ! -z "$OBFUSCATION_SALT" ]; then
+      if [[ "$OBFUSCATION_SALT" =~ ^0x[0-9a-fA-F]+$ ]]; then
+        echo "<?php" > /var/www/html/results/idObfuscation_salt.php
+        echo "\$OBFUSCATION_SALT = $OBFUSCATION_SALT;" >> /var/www/html/results/idObfuscation_salt.php
+      else
+        echo "WARNING: Invalid OBFUSCATION_SALT format. It must be a hex string (e.g., 0x1234abcd). Using random salt." >&2
+      fi
+    fi
   fi
 
   if [ "$REDACT_IP_ADDRESSES" == "true" ]; then
