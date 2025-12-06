@@ -59,6 +59,10 @@ A template to build an Android client for your LibreSpeed installation is availa
 
 A command line client is available [here](https://github.com/librespeed/speedtest-cli).
 
+## Development
+
+If you want to contribute or develop with LibreSpeed, see [DEVELOPMENT.md](DEVELOPMENT.md) for information about using npm for development tasks, linting, and formatting.
+
 ## Docker
 
 A docker image is available on [GitHub](https://github.com/librespeed/speedtest/pkgs/container/speedtest), check our [docker documentation](doc_docker.md) for more info about it.
