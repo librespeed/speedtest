@@ -1,0 +1,14 @@
+node_modules/
+backend/
+results/
+docker/
+.git/
+*.php
+*.md
+*.sql
+*.mmdb
+*.phar
+*.ttf
+*.ico
+*.png
+*.gif
