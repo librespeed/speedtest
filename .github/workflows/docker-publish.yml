@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Fetch the ipinfo database file using curl if API key is defined
       - name: Fetch DB from ipinfo.io
