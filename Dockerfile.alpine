@@ -1,31 +1,25 @@
-FROM php:8.3-alpine3.19
-
-# Use the mlocati helper to install PHP extensions in a platform-agnostic way.
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-
-# Install runtime packages and let the helper install/compile PHP extensions
-RUN apk add --no-cache \
+FROM php:8-alpine
+RUN apk add --quiet --no-cache \
     bash \
     apache2 \
-    wget \
-    curl \
-    && apk add --no-cache --virtual .build-deps \
-        build-base \
-        autoconf \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        libwebp-dev \
-        freetype-dev \
-        libxml2-dev \
-        mariadb-connector-c-dev \
-        postgresql-dev \
-        sqlite-dev \
-    && install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pdo_sqlite pgsql zip \
-    && apk del .build-deps
+    php-apache2 \
+    php-ctype \
+    php-phar \
+    php-gd \
+    php-openssl \
+    php-pdo \
+    php-pdo_mysql \
+    php-pdo_pgsql \
+    php-pdo_sqlite \
+    php-pgsql \
+    php-session \
+    php-sqlite3
 
-# Note: PHP extensions are provided via Alpine `php-*` packages above.
-# The docker-php-extension-installer is redundant when using those packages,
-# so it's intentionally removed to simplify the image.
+# # use docker-php-extension-installer for automatically get the right packages installed
+# ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+# # Install extensions
+# RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql
 
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
