@@ -62,7 +62,7 @@ LABEL org.opencontainers.image.licenses="LGPL-3.0-or-later"
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${WEBPORT}/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${WEBPORT}/ || exit 1
 
 WORKDIR /var/www/html
 
