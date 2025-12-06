@@ -1,19 +1,24 @@
-FROM php:8-alpine
+FROM alpine:3.18
+
+# Use Alpine packages (php8-*) and apache2. Explicit php8 package names
+# avoid conflicts and improve multi-arch compatibility.
 RUN apk add --quiet --no-cache \
     bash \
     apache2 \
-    php-apache2 \
-    php-ctype \
-    php-phar \
-    php-gd \
-    php-openssl \
-    php-pdo \
-    php-pdo_mysql \
-    php-pdo_pgsql \
-    php-pdo_sqlite \
-    php-pgsql \
-    php-session \
-    php-sqlite3
+    wget \
+    php8 \
+    php8-apache2 \
+    php8-ctype \
+    php8-phar \
+    php8-gd \
+    php8-openssl \
+    php8-pdo \
+    php8-pdo_mysql \
+    php8-pdo_pgsql \
+    php8-pdo_sqlite \
+    php8-pgsql \
+    php8-session \
+    php8-sqlite3
 
 # Note: PHP extensions are provided via Alpine `php-*` packages above.
 # The docker-php-extension-installer is redundant when using those packages,
