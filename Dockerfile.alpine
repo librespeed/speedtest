@@ -1,15 +1,15 @@
-FROM php:8-alpine
+FROM php:8.3-alpine3.19
 
 # Use the mlocati helper to install PHP extensions in a platform-agnostic way.
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 # Install runtime packages and let the helper install/compile PHP extensions
-RUN apk add --quiet --no-cache \
+RUN apk add --no-cache \
     bash \
     apache2 \
     wget \
     curl \
-    && apk add --quiet --no-cache --virtual .build-deps \
+    && apk add --no-cache --virtual .build-deps \
         build-base \
         autoconf \
         libpng-dev \

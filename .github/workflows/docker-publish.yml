@@ -57,6 +57,10 @@ jobs:
             curl -L https://ipinfo.io/data/free/country_asn.mmdb?token=${{ secrets.IPINFO_APIKEY }} -o backend/country_asn.mmdb
           fi
 
+      # Set up QEMU for multi-arch builds
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
