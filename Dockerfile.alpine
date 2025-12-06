@@ -1,27 +1,31 @@
-FROM php:8-alpine
-RUN apk add --quiet --no-cache \
-    bash \
-    apache2 \
-    php-apache2 \
-    php-ctype \
-    php-phar \
-    php-gd \
-    php-openssl \
-    php-pdo \
-    php-pdo_mysql \
-    php-pdo_pgsql \
-    php-pdo_sqlite \
-    php-pgsql \
-    php-session \
-    php-sqlite3
+FROM php:8.3-alpine3.19
 
-# use docker-php-extension-installer for automatically get the right packages installed
+# Use the mlocati helper to install PHP extensions in a platform-agnostic way.
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
+# Install runtime packages and let the helper install/compile PHP extensions
+RUN apk add --no-cache \
+    bash \
+    apache2 \
+    wget \
+    curl \
+    && apk add --no-cache --virtual .build-deps \
+        build-base \
+        autoconf \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        libwebp-dev \
+        freetype-dev \
+        libxml2-dev \
+        mariadb-connector-c-dev \
+        postgresql-dev \
+        sqlite-dev \
+    && install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pdo_sqlite pgsql zip \
+    && apk del .build-deps
 
-
-# Install extensions
-RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql
+# Note: PHP extensions are provided via Alpine `php-*` packages above.
+# The docker-php-extension-installer is redundant when using those packages,
+# so it's intentionally removed to simplify the image.
 
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
@@ -54,6 +58,19 @@ ENV WEBPORT=8080
 
 # https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
 STOPSIGNAL SIGWINCH
+
+# Add labels for better metadata
+LABEL org.opencontainers.image.title="LibreSpeed"
+LABEL org.opencontainers.image.description="A Free and Open Source speed test that you can host on your server(s)"
+LABEL org.opencontainers.image.vendor="LibreSpeed"
+LABEL org.opencontainers.image.url="https://github.com/librespeed/speedtest"
+LABEL org.opencontainers.image.source="https://github.com/librespeed/speedtest"
+LABEL org.opencontainers.image.documentation="https://github.com/librespeed/speedtest/blob/master/doc_docker.md"
+LABEL org.opencontainers.image.licenses="LGPL-3.0-or-later"
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${WEBPORT}/ || exit 1
 
 WORKDIR /var/www/html
 
