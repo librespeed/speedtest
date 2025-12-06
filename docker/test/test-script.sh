@@ -9,7 +9,7 @@ if ! apk add w3m; then
     exit 1
 fi
 
-echo sleeping a little to get things setteled...
+echo sleeping a little to get things settled...
 sleep 15
 
 for db in sqlite pg mysql; do

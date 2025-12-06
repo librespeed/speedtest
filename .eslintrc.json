@@ -1,0 +1,36 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "worker": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2015,
+    "sourceType": "script"
+  },
+  "globals": {
+    "XMLHttpRequest": "readonly",
+    "Worker": "readonly",
+    "Blob": "readonly",
+    "URL": "readonly",
+    "navigator": "readonly",
+    "document": "readonly",
+    "window": "readonly",
+    "console": "readonly",
+    "setTimeout": "readonly",
+    "clearTimeout": "readonly",
+    "setInterval": "readonly",
+    "clearInterval": "readonly",
+    "postMessage": "readonly",
+    "onmessage": "writable",
+    "addEventListener": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "args": "none" }],
+    "no-console": "off",
+    "no-empty": "warn",
+    "no-undef": "warn",
+    "no-const-assign": "error"
+  }
+}
