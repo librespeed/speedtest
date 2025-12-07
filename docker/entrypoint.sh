@@ -51,6 +51,7 @@ fi
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
 if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual") ]]; then
   cp -r /speedtest/results /var/www/html/results
+  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/settings.json
 
   if [ "$MODE" == "frontend" ]; then
     mkdir /var/www/html/backend
