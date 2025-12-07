@@ -331,7 +331,18 @@ function startRenderingLoop() {
 
       // Set user's IP and provider
       if (testState.testData.clientIp) {
-        privacyWarning.innerHTML = `<span>You are connected through:</span><br/>${testState.testData.clientIp}`;
+        // Clear previous content
+        privacyWarning.innerHTML = '';
+
+        const connectedThrough = document.createElement('span');
+        connectedThrough.textContent = 'You are connected through:';
+  
+        const ipAddress = document.createTextNode(testState.testData.clientIp);
+
+        privacyWarning.appendChild(connectedThrough);
+        privacyWarning.appendChild(document.createElement('br'));
+        privacyWarning.appendChild(ipAddress);
+  
         privacyWarning.classList.remove("hidden");
       }
 
