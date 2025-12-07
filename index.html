@@ -155,6 +155,7 @@ function startStop(){
                     if(testId!=null){
                         var shareURL=window.location.href.substring(0,window.location.href.lastIndexOf("/"))+"/results/?id="+testId;
                         I("resultsImg").src=shareURL;
+                        I("resultsImg").alt="Download: "+uiData.dlStatus+" Mbps, Upload: "+uiData.ulStatus+" Mbps, Ping: "+uiData.pingStatus+" ms, Jitter: "+uiData.jitterStatus+" ms";
                         I("resultsURL").value=shareURL;
                         I("testId").innerHTML=testId;
                         I("shareArea").style.display="";
