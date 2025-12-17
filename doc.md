@@ -85,11 +85,21 @@ Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either
 
 If you chose to use SQLite, the default configuration stores the database at `__DIR__ . '/../../speedtest_telemetry.db'`, which places it two directories up from the `results/` folder. This is designed to keep the database **outside your web-accessible directory** for security.
 
-**Important Security Note**: The default path assumes you've installed the application in a subdirectory (e.g., if your webroot serves files from `/var/www/html/speedtest/`, the database will be at `/var/www/html/speedtest_telemetry.db`, which is outside the `/var/www/html/speedtest/` directory that's web-accessible). 
+**Critical Security Requirements**:
+1. **Web Server Configuration**: Configure your web server's document root to point to the application directory, NOT its parent. For example:
+   - Install application files to: `/var/www/speedtest/`
+   - Set Apache/nginx document root to: `/var/www/speedtest/` (NOT `/var/www/`)
+   - Database will be at: `/var/www/speedtest_telemetry.db` (outside document root, not web-accessible)
 
-However, if you installed directly in your document root (e.g., `/var/www/html/` itself), you **must** change `$Sqlite_db_file` to use at least `__DIR__ . '/../../../speedtest_telemetry.db'` to move the database further outside your webroot, or better yet, place it in a completely separate directory like `/var/db/speedtest_telemetry.db`.
+2. **Alternative: Use Absolute Path**: For maximum security, especially if you cannot control the document root configuration, modify `$Sqlite_db_file` in `results/telemetry_settings.php` to use an absolute path completely outside your web directories:
+   ```php
+   $Sqlite_db_file = '/var/lib/speedtest/speedtest_telemetry.db';  // or /opt/speedtest_data/
+   ```
+   Ensure the web server has write permissions to this directory.
 
-Always verify that your database file cannot be accessed via a web browser after installation. SQLite doesn't require any additional configuration beyond setting a secure path.
+3. **Verification**: After installation, try accessing `http://yourserver/speedtest_telemetry.db` in a browser - you should get a 404 error. If the file downloads, your configuration is insecure.
+
+SQLite doesn't require any additional configuration beyond setting a secure path and ensuring proper permissions.
 
 If you chose to use MySQL, you must set your database credentials:
 
