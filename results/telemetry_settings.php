@@ -10,7 +10,7 @@ $enable_id_obfuscation = false;
 $redact_ip_addresses = false;
 
 // Sqlite3 settings
-$Sqlite_db_file = __DIR__ . '/speedtest_telemetry.db';
+$Sqlite_db_file = __DIR__ . '/../../speedtest_telemetry.db';
 
 // mssql settings
 $MsSql_server = 'DB_HOSTNAME';
