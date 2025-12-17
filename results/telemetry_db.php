@@ -104,6 +104,21 @@ function getPdo($returnErrorMessage = false)
                 return false;
             }
 
+            // Check if directory exists and is writable
+            $db_dir = dirname($Sqlite_db_file);
+            if (!is_dir($db_dir)) {
+                if ($returnErrorMessage) {
+                    return "SQLite database directory does not exist: " . $db_dir . ". Please create it and ensure it's writable by the web server.";
+                }
+                return false;
+            }
+            if (!is_writable($db_dir)) {
+                if ($returnErrorMessage) {
+                    return "SQLite database directory is not writable: " . $db_dir . ". Please ensure the web server has write permissions (e.g., chmod 755 or 775).";
+                }
+                return false;
+            }
+
             $pdo = new PDO('sqlite:'.$Sqlite_db_file, null, null, $pdoOptions);
 
             # TODO: Why create table only in sqlite mode?
