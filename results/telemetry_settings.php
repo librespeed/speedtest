@@ -1,7 +1,7 @@
 <?php
 
 // Type of db: "mssql", "mysql", "sqlite" or "postgresql"
-$db_type = 'mysql';
+$db_type = 'sqlite';
 // Password to login to stats.php. Change this!!!
 $stats_password = 'PASSWORD';
 // If set to true, test IDs will be obfuscated to prevent users from guessing URLs of other tests
@@ -10,7 +10,7 @@ $enable_id_obfuscation = false;
 $redact_ip_addresses = false;
 
 // Sqlite3 settings
-$Sqlite_db_file = '../../speedtest_telemetry.sql';
+$Sqlite_db_file = __DIR__ . '/speedtest_telemetry.db';
 
 // mssql settings
 $MsSql_server = 'DB_HOSTNAME';
