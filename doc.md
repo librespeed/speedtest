@@ -93,7 +93,7 @@ If you chose to use SQLite, the default configuration stores the database at `__
 
 2. **Alternative: Use Absolute Path**: For maximum security, especially if you cannot control the document root configuration, modify `$Sqlite_db_file` in `results/telemetry_settings.php` to use an absolute path completely outside your web directories:
    ```php
-   $Sqlite_db_file = '/var/lib/speedtest/speedtest_telemetry.db';  // or /opt/speedtest_data/
+   $Sqlite_db_file = '/var/lib/speedtest/speedtest_telemetry.db';  // or /opt/speedtest_data/speedtest_telemetry.db
    ```
    Ensure the web server has write permissions to this directory.
 
