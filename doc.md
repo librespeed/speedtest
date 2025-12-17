@@ -83,7 +83,11 @@ Log into your database using phpMyAdmin or a similar software and create a new d
 
 Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql`, `mssql` or `sqlite`.
 
-If you chose to use SQLite, you might want to change `$Sqlite_db_file` to another path where you want the database to be stored. Just make sure that the file cannot be downloaded by users. Sqlite doesn't require any additional configuration, you can skip the rest of this section.
+If you chose to use SQLite, the default configuration stores the database at `__DIR__ . '/../../speedtest_telemetry.db'`, which places it two directories up from the `results/` folder. This is designed to keep the database **outside your webroot** for security.
+
+**Important**: Make sure the database location is NOT web-accessible. The default path assumes you've installed the application in a subdirectory of your webroot (e.g., `/var/www/html/speedtest/`), which places the database at `/var/www/html/speedtest_telemetry.db` (outside the webroot).
+
+If you need to change the database location, update `$Sqlite_db_file` in `results/telemetry_settings.php`, ensuring the new path is also outside the web-accessible directory. SQLite doesn't require any additional configuration beyond setting the secure path.
 
 If you chose to use MySQL, you must set your database credentials:
 
