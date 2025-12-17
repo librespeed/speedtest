@@ -7,3 +7,6 @@ package-lock.json
 results/speedtest_telemetry.db
 results/speedtest_telemetry.db-shm
 results/speedtest_telemetry.db-wal
+speedtest_telemetry.db
+speedtest_telemetry.db-shm
+speedtest_telemetry.db-wal
