@@ -97,7 +97,7 @@ If you chose to use SQLite, the default configuration stores the database at `__
    ```
    Ensure the web server has write permissions to this directory.
 
-3. **Verification**: After installation, try accessing `http://yourserver/speedtest_telemetry.db` in a browser - you should get a 404 error. If the file downloads, your configuration is insecure.
+3. **Verification**: After running at least one speed test or accessing `sanitycheck.php` (which creates the database), try accessing `http://yourserver/speedtest_telemetry.db` in a browser - you should get a 404 error. If the file downloads, your configuration is insecure. Note: The database file won't exist until the first test is recorded, so you'll get a 404 initially even with correct configuration.
 
 SQLite doesn't require any additional configuration beyond setting a secure path and ensuring proper permissions.
 
