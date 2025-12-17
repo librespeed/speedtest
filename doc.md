@@ -83,11 +83,13 @@ Log into your database using phpMyAdmin or a similar software and create a new d
 
 Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql`, `mssql` or `sqlite`.
 
-If you chose to use SQLite, the default configuration stores the database at `__DIR__ . '/../../speedtest_telemetry.db'`, which places it two directories up from the `results/` folder. This is designed to keep the database **outside your webroot** for security.
+If you chose to use SQLite, the default configuration stores the database at `__DIR__ . '/../../speedtest_telemetry.db'`, which places it two directories up from the `results/` folder. This is designed to keep the database **outside your web-accessible directory** for security.
 
-**Important**: Make sure the database location is NOT web-accessible. The default path assumes you've installed the application in a subdirectory of your webroot (e.g., `/var/www/html/speedtest/`), which places the database at `/var/www/html/speedtest_telemetry.db` (outside the webroot).
+**Important Security Note**: The default path assumes you've installed the application in a subdirectory (e.g., if your webroot serves files from `/var/www/html/speedtest/`, the database will be at `/var/www/html/speedtest_telemetry.db`, which is outside the `/var/www/html/speedtest/` directory that's web-accessible). 
 
-If you need to change the database location, update `$Sqlite_db_file` in `results/telemetry_settings.php`, ensuring the new path is also outside the web-accessible directory. SQLite doesn't require any additional configuration beyond setting the secure path.
+However, if you installed directly in your document root (e.g., `/var/www/html/` itself), you **must** change `$Sqlite_db_file` to use at least `__DIR__ . '/../../../speedtest_telemetry.db'` to move the database further outside your webroot, or better yet, place it in a completely separate directory like `/var/db/speedtest_telemetry.db`.
+
+Always verify that your database file cannot be accessed via a web browser after installation. SQLite doesn't require any additional configuration beyond setting a secure path.
 
 If you chose to use MySQL, you must set your database credentials:
 
