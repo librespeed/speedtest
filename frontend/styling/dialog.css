@@ -1,0 +1,132 @@
+/* Styling for the popups */
+
+dialog {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70vw;
+  height: 70vh;
+  margin: auto;
+  margin-top: 23rem;
+
+  background: var(--popup-background-color);
+  border: none;
+  border-radius: 0.8rem;
+
+  @media screen and (max-width: 800px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: 100vw; /* We need these overrides of browser defaults*/
+    max-height: 100vh;
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+
+  animation: fade-out 0.3s ease-out;
+  &[open] {
+    display: flex;
+    animation: fade-in 0.3s ease-out;
+  }
+
+  & > .close-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    position: absolute;
+    top: 3rem;
+    right: 3rem;
+
+    cursor: pointer;
+  }
+
+  & > section {
+    max-width: 800px;
+    overflow-y: auto;
+    margin: 4rem 2rem 2rem 4rem;
+    padding: 0 2rem 0 0;
+
+    & h1,
+    & h2 {
+      margin: 3rem 0 2rem 0;
+      font-size: 3.6rem;
+      font-weight: 400;
+      letter-spacing: -0.2rem;
+      color: var(--primary-text-color);
+    }
+    & h2 {
+      margin: 2rem 0 1rem 0;
+      font-size: 2.5rem;
+    }
+
+    & p,
+    & li {
+      margin: 1rem 0 1rem 0;
+      font-size: 1.6rem;
+      line-height: 2.5rem;
+      font-weight: 400;
+      letter-spacing: -0.1rem;
+      color: var(--secondary-text-color);
+    }
+
+    & ul {
+      list-style-position: inside;
+      margin: 1rem;
+
+      & li {
+        margin: 0.1rem 0;
+      }
+    }
+
+    & a {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.1rem;
+      color: var(--secondary-text-color);
+      text-underline-offset: 0.3rem;
+      transition: text-underline-offset 0.2s;
+
+      &:hover {
+        color: var(--theme-green);
+        text-underline-offset: 0.5rem;
+      }
+    }
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+    display: none;
+  }
+  0.1% {
+    display: flex;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    display: flex;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    display: flex;
+  }
+  99.9% {
+    display: flex;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+    display: none;
+  }
+}

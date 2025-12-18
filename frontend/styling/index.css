@@ -1,0 +1,85 @@
+/**
+ * Design by fromScratch Studio - 2022, 2023 (fromscratch.io)
+ * Implementation in HTML/CSS/JS by Timendus - 2024 (https://github.com/Timendus)
+ *
+ * See https://github.com/librespeed/speedtest/issues/585
+ */
+
+@import url("colors.css");
+@import url("fonts.css");
+@import url("main.css");
+@import url("server-selector.css");
+@import url("button.css");
+@import url("results.css");
+@import url("dialog.css");
+
+/* Setting up the basic structure */
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  min-height: 100vh;
+  width: 100vw;
+}
+
+html {
+  background-color: var(--background-backup-color);
+  background-image: url("../images/background.jpeg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  font-size: 10px;
+
+  @media screen and (max-width: 800px) {
+    font-size: 8px;
+  }
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--background-overlay-color);
+  color: var(--primary-text-color);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Position the logo */
+
+header {
+  padding: 4rem 7rem;
+
+  @media screen and (max-width: 800px) {
+    padding: 7rem 2rem;
+    text-align: center;
+  }
+}
+
+/* Position the source code link */
+
+footer {
+  margin: auto auto 0 auto;
+  padding: 5rem;
+
+  & > p.source a {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.1rem;
+    color: var(--theme-green);
+    text-underline-offset: 0.3rem;
+    transition: text-underline-offset 0.2s;
+
+    &:hover {
+      color: var(--theme-pink);
+      text-underline-offset: 0.5rem;
+    }
+  }
+
+  @media screen and (max-width: 800px) {
+    padding: 4rem;
+  }
+}

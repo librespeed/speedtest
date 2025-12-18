@@ -1,0 +1,260 @@
+/* Variables */
+
+:root {
+  --gauge-width: 32rem;
+  --gauge-height: 22rem;
+  --progress-width: 0.6rem;
+  --speed-width: 3rem;
+}
+
+/* Layout for the gauges */
+
+.gauge-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: center;
+  gap: 5rem;
+  margin: 5rem auto 3rem auto;
+
+  @media screen and (max-width: 1100px) {
+    display: grid;
+    grid-template-areas:
+      "download upload"
+      "ping jitter";
+    justify-items: center;
+    justify-content: center;
+
+    --gauge-width: min(40vw, 32rem);
+    --gauge-height: min(28vw, 22rem);
+    --progress-width: min(1.2vw, 0.6rem);
+    --speed-width: min(4vw, 3rem);
+  }
+  @media screen and (max-width: 500px) {
+    gap: 5rem 2rem;
+  }
+}
+
+/* The download/upload speed gauges */
+
+/**
+ * One thing I should really document here is the weird `transform: scale(1);`
+ * and `position: fixed` in this code. This is a nasty little trick to allow the
+ * gauge pointer to break out of the `overflow: hidden` of the .speed element.
+ * We need the `overflow: hidden` to hide the arc that's rotating into view when
+ * the value goes up. But we do want to see the full pointer, even when it's at
+ * zero. This degrades fairly gracefully into showing half of the pointer when
+ * browsers don't understand this.
+ *
+ * Trick taken from this article:
+ * https://medium.com/@thomas.ryu/css-overriding-the-parents-overflow-hidden-90c75a0e7296
+ */
+
+div.gauge {
+  position: relative;
+  transform: scale(1);
+  width: var(--gauge-width);
+  height: var(--gauge-height);
+
+  &.download {
+    grid-area: download;
+  }
+  &.upload {
+    grid-area: upload;
+  }
+
+  & > .progress,
+  & > .speed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--gauge-width);
+    height: calc(var(--gauge-width) / 2);
+    overflow: hidden;
+
+    &:after,
+    &:before {
+      content: "";
+      position: absolute;
+      box-sizing: border-box;
+    }
+  }
+
+  & > .progress {
+    &:before,
+    &:after {
+      top: 0;
+      left: 0;
+      width: var(--gauge-width);
+      height: calc(var(--gauge-width) / 2);
+
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      border: var(--progress-width) solid var(--gauge-background-color);
+      border-bottom: 0;
+
+      transform-origin: bottom center;
+      transform: rotate(var(--progress-rotation));
+      transition: transform 0.2s linear;
+    }
+    &:after {
+      top: calc(var(--gauge-width) / 2);
+
+      border-radius: 0 0 50% 50% / 0 0 100% 100%;
+      border: var(--progress-width) solid var(--gauge-background-color);
+      border-top: 0;
+
+      transform-origin: top center;
+    }
+  }
+
+  & > .speed {
+    &:before,
+    &:after {
+      transform: rotate(var(--speed-rotation));
+      transition: transform 0.2s ease;
+      transition-timing-function: cubic-bezier(0.56, 0.04, 0.59, 0.91);
+    }
+    &:before {
+      position: fixed;
+      top: calc(var(--gauge-width) / 2 - var(--speed-width) / 3);
+      left: var(--progress-width);
+      width: 0;
+      height: 0;
+
+      border-top: calc(var(--speed-width) / 3) solid transparent;
+      border-bottom: calc(var(--speed-width) / 3) solid transparent;
+      border-right: calc(var(--speed-width) * 0.97) solid
+        var(--gauge-background-color);
+      z-index: 1;
+
+      transform-origin: calc(var(--gauge-width) / 2 - var(--progress-width))
+        calc(var(--speed-width) / 3);
+    }
+    &:after {
+      top: calc(var(--gauge-width) / 2);
+      left: calc(var(--progress-width) - 0.1rem);
+      width: calc(var(--gauge-width) - var(--progress-width) * 2 + 0.2rem);
+      height: calc(var(--gauge-width) / 2 - var(--progress-width) + 0.1rem);
+
+      border-radius: 0 0 50% 50% / 0 0 100% 100%;
+      border: var(--speed-width) solid var(--gauge-background-color);
+      border-top: 0;
+
+      transform-origin: top center;
+    }
+  }
+
+  &.enabled {
+    &.download {
+      & > .progress:after {
+        border-color: var(--theme-pink);
+      }
+      & > .speed {
+        &:before {
+          border-right-color: var(--gauge-pointer-pink);
+        }
+        &:after {
+          border-color: var(--theme-pink);
+        }
+      }
+    }
+    &.upload {
+      & > .progress:after {
+        border-color: var(--theme-green);
+      }
+      & > .speed {
+        &:before {
+          border-right-color: var(--gauge-pointer-green);
+        }
+        &:after {
+          border-color: var(--theme-green);
+        }
+      }
+    }
+    & > h1 > span {
+      color: var(--primary-text-color);
+    }
+  }
+
+  & > h1,
+  & > h2 {
+    display: block;
+    position: absolute;
+    width: 100%;
+    font-family: "Inter", sans-serif;
+    font-size: 2.1rem;
+    letter-spacing: -0.1rem;
+    color: var(--secondary-text-color);
+  }
+  & > h1 {
+    bottom: calc(var(--gauge-height) - var(--gauge-width) / 2);
+    font-weight: 300;
+
+    & > span {
+      font-size: 5.5rem;
+      font-weight: 200;
+      display: block;
+      color: var(--secondary-text-color);
+      letter-spacing: -0.3rem;
+    }
+  }
+  & > h2 {
+    bottom: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  @media screen and (max-width: 500px) {
+    & > h1 {
+      font-size: 3vw;
+
+      & > span {
+        font-size: 8vw;
+      }
+    }
+
+    & > h2 {
+      font-size: 3vw;
+    }
+  }
+}
+
+/* Styling for Ping and Jitter */
+
+.ping,
+.jitter {
+  grid-area: jitter;
+  display: flex;
+  align-items: end;
+  height: calc(var(--gauge-width) / 2);
+  width: 13rem;
+
+  font-size: 2.1rem;
+  letter-spacing: -0.1rem;
+  font-weight: 300;
+  color: var(--ping-and-jitter-secondary-text-color);
+
+  & > .label {
+    font-weight: 700;
+  }
+  & > .value {
+    color: var(--ping-and-jitter-primary-text-color);
+  }
+
+  &.hidden {
+    display: none;
+  }
+
+  @media screen and (max-width: 1100px) {
+    width: 100%;
+    height: auto;
+    justify-content: center !important;
+  }
+  @media screen and (max-width: 500px) {
+    font-size: 1.8rem;
+  }
+}
+.ping {
+  grid-area: ping;
+  justify-content: end;
+}
