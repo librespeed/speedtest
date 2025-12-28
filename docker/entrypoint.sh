@@ -13,6 +13,10 @@ rm -rf /var/www/html/*
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
 
+# Copy design switch files
+cp /speedtest/config.json /var/www/html/
+cp /speedtest/design-switch.js /var/www/html/
+
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
 
@@ -44,8 +48,16 @@ fi
 if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
   cp -av /speedtest/frontend/* /var/www/html/
 elif [ "$MODE" == "standalone" ]; then
-  cp -av /speedtest/frontend/* /var/www/html/
+  # Copy root index.html (old design with feature switch)
+  cp /speedtest/index.html /var/www/html/
+  # Copy frontend directory for new design option
+  cp -av /speedtest/frontend /var/www/html/
   echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+fi
+
+# Configure design preference via config.json
+if [ "$USE_NEW_DESIGN" == "true" ]; then
+  sed -i 's/"useNewDesign": false/"useNewDesign": true/' /var/www/html/config.json
 fi
 
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled

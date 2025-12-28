@@ -21,6 +21,8 @@ COPY results/*.php /speedtest/results/
 COPY results/*.ttf /speedtest/results/
 
 COPY *.js /speedtest/
+COPY *.html /speedtest/
+COPY config.json /speedtest/
 COPY favicon.ico /speedtest/
 
 COPY docker/servers.json /servers.json
@@ -36,6 +38,7 @@ ENV TELEMETRY=false
 ENV ENABLE_ID_OBFUSCATION=false
 ENV REDACT_IP_ADDRESSES=false
 ENV WEBPORT=8080
+ENV USE_NEW_DESIGN=false
 
 # https://httpd.apache.org/docs/2.4/stopping.html#gracefulstop
 STOPSIGNAL SIGWINCH

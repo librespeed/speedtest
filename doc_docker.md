@@ -57,6 +57,7 @@ The test can be accessed on port 80.
 Here's a list of additional environment variables available in this mode:
 
 * __`TITLE`__: Title of your speed test. Default value: `LibreSpeed`
+* __`USE_NEW_DESIGN`__: When set to `true`, enables the new modern frontend design. When set to `false` (default), uses the classic design. The design can also be switched using URL parameters (`?design=new` or `?design=old`). Default value: `false`
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`OBFUSCATION_SALT`__: The salt string that is used to obfuscate the test IDs. The format shoud be a 2 byte hex string (e.g. `0x1234abcd`). If not specified, a random one will be generated.
