@@ -6,9 +6,17 @@
  * 2. Configuration file: config.json with useNewDesign flag
  * 
  * Default behavior: Shows the old design
+ * 
+ * Note: This script is only loaded on the root index.html, not on frontend/index.html
  */
 (function() {
     'use strict';
+    
+    // Don't run this script if we're already in the frontend directory
+    // This prevents infinite redirect loops
+    if (window.location.pathname.includes('/frontend/')) {
+        return;
+    }
     
     // Check URL parameters first (they override config)
     const urlParams = new URLSearchParams(window.location.search);
@@ -39,9 +47,9 @@
             }
             // Otherwise stay on old design (default)
         })
-        .catch(() => {
-            // If there's any error, default to old design
-            console.log('Using default (old) design');
+        .catch(error => {
+            // If there's any error (including JSON parse errors), default to old design
+            console.log('Using default (old) design:', error.message || 'config error');
         });
     
     function redirectToNewDesign() {

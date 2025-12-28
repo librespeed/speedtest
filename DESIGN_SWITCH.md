@@ -6,6 +6,10 @@ LibreSpeed now supports switching between the classic design and the new modern 
 
 By default, LibreSpeed uses the **classic design** (located in `index.html`).
 
+## Browser Compatibility
+
+The feature switch uses modern JavaScript features (URLSearchParams, fetch API). It is compatible with all modern browsers. The new design itself requires modern browser features and has no backwards compatibility with older browsers (see `frontend/README.md`).
+
 ## Enabling the New Design
 
 There are two ways to enable the new design:
