@@ -33,24 +33,24 @@
     }
     
     // Check config.json for design preference
-    fetch('config.json')
-        .then(response => {
-            if (!response.ok) {
-                // If config.json doesn't exist or can't be loaded, use old design
-                return { useNewDesign: false };
-            }
-            return response.json();
-        })
-        .then(config => {
+    try {
+        const xhr = new XMLHttpRequest();
+        // Use a synchronous request to prevent a flash of the old design before redirecting
+        xhr.open('GET', 'config.json', false);
+        xhr.send(null);
+
+        // Check for a successful response, but not 304 Not Modified, which can have an empty response body
+        if (xhr.status >= 200 && xhr.status < 300) {
+            const config = JSON.parse(xhr.responseText);
             if (config.useNewDesign === true) {
                 redirectToNewDesign();
             }
-            // Otherwise stay on old design (default)
-        })
-        .catch(error => {
-            // If there's any error (including JSON parse errors), default to old design
-            console.log('Using default (old) design:', error.message || 'config error');
-        });
+        }
+        // Otherwise, stay on the old design (default for 404, errors, or useNewDesign: false)
+    } catch (error) {
+        // If there's any error (e.g., network, JSON parse), default to old design
+        console.log('Using default (old) design:', error.message || 'config error');
+    }
     
     function redirectToNewDesign() {
         // Preserve any URL parameters when redirecting
