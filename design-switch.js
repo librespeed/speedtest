@@ -9,30 +9,30 @@
  * 
  * Note: This script is only loaded on the root index.html
  */
-(function() {
+(function () {
     'use strict';
-    
+
     // Don't run this script if we're already on a specific design page
     // This prevents infinite redirect loops
     const currentPath = window.location.pathname;
     if (currentPath.includes('index-classic.html') || currentPath.includes('index-modern.html')) {
         return;
     }
-    
+
     // Check URL parameters first (they override config)
     const urlParams = new URLSearchParams(window.location.search);
     const designParam = urlParams.get('design');
-    
+
     if (designParam === 'new') {
         redirectToNewDesign();
         return;
     }
-    
+
     if (designParam === 'old' || designParam === 'classic') {
         redirectToOldDesign();
         return;
     }
-    
+
     // Check config.json for design preference
     try {
         const xhr = new XMLHttpRequest();
@@ -57,13 +57,13 @@
         console.log('Using default (old) design:', error.message || 'config error');
         redirectToOldDesign();
     }
-    
+
     function redirectToNewDesign() {
         // Preserve any URL parameters when redirecting
         const currentParams = window.location.search;
         window.location.href = 'index-modern.html' + currentParams;
     }
-    
+
     function redirectToOldDesign() {
         // Preserve any URL parameters when redirecting
         const currentParams = window.location.search;
