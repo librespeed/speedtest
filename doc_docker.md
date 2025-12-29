@@ -37,7 +37,6 @@ services:
       #ENABLE_ID_OBFUSCATION: "false"
       #REDACT_IP_ADDRESSES: "false"
       #PASSWORD:
-      #EMAIL:
       #GDPR_EMAIL: "privacy@example.com"
       #DISABLE_IPINFO: "false"
       #IPINFO_APIKEY: "your api key"
@@ -72,8 +71,7 @@ Here's a list of additional environment variables available in this mode:
     * DB_USERNAME, DB_PASSWORD - credentials of the user with read and update permissions to the db
   * mssql - not supported in docker image yet (feel free to open a PR with that, has to be done in `entrypoint.sh`)
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
-* __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
-* __`GDPR_EMAIL`__: Email address displayed in the privacy policy for data deletion requests. If not set, the default placeholder text will be shown. This should be set to comply with GDPR requirements when running in production.
+* __`GDPR_EMAIL`__: Email address displayed in the privacy policy for data deletion requests. If not set, the default placeholder text will be shown. This should be set to comply with GDPR requirements when running in production. Must be specified when telemetry is enabled.
 * __`DISABLE_IPINFO`__: If set to `true`, ISP info and distance will not be fetched from either [ipinfo.io](https://ipinfo.io) or the offline database. Default: value: `false`
 * __`IPINFO_APIKEY`__: API key for [ipinfo.io](https://ipinfo.io). Optional, but required if you want to use the full [ipinfo.io](https://ipinfo.io) APIs (required for distance measurement)
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an [ipinfo.io](https://ipinfo.io) API key. Default value: `km`

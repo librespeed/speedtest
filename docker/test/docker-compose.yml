@@ -4,7 +4,7 @@ x-shared:
   speedtest-service: &speedtest-service
     environment:
       - PASSWORD=gimmeTheStats1337
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -32,7 +32,7 @@ services:
       - DB_PASSWORD=Not4SecureProduction
       - DB_TYPE=postgresql
       - DB_USERNAME=librespeed
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -73,7 +73,7 @@ services:
       - DB_PASSWORD=Not4SecureProduction
       - DB_TYPE=mysql
       - DB_USERNAME=librespeed
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -97,7 +97,7 @@ services:
       dockerfile: Dockerfile
     environment: &env_vars_sqlite
       - PASSWORD=gimmeTheStats1337
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
