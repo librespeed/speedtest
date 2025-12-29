@@ -6,14 +6,32 @@ LibreSpeed now supports switching between the classic design and the new modern 
 
 By default, LibreSpeed uses the **classic design** (located in `index-classic.html`).
 
-## How It Works
+## Architecture
 
-The implementation uses three HTML files at the root level:
-- **`index.html`** - Entry point with design switcher (lightweight redirect page)
-- **`index-classic.html`** - Classic design (default)
-- **`index-modern.html`** - Modern design with assets in `frontend/` subdirectory
+### File Structure (Non-Docker)
+- **`index.html`** - Entry point (lightweight switcher)
+- **`index-classic.html`** - Classic design at root
+- **`index-modern.html`** - Modern design at root (references assets in subdirectories)
+- **`frontend/`** - Directory containing modern design assets (CSS, JS, images, fonts) - kept for non-Docker deployments
 
-Both designs are at the same level, so relative paths to resources like `results/` work correctly for both.
+### File Structure (Docker)
+In Docker deployments, the frontend assets are flattened to root-level subdirectories:
+- **`index.html`** - Entry point (lightweight switcher)
+- **`index-classic.html`** - Classic design
+- **`index-modern.html`** - Modern design  
+- **`styling/`** - CSS files for modern design
+- **`javascript/`** - JS files for modern design
+- **`images/`** - Images for modern design
+- **`fonts/`** - Fonts for modern design
+- **No `frontend/` directory** - Assets are copied directly to root subdirectories
+
+### Benefits of Root-Level Design Files
+✅ Both designs at same level - no path confusion
+✅ `results/` accessible from both designs with same relative path
+✅ `backend/` accessible from both designs with same relative path  
+✅ No subdirectory nesting issues
+✅ Clean separation of concerns
+✅ Docker containers have no `frontend/` parent directory
 
 ## Browser Compatibility
 
@@ -46,10 +64,18 @@ URL parameters take precedence over the configuration file, making them useful f
 
 ## Design Locations
 
+### Non-Docker Deployments
 - **Entry Point**: Root `index.html` file (lightweight redirect page)
 - **Old Design**: `index-classic.html` at root
-- **New Design**: `index-modern.html` at root (references assets in `frontend/` directory)
-- **Assets**: Frontend assets (CSS, JS, images, fonts) remain in `frontend/` subdirectory
+- **New Design**: `index-modern.html` at root (references assets in `frontend/` subdirectory)
+- **Assets**: Frontend assets (CSS, JS, images, fonts) in `frontend/` subdirectory
+
+### Docker Deployments
+- **Entry Point**: Root `index.html` file (lightweight redirect page)
+- **Old Design**: `index-classic.html` at root
+- **New Design**: `index-modern.html` at root (references assets in root subdirectories)
+- **Assets**: Frontend assets copied directly to root subdirectories (`styling/`, `javascript/`, `images/`, `fonts/`)
+- **No `frontend/` directory** - Assets are flattened to root level
 
 Both designs are at the same directory level, ensuring that relative paths to shared resources like `backend/` and `results/` work correctly for both.
 
@@ -61,4 +87,10 @@ The feature switch is implemented in `design-switch.js`, which is loaded by the 
 2. Then, the `config.json` configuration file
 3. Redirects to either `index-classic.html` or `index-modern.html`
 
-Both design HTML files are at the root level, eliminating path issues. The modern design references assets from the `frontend/` subdirectory (e.g., `frontend/styling/index.css`), while both designs can access shared resources like `backend/` and `results/` using the same relative paths.
+Both design HTML files are at the root level, eliminating path issues.
+
+### Non-Docker
+The modern design references assets from the `frontend/` subdirectory (e.g., `frontend/styling/index.css`), while both designs can access shared resources like `backend/` and `results/` using the same relative paths.
+
+### Docker
+In Docker deployments, the `frontend/` directory is flattened during container startup. Assets are copied directly to root-level subdirectories (`styling/`, `javascript/`, `images/`, `fonts/`), and `index-modern.html` references these root-level paths. This eliminates the `frontend/` parent directory in the container.

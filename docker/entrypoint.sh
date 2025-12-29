@@ -50,14 +50,20 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   cp /speedtest/index.html /var/www/html/
   cp /speedtest/index-classic.html /var/www/html/
   cp /speedtest/index-modern.html /var/www/html/
-  # Copy frontend directory for assets used by modern design
-  cp -av /speedtest/frontend /var/www/html/
+  
+  # Copy frontend assets directly to root-level subdirectories (no frontend/ parent dir)
+  mkdir -p /var/www/html/styling /var/www/html/javascript /var/www/html/images /var/www/html/fonts
+  cp -a /speedtest/frontend/styling/* /var/www/html/styling/
+  cp -a /speedtest/frontend/javascript/* /var/www/html/javascript/
+  cp -a /speedtest/frontend/images/* /var/www/html/images/
+  cp -a /speedtest/frontend/fonts/* /var/www/html/fonts/ 2>/dev/null || true
+  
+  # Copy frontend config files
+  cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
 fi
 if [ "$MODE" == "standalone" ]; then
   # generate config for just the local server
   echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
-  # Also copy to frontend/server-list.json for the modern design
-  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/frontend/server-list.json
 fi
 
 # Configure design preference via config.json
