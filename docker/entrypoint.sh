@@ -1,7 +1,15 @@
 #!/bin/bash
 
+echo "Setting up docker env..."
+echo "MODE: $MODE"
+echo "USE_NEW_DESIGN: $USE_NEW_DESIGN"
+echo "WEBPORT: $WEBPORT"
+echo "REDACT_IP_ADDRESSES: $REDACT_IP_ADDRESSES"
+echo "DB_TYPE: $DB_TYPE"
+echo "ENABLE_ID_OBFUSCATION: $ENABLE_ID_OBFUSCATION"
+
 set -e
-set -x
+#set -x
 
 is_alpine() {
   [ -f /etc/alpine-release ]
@@ -60,12 +68,12 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   
   # Copy frontend config files
   cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
+  if [ ! -f /var/www/html/server-list.json ]; then
+    echo "no server-list.json found, create one for local host"
+    # generate config for just the local server
+    echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  fi
 fi
-if [ "$MODE" == "standalone" ]; then
-  # generate config for just the local server
-  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
-fi
-
 # Configure design preference via config.json
 if [ "$USE_NEW_DESIGN" == "true" ]; then
   sed -i 's/"useNewDesign": false/"useNewDesign": true/' /var/www/html/config.json
@@ -74,7 +82,7 @@ fi
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
 if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual") ]]; then
   cp -r /speedtest/results /var/www/html/results
-  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/frontend/settings.json
+  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/settings.json
 
   if [ "$MODE" == "frontend" ]; then
     mkdir /var/www/html/backend
