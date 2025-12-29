@@ -77,12 +77,14 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   
   # Replace GDPR email placeholder if GDPR_EMAIL is set
   if [ ! -z "$GDPR_EMAIL" ]; then
-    # Escape special characters for sed
-    GDPR_EMAIL_ESCAPED=$(echo "$GDPR_EMAIL" | sed 's/[&/\]/\\&/g')
+    # Escape special characters for sed (handles /, &, \, and regex metacharacters)
+    GDPR_EMAIL_ESCAPED=$(echo "$GDPR_EMAIL" | sed 's/[&/\]/\\&/g; s/\[/\\[/g; s/\]/\\]/g')
     
-    for html_file in /var/www/html/index.html /var/www/html/index-modern.html /var/www/html/index-classic.html; do
-      sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL_ESCAPED/g" "$html_file"
-      sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+    for html_file in /var/www/html/index-modern.html /var/www/html/index-classic.html; do
+      if [ -f "$html_file" ]; then
+        sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+        sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+      fi
     done
   fi
 fi
