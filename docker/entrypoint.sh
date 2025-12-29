@@ -77,12 +77,13 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   
   # Replace GDPR email placeholder if GDPR_EMAIL is set
   if [ ! -z "$GDPR_EMAIL" ]; then
-    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index.html
-    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index-modern.html
-    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index-classic.html
-    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index.html
-    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index-modern.html
-    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index-classic.html
+    # Escape special characters for sed
+    GDPR_EMAIL_ESCAPED=$(echo "$GDPR_EMAIL" | sed 's/[&/\]/\\&/g')
+    
+    for html_file in /var/www/html/index.html /var/www/html/index-modern.html /var/www/html/index-classic.html; do
+      sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+      sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+    done
   fi
 fi
 # Configure design preference via config.json
