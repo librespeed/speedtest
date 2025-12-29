@@ -45,13 +45,14 @@ if [ "$MODE" == "backend" ]; then
 fi
 
 # Set up index.php for frontend-only or standalone modes
-if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
-  cp -av /speedtest/frontend/* /var/www/html/
-elif [ "$MODE" == "standalone" ]; then
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]]; then
   # Copy root index.html (old design with feature switch)
   cp /speedtest/index.html /var/www/html/
   # Copy frontend directory for new design option
   cp -av /speedtest/frontend /var/www/html/
+fi
+if [ "$MODE" == "standalone" ]; then
+  # generate config for just the local server
   echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
 fi
 
@@ -63,7 +64,7 @@ fi
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
 if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual") ]]; then
   cp -r /speedtest/results /var/www/html/results
-  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/settings.json
+  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/frontend/settings.json
 
   if [ "$MODE" == "frontend" ]; then
     mkdir /var/www/html/backend
