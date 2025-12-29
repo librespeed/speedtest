@@ -7,6 +7,7 @@ echo "WEBPORT: $WEBPORT"
 echo "REDACT_IP_ADDRESSES: $REDACT_IP_ADDRESSES"
 echo "DB_TYPE: $DB_TYPE"
 echo "ENABLE_ID_OBFUSCATION: $ENABLE_ID_OBFUSCATION"
+echo "GDPR_EMAIL: $GDPR_EMAIL"
 
 set -e
 #set -x
@@ -72,6 +73,16 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     echo "no server-list.json found, create one for local host"
     # generate config for just the local server
     echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  fi
+  
+  # Replace GDPR email placeholder if GDPR_EMAIL is set
+  if [ ! -z "$GDPR_EMAIL" ]; then
+    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index.html
+    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index-modern.html
+    sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL/g" /var/www/html/index-classic.html
+    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index.html
+    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index-modern.html
+    sed -i "s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL/g" /var/www/html/index-classic.html
   fi
 fi
 # Configure design preference via config.json
