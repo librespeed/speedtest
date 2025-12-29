@@ -1,7 +1,15 @@
 #!/bin/bash
 
+echo "Setting up docker env..."
+echo "MODE: $MODE"
+echo "USE_NEW_DESIGN: $USE_NEW_DESIGN"
+echo "WEBPORT: $WEBPORT"
+echo "REDACT_IP_ADDRESSES: $REDACT_IP_ADDRESSES"
+echo "DB_TYPE: $DB_TYPE"
+echo "ENABLE_ID_OBFUSCATION: $ENABLE_ID_OBFUSCATION"
+
 set -e
-set -x
+#set -x
 
 is_alpine() {
   [ -f /etc/alpine-release ]
@@ -12,6 +20,10 @@ rm -rf /var/www/html/*
 
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
+
+# Copy design switch files
+cp /speedtest/config.json /var/www/html/
+cp /speedtest/design-switch.js /var/www/html/
 
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
@@ -41,11 +53,30 @@ if [ "$MODE" == "backend" ]; then
 fi
 
 # Set up index.php for frontend-only or standalone modes
-if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
-  cp -av /speedtest/frontend/* /var/www/html/
-elif [ "$MODE" == "standalone" ]; then
-  cp -av /speedtest/frontend/* /var/www/html/
-  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]]; then
+  # Copy design files (switcher + both designs)
+  cp /speedtest/index.html /var/www/html/
+  cp /speedtest/index-classic.html /var/www/html/
+  cp /speedtest/index-modern.html /var/www/html/
+  
+  # Copy frontend assets directly to root-level subdirectories (no frontend/ parent dir)
+  mkdir -p /var/www/html/styling /var/www/html/javascript /var/www/html/images /var/www/html/fonts
+  cp -a /speedtest/frontend/styling/* /var/www/html/styling/
+  cp -a /speedtest/frontend/javascript/* /var/www/html/javascript/
+  cp -a /speedtest/frontend/images/* /var/www/html/images/
+  cp -a /speedtest/frontend/fonts/* /var/www/html/fonts/ 2>/dev/null || true
+  
+  # Copy frontend config files
+  cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
+  if [ ! -f /var/www/html/server-list.json ]; then
+    echo "no server-list.json found, create one for local host"
+    # generate config for just the local server
+    echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  fi
+fi
+# Configure design preference via config.json
+if [ "$USE_NEW_DESIGN" == "true" ]; then
+  sed -i 's/"useNewDesign": false/"useNewDesign": true/' /var/www/html/config.json
 fi
 
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
