@@ -46,14 +46,18 @@ fi
 
 # Set up index.php for frontend-only or standalone modes
 if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]]; then
-  # Copy root index.html (old design with feature switch)
+  # Copy design files (switcher + both designs)
   cp /speedtest/index.html /var/www/html/
-  # Copy frontend directory for new design option
+  cp /speedtest/index-classic.html /var/www/html/
+  cp /speedtest/index-modern.html /var/www/html/
+  # Copy frontend directory for assets used by modern design
   cp -av /speedtest/frontend /var/www/html/
 fi
 if [ "$MODE" == "standalone" ]; then
   # generate config for just the local server
   echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  # Also copy to frontend/server-list.json for the modern design
+  echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/frontend/server-list.json
 fi
 
 # Configure design preference via config.json

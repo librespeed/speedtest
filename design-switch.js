@@ -7,14 +7,15 @@
  * 
  * Default behavior: Shows the old design
  * 
- * Note: This script is only loaded on the root index.html, not on frontend/index.html
+ * Note: This script is only loaded on the root index.html
  */
 (function() {
     'use strict';
     
-    // Don't run this script if we're already in the frontend directory
+    // Don't run this script if we're already on a specific design page
     // This prevents infinite redirect loops
-    if (window.location.pathname.includes('/frontend/')) {
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('index-classic.html') || currentPath.includes('index-modern.html')) {
         return;
     }
     
@@ -27,8 +28,8 @@
         return;
     }
     
-    if (designParam === 'old') {
-        // Stay on old design, don't check config
+    if (designParam === 'old' || designParam === 'classic') {
+        redirectToOldDesign();
         return;
     }
     
@@ -44,17 +45,28 @@
             const config = JSON.parse(xhr.responseText);
             if (config.useNewDesign === true) {
                 redirectToNewDesign();
+            } else {
+                redirectToOldDesign();
             }
+        } else {
+            // Config not found or error - default to old design
+            redirectToOldDesign();
         }
-        // Otherwise, stay on the old design (default for 404, errors, or useNewDesign: false)
     } catch (error) {
         // If there's any error (e.g., network, JSON parse), default to old design
         console.log('Using default (old) design:', error.message || 'config error');
+        redirectToOldDesign();
     }
     
     function redirectToNewDesign() {
         // Preserve any URL parameters when redirecting
         const currentParams = window.location.search;
-        window.location.href = 'frontend/index.html' + currentParams;
+        window.location.href = 'index-modern.html' + currentParams;
+    }
+    
+    function redirectToOldDesign() {
+        // Preserve any URL parameters when redirecting
+        const currentParams = window.location.search;
+        window.location.href = 'index-classic.html' + currentParams;
     }
 })();

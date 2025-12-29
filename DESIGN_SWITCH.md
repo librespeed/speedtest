@@ -4,7 +4,16 @@ LibreSpeed now supports switching between the classic design and the new modern 
 
 ## Default Behavior
 
-By default, LibreSpeed uses the **classic design** (located in `index.html`).
+By default, LibreSpeed uses the **classic design** (located in `index-classic.html`).
+
+## How It Works
+
+The implementation uses three HTML files at the root level:
+- **`index.html`** - Entry point with design switcher (lightweight redirect page)
+- **`index-classic.html`** - Classic design (default)
+- **`index-modern.html`** - Modern design with assets in `frontend/` subdirectory
+
+Both designs are at the same level, so relative paths to resources like `results/` work correctly for both.
 
 ## Browser Compatibility
 
@@ -37,15 +46,19 @@ URL parameters take precedence over the configuration file, making them useful f
 
 ## Design Locations
 
-- **Old Design**: Root `index.html` file
-- **New Design**: `frontend/index.html` and associated files in the `frontend/` directory
+- **Entry Point**: Root `index.html` file (lightweight redirect page)
+- **Old Design**: `index-classic.html` at root
+- **New Design**: `index-modern.html` at root (references assets in `frontend/` directory)
+- **Assets**: Frontend assets (CSS, JS, images, fonts) remain in `frontend/` subdirectory
+
+Both designs are at the same directory level, ensuring that relative paths to shared resources like `backend/` and `results/` work correctly for both.
 
 ## Technical Details
 
-The feature switch is implemented in `design-switch.js`, which is loaded early in the page lifecycle. It checks:
+The feature switch is implemented in `design-switch.js`, which is loaded by the root `index.html`. It checks:
 
 1. First, URL parameters (`?design=new` or `?design=old`)
 2. Then, the `config.json` configuration file
-3. Defaults to the old design if neither is specified or if there's an error
+3. Redirects to either `index-classic.html` or `index-modern.html`
 
-The script performs a client-side redirect to `frontend/index.html` when the new design is enabled.
+Both design HTML files are at the root level, eliminating path issues. The modern design references assets from the `frontend/` subdirectory (e.g., `frontend/styling/index.css`), while both designs can access shared resources like `backend/` and `results/` using the same relative paths.
