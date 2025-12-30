@@ -1,7 +1,7 @@
 # LibreSpeed
 
 > by Federico Dossena
-> Version 5.4.1
+> Version 5.5.0
 > [https://github.com/librespeed/speedtest/](https://github.com/librespeed/speedtest/)
 
 ## Introduction
