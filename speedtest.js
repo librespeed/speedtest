@@ -49,7 +49,7 @@ function Speedtest() {
   this._settings = {}; //settings for the speed test worker
   this._state = 0; //0=adding settings, 1=adding servers, 2=server selection done, 3=test running, 4=done
   console.log(
-    "LibreSpeed by Federico Dossena v5.4.1 - https://github.com/librespeed/speedtest"
+    "LibreSpeed by Federico Dossena v5.5.0 - https://github.com/librespeed/speedtest"
   );
 }
 
@@ -330,7 +330,7 @@ Speedtest.prototype = {
         console.error("Speedtest onupdate event threw exception: " + e);
       }
       if (data.testState >= 4) {
-	  clearInterval(this.updater);
+        clearInterval(this.updater);
         this._state = 4;
         try {
           if (this.onend) this.onend(data.testState == 5);

@@ -1,0 +1,55 @@
+{
+  "name": "librespeed-speedtest",
+  "version": "5.5.0",
+  "description": "LibreSpeed - A Free and Open Source speed test that you can host on your server(s)",
+  "main": "speedtest.js",
+  "scripts": {
+    "test": "echo \"No automated tests configured yet\" && exit 0",
+    "lint": "eslint speedtest.js speedtest_worker.js",
+    "lint:fix": "eslint --fix speedtest.js speedtest_worker.js",
+    "format": "prettier --write \"*.js\"",
+    "format:check": "prettier --check \"*.js\"",
+    "validate": "npm run format:check && npm run lint",
+    "docker:build": "docker build -t librespeed-speedtest .",
+    "docker:build-alpine": "docker build -t librespeed-speedtest:alpine -f Dockerfile.alpine ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/librespeed/speedtest.git"
+  },
+  "keywords": [
+    "speedtest",
+    "speed-test",
+    "internet-speed",
+    "bandwidth",
+    "network",
+    "performance",
+    "librespeed",
+    "download",
+    "upload",
+    "ping",
+    "latency"
+  ],
+  "author": "Federico Dossena",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/librespeed/speedtest/issues"
+  },
+  "homepage": "https://github.com/librespeed/speedtest#readme",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.1.1"
+  },
+  "files": [
+    "speedtest.js",
+    "speedtest_worker.js",
+    "index.html",
+    "favicon.ico",
+    "backend/",
+    "examples/",
+    "results/"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
