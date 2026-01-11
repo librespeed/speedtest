@@ -319,6 +319,11 @@ Speedtest.prototype = {
    */
   start: function() {
     if (this._state == 3) throw "Test already running";
+    // Terminate any existing worker from previous test
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
     this.worker = new Worker("speedtest_worker.js?r=" + Math.random());
     this.worker.onmessage = function(e) {
       if (e.data === this._prevData) return;
@@ -336,6 +341,11 @@ Speedtest.prototype = {
           if (this.onend) this.onend(data.testState == 5);
         } catch (e) {
           console.error("Speedtest onend event threw exception: " + e);
+        }
+        // Terminate worker after test completes
+        if (this.worker) {
+          this.worker.terminate();
+          this.worker = null;
         }
       }
     }.bind(this);
@@ -374,6 +384,18 @@ Speedtest.prototype = {
    */
   abort: function() {
     if (this._state < 3) throw "You cannot abort a test that's not started yet";
-    if (this._state < 4) this.worker.postMessage("abort");
+    if (this._state < 4) {
+      this.worker.postMessage("abort");
+      // Safety: terminate worker after a short delay if it hasn't already been terminated
+      // This handles cases where the worker might not respond to the abort message
+      setTimeout(function() {
+        if (this.worker && this._state < 4) {
+          this.worker.terminate();
+          this.worker = null;
+          clearInterval(this.updater);
+          this._state = 4;
+        }
+      }.bind(this), 1000);
+    }
   }
 };

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8" />
+<head>
+    <title>LibreSpeed - Multiple Instance Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { 
+            border: 2px solid #333; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 5px;
+        }
+        .test-container h2 { margin-top: 0; }
+        button { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .results { 
+            margin-top: 10px; 
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .status { 
+            font-weight: bold; 
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<script type="text/javascript" src="speedtest.js"></script>
+<body>
+    <h1>LibreSpeed - Multiple Instance Test</h1>
+    <p>This page tests running multiple Speedtest instances sequentially and simultaneously.</p>
+
+    <div class="test-container">
+        <h2>Test Instance 1</h2>
+        <button id="start1">Start Test 1</button>
+        <button id="abort1">Abort Test 1</button>
+        <div class="results">
+            <div class="status">Status: <span id="status1">Not started</span></div>
+            <div>Download: <span id="download1">-</span> Mbit/s</div>
+            <div>Upload: <span id="upload1">-</span> Mbit/s</div>
+            <div>Ping: <span id="ping1">-</span> ms</div>
+            <div>Jitter: <span id="jitter1">-</span> ms</div>
+            <div>IP: <span id="ip1">-</span></div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Instance 2</h2>
+        <button id="start2">Start Test 2</button>
+        <button id="abort2">Abort Test 2</button>
+        <div class="results">
+            <div class="status">Status: <span id="status2">Not started</span></div>
+            <div>Download: <span id="download2">-</span> Mbit/s</div>
+            <div>Upload: <span id="upload2">-</span> Mbit/s</div>
+            <div>Ping: <span id="ping2">-</span> ms</div>
+            <div>Jitter: <span id="jitter2">-</span> ms</div>
+            <div>IP: <span id="ip2">-</span></div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "Start Test 1" and wait for it to complete</li>
+            <li>Then click "Start Test 2" - it should work correctly without strange values</li>
+            <li>You can also run both tests simultaneously</li>
+            <li>You can run each test multiple times</li>
+        </ol>
+    </div>
+
+    <script type="text/javascript">
+        // Create two independent Speedtest instances
+        var s1 = new Speedtest();
+        var s2 = new Speedtest();
+
+        // Setup Test Instance 1
+        s1.onupdate = function (data) {
+            document.getElementById('status1').textContent = getStatusText(data.testState);
+            document.getElementById('download1').textContent = data.dlStatus || '-';
+            document.getElementById('upload1').textContent = data.ulStatus || '-';
+            document.getElementById('ping1').textContent = data.pingStatus || '-';
+            document.getElementById('jitter1').textContent = data.jitterStatus || '-';
+            document.getElementById('ip1').textContent = data.clientIp || '-';
+        };
+
+        s1.onend = function (aborted) {
+            document.getElementById('status1').textContent = aborted ? 'Aborted' : 'Completed';
+            console.log('Test 1 ended. Aborted:', aborted);
+        };
+
+        // Setup Test Instance 2
+        s2.onupdate = function (data) {
+            document.getElementById('status2').textContent = getStatusText(data.testState);
+            document.getElementById('download2').textContent = data.dlStatus || '-';
+            document.getElementById('upload2').textContent = data.ulStatus || '-';
+            document.getElementById('ping2').textContent = data.pingStatus || '-';
+            document.getElementById('jitter2').textContent = data.jitterStatus || '-';
+            document.getElementById('ip2').textContent = data.clientIp || '-';
+        };
+
+        s2.onend = function (aborted) {
+            document.getElementById('status2').textContent = aborted ? 'Aborted' : 'Completed';
+            console.log('Test 2 ended. Aborted:', aborted);
+        };
+
+        // Helper function to convert testState to readable text
+        function getStatusText(state) {
+            switch(state) {
+                case -1: return 'Not started';
+                case 0: return 'Starting...';
+                case 1: return 'Download test';
+                case 2: return 'Ping + Jitter test';
+                case 3: return 'Upload test';
+                case 4: return 'Completed';
+                case 5: return 'Aborted';
+                default: return 'Unknown (' + state + ')';
+            }
+        }
+
+        // Button handlers
+        document.getElementById('start1').addEventListener('click', function() {
+            try {
+                console.log('Starting Test 1');
+                s1.start();
+            } catch(e) {
+                alert('Error starting Test 1: ' + e);
+                console.error('Error starting Test 1:', e);
+            }
+        });
+
+        document.getElementById('abort1').addEventListener('click', function() {
+            try {
+                s1.abort();
+            } catch(e) {
+                alert('Error aborting Test 1: ' + e);
+            }
+        });
+
+        document.getElementById('start2').addEventListener('click', function() {
+            try {
+                console.log('Starting Test 2');
+                s2.start();
+            } catch(e) {
+                alert('Error starting Test 2: ' + e);
+                console.error('Error starting Test 2:', e);
+            }
+        });
+
+        document.getElementById('abort2').addEventListener('click', function() {
+            try {
+                s2.abort();
+            } catch(e) {
+                alert('Error aborting Test 2: ' + e);
+            }
+        });
+    </script>
+
+    <a href="https://github.com/librespeed/speedtest">LibreSpeed Source Code</a>
+</body>
+</html>
