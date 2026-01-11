@@ -384,6 +384,18 @@ Speedtest.prototype = {
    */
   abort: function() {
     if (this._state < 3) throw "You cannot abort a test that's not started yet";
-    if (this._state < 4) this.worker.postMessage("abort");
+    if (this._state < 4) {
+      this.worker.postMessage("abort");
+      // Safety: terminate worker after a short delay if it hasn't already been terminated
+      // This handles cases where the worker might not respond to the abort message
+      setTimeout(function() {
+        if (this.worker && this._state < 4) {
+          this.worker.terminate();
+          this.worker = null;
+          clearInterval(this.updater);
+          this._state = 4;
+        }
+      }.bind(this), 1000);
+    }
   }
 };
