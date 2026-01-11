@@ -319,6 +319,11 @@ Speedtest.prototype = {
    */
   start: function() {
     if (this._state == 3) throw "Test already running";
+    // Terminate any existing worker from previous test
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
     this.worker = new Worker("speedtest_worker.js?r=" + Math.random());
     this.worker.onmessage = function(e) {
       if (e.data === this._prevData) return;
@@ -336,6 +341,11 @@ Speedtest.prototype = {
           if (this.onend) this.onend(data.testState == 5);
         } catch (e) {
           console.error("Speedtest onend event threw exception: " + e);
+        }
+        // Terminate worker after test completes
+        if (this.worker) {
+          this.worker.terminate();
+          this.worker = null;
         }
       }
     }.bind(this);
