@@ -872,6 +872,9 @@ s.setParameter("test_order","P_D_U");
 
 This will point to our static files and set the test to only do ping/jitter, download and upload tests.
 
+There is also an example to achieve this with nginx backend here:
+https://github.com/librespeed/speedtest/issues/375#issuecomment-3769211254
+
 ## Troubleshooting
 
 These are the most common issues reported by users, and how to fix them. If you still need help, contact me at [info@fdossena.com](mailto:info@fdossena.com).
