@@ -134,11 +134,11 @@ function getIspInfo_ipinfoApi($ip){
     ]);
 }
 
-if (PHP_MAJOR_VERSION >= 8){
+if (PHP_VERSION_ID >= 80100){
     require_once("geoip2.phar");
 }
 function getIspInfo_ipinfoOfflineDb($ip){
-    if (PHP_MAJOR_VERSION < 8 || !file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
+    if (PHP_VERSION_ID < 80100 || !file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
         return null;
     }
     $reader = new MaxMind\Db\Reader(OFFLINE_IPINFO_DB_FILE);
