@@ -339,7 +339,7 @@ function getCountryName($code) {
 <html>
     <head>
         <title>LibreSpeed - Analytics</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="chart.min.js"></script>
         <style type="text/css">
             :root {
                 --bg-page: hsl(198, 72%, 35%);
