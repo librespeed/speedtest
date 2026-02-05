@@ -341,6 +341,36 @@ function getCountryName($code) {
         <title>LibreSpeed - Analytics</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style type="text/css">
+            :root {
+                --bg-page: hsl(198, 72%, 35%);
+                --bg-body: #FFFFFF;
+                --bg-chart: #f8f9fa;
+                --text-primary: #333;
+                --text-secondary: #555;
+                --text-muted: #666;
+                --border-color: #ccc;
+                --shadow-color: rgba(0,0,0,0.1);
+                --shadow-heavy: #00000080;
+                --link-color: hsl(198, 72%, 35%);
+                --input-bg: #FFFFFF;
+                --card-gradient-start: hsl(198, 72%, 45%);
+                --card-gradient-end: hsl(198, 72%, 35%);
+            }
+            [data-theme="dark"] {
+                --bg-page: hsl(220, 20%, 12%);
+                --bg-body: hsl(220, 20%, 18%);
+                --bg-chart: hsl(220, 20%, 22%);
+                --text-primary: #e4e4e7;
+                --text-secondary: #a1a1aa;
+                --text-muted: #71717a;
+                --border-color: #3f3f46;
+                --shadow-color: rgba(0,0,0,0.3);
+                --shadow-heavy: #00000099;
+                --link-color: hsl(198, 72%, 55%);
+                --input-bg: hsl(220, 20%, 25%);
+                --card-gradient-start: hsl(198, 60%, 35%);
+                --card-gradient-end: hsl(198, 60%, 25%);
+            }
             html, body {
                 margin: 0;
                 padding: 0;
@@ -349,28 +379,63 @@ function getCountryName($code) {
                 min-height: 100%;
             }
             html {
-                background-color: hsl(198, 72%, 35%);
+                background-color: var(--bg-page);
                 font-family: "Segoe UI", "Roboto", sans-serif;
             }
             body {
-                background-color: #FFFFFF;
+                background-color: var(--bg-body);
                 box-sizing: border-box;
                 width: 100%;
                 max-width: 90em;
                 margin: 4em auto;
-                box-shadow: 0 1em 6em #00000080;
+                box-shadow: 0 1em 6em var(--shadow-heavy);
                 padding: 1em 2em 4em 2em;
                 border-radius: 0.4em;
+                color: var(--text-primary);
             }
             h1, h2, h3 {
                 font-weight: 300;
                 margin-bottom: 0.5em;
-                color: #333;
+                color: var(--text-primary);
             }
             h1 {
                 text-align: center;
                 margin-bottom: 1em;
             }
+            .header-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1em;
+            }
+            .header-row h1 {
+                margin: 0;
+            }
+            .theme-toggle {
+                display: flex;
+                align-items: center;
+                gap: 0.5em;
+                cursor: pointer;
+                padding: 0.5em 1em;
+                background: var(--bg-chart);
+                border: 1px solid var(--border-color);
+                border-radius: 2em;
+                color: var(--text-secondary);
+                font-size: 0.9em;
+                transition: all 0.3s ease;
+            }
+            .theme-toggle:hover {
+                background: var(--border-color);
+            }
+            .theme-toggle svg {
+                width: 1.2em;
+                height: 1.2em;
+                fill: currentColor;
+            }
+            .theme-toggle .sun-icon { display: none; }
+            .theme-toggle .moon-icon { display: block; }
+            [data-theme="dark"] .theme-toggle .sun-icon { display: block; }
+            [data-theme="dark"] .theme-toggle .moon-icon { display: none; }
             .stats-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -378,12 +443,12 @@ function getCountryName($code) {
                 margin: 2em 0;
             }
             .stat-card {
-                background: linear-gradient(135deg, hsl(198, 72%, 45%), hsl(198, 72%, 35%));
+                background: linear-gradient(135deg, var(--card-gradient-start), var(--card-gradient-end));
                 color: white;
                 padding: 1.5em;
                 border-radius: 0.5em;
                 text-align: center;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 6px var(--shadow-color);
             }
             .stat-card h3 {
                 color: rgba(255,255,255,0.9);
@@ -407,14 +472,14 @@ function getCountryName($code) {
                 margin: 2em 0;
             }
             .chart-container {
-                background: #f8f9fa;
+                background: var(--bg-chart);
                 padding: 1.5em;
                 border-radius: 0.5em;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                box-shadow: 0 2px 4px var(--shadow-color);
             }
             .chart-container h3 {
                 margin-top: 0;
-                color: #555;
+                color: var(--text-secondary);
             }
             .chart-wrapper {
                 position: relative;
@@ -429,8 +494,10 @@ function getCountryName($code) {
             .login-form input, .logout-form input {
                 padding: 0.5em 1em;
                 margin: 0.25em;
-                border: 1px solid #ccc;
+                border: 1px solid var(--border-color);
                 border-radius: 4px;
+                background: var(--input-bg);
+                color: var(--text-primary);
             }
             .login-form input[type="submit"], .logout-form input[type="submit"] {
                 background: hsl(198, 72%, 35%);
@@ -446,7 +513,7 @@ function getCountryName($code) {
                 margin: 1em 0;
             }
             .nav-links a {
-                color: hsl(198, 72%, 35%);
+                color: var(--link-color);
                 text-decoration: none;
                 margin: 0 1em;
             }
@@ -456,7 +523,64 @@ function getCountryName($code) {
         </style>
     </head>
     <body>
-        <h1>LibreSpeed - Analytics</h1>
+        <script>
+            // Theme initialization - runs immediately to prevent flash
+            (function() {
+                const savedTheme = localStorage.getItem('analytics-theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            })();
+
+            function toggleTheme() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const newTheme = isDark ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme === 'dark' ? 'dark' : '');
+                localStorage.setItem('analytics-theme', newTheme);
+
+                // Update Chart.js colors if charts exist
+                if (typeof Chart !== 'undefined') {
+                    updateChartColors(newTheme);
+                }
+            }
+
+            function updateChartColors(theme) {
+                const textColor = theme === 'dark' ? '#a1a1aa' : '#666';
+                const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+                Chart.helpers.each(Chart.instances, function(chart) {
+                    if (chart.options.scales) {
+                        if (chart.options.scales.x) {
+                            chart.options.scales.x.ticks = chart.options.scales.x.ticks || {};
+                            chart.options.scales.x.ticks.color = textColor;
+                            chart.options.scales.x.grid = chart.options.scales.x.grid || {};
+                            chart.options.scales.x.grid.color = gridColor;
+                        }
+                        if (chart.options.scales.y) {
+                            chart.options.scales.y.ticks = chart.options.scales.y.ticks || {};
+                            chart.options.scales.y.ticks.color = textColor;
+                            chart.options.scales.y.grid = chart.options.scales.y.grid || {};
+                            chart.options.scales.y.grid.color = gridColor;
+                        }
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels = chart.options.plugins.legend.labels || {};
+                        chart.options.plugins.legend.labels.color = textColor;
+                    }
+                    chart.update();
+                });
+            }
+        </script>
+        <div class="header-row">
+            <h1>LibreSpeed - Analytics</h1>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+                <span class="theme-label">Theme</span>
+            </button>
+        </div>
         <?php
         if (!isset($stats_password) || $stats_password === 'PASSWORD') {
             ?>
@@ -586,6 +710,17 @@ function getCountryName($code) {
                 </div>
 
                 <script>
+                    // Theme-aware color helper
+                    function getThemeColors() {
+                        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                        return {
+                            text: isDark ? '#a1a1aa' : '#666',
+                            grid: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                        };
+                    }
+
+                    const themeColors = getThemeColors();
+
                     // Color palette
                     const colors = {
                         primary: 'hsl(198, 72%, 35%)',
@@ -601,6 +736,15 @@ function getCountryName($code) {
                             'rgba(231, 76, 60, 0.8)',
                             'rgba(149, 165, 166, 0.8)'
                         ]
+                    };
+
+                    // Default chart options with theme colors
+                    const defaultScaleOptions = {
+                        ticks: { color: themeColors.text },
+                        grid: { color: themeColors.grid }
+                    };
+                    const defaultLegendOptions = {
+                        labels: { color: themeColors.text }
                     };
 
                     // Tests per day chart
@@ -623,7 +767,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                y: { beginAtZero: true }
+                                x: defaultScaleOptions,
+                                y: { beginAtZero: true, ...defaultScaleOptions }
                             }
                         }
                     });
@@ -652,10 +797,11 @@ function getCountryName($code) {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'top' }
+                                legend: { position: 'top', labels: defaultLegendOptions.labels }
                             },
                             scales: {
-                                y: { beginAtZero: true }
+                                x: defaultScaleOptions,
+                                y: { beginAtZero: true, ...defaultScaleOptions }
                             }
                         }
                     });
@@ -680,7 +826,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                y: { beginAtZero: true }
+                                x: defaultScaleOptions,
+                                y: { beginAtZero: true, ...defaultScaleOptions }
                             }
                         }
                     });
@@ -705,7 +852,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                y: { beginAtZero: true }
+                                x: defaultScaleOptions,
+                                y: { beginAtZero: true, ...defaultScaleOptions }
                             }
                         }
                     });
@@ -730,7 +878,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                y: { beginAtZero: true }
+                                x: defaultScaleOptions,
+                                y: { beginAtZero: true, ...defaultScaleOptions }
                             }
                         }
                     });
@@ -750,7 +899,7 @@ function getCountryName($code) {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'right' }
+                                legend: { position: 'right', labels: defaultLegendOptions.labels }
                             }
                         }
                     });
@@ -781,7 +930,7 @@ function getCountryName($code) {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: { position: 'right' }
+                                legend: { position: 'right', labels: defaultLegendOptions.labels }
                             }
                         }
                     });
@@ -807,7 +956,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                x: { beginAtZero: true }
+                                x: { beginAtZero: true, ...defaultScaleOptions },
+                                y: defaultScaleOptions
                             }
                         }
                     });
@@ -833,7 +983,8 @@ function getCountryName($code) {
                                 legend: { display: false }
                             },
                             scales: {
-                                x: { beginAtZero: true }
+                                x: { beginAtZero: true, ...defaultScaleOptions },
+                                y: defaultScaleOptions
                             }
                         }
                     });
