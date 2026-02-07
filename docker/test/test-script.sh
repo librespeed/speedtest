@@ -12,7 +12,7 @@ fi
 echo sleeping a little to get things settled...
 sleep 15
 
-for db in sqlite pg mysql; do
+for db in sqlite pg mysql mssql; do
   for distro in alpine debian; do
 	hostname=speedtest-$distro-$db
 	echo $hostname
