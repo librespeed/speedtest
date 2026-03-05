@@ -4,7 +4,9 @@
  * @return string
  */
 function getClientIp() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IPV6'])) {
+        $ip = $_SERVER['HTTP_CF_CONNECTING_IPV6'];
+    } elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         $ip = $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
         $ip = $_SERVER['HTTP_X_REAL_IP'];
