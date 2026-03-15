@@ -25,9 +25,9 @@ COPY index.html /speedtest/
 COPY index-classic.html /speedtest/
 COPY index-modern.html /speedtest/
 COPY config.json /speedtest/
+COPY stability.html /speedtest/
 COPY favicon.ico /speedtest/
 
-COPY docker/*.php /speedtest/
 COPY docker/entrypoint.sh /
 
 # Prepare default environment variables

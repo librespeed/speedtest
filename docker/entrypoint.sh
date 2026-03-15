@@ -35,6 +35,7 @@ rm -rf /var/www/html/*
 
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
+cp /speedtest/stability.html /var/www/html/
 
 # Copy design switch files
 cp /speedtest/config.json /var/www/html/
