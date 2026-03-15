@@ -12,6 +12,7 @@ rm -rf /var/www/html/*
 
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
+cp /speedtest/stability.html /var/www/html/
 
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
