@@ -5,8 +5,8 @@
   "main": "speedtest.js",
   "scripts": {
     "test": "echo \"No automated tests configured yet\" && exit 0",
-    "lint": "eslint speedtest.js speedtest_worker.js",
-    "lint:fix": "eslint --fix speedtest.js speedtest_worker.js",
+    "lint": "eslint speedtest.js speedtest_worker.js stability_worker.js",
+    "lint:fix": "eslint --fix speedtest.js speedtest_worker.js stability_worker.js",
     "format": "prettier --write \"*.js\"",
     "format:check": "prettier --check \"*.js\"",
     "validate": "npm run format:check && npm run lint",
@@ -43,6 +43,8 @@
   "files": [
     "speedtest.js",
     "speedtest_worker.js",
+    "stability_worker.js",
+    "stability.html",
     "index.html",
     "favicon.ico",
     "backend/",

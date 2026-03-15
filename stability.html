@@ -1,0 +1,888 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
+    <meta charset="UTF-8" />
+    <title>LibreSpeed - Stability Test</title>
+    <style type="text/css">
+      html,
+      body {
+        border: none;
+        padding: 0;
+        margin: 0;
+        background: #ffffff;
+        color: #202020;
+      }
+      body {
+        text-align: center;
+        font-family: "Roboto", sans-serif;
+      }
+      h1 {
+        color: #404040;
+      }
+      nav {
+        margin-bottom: 1em;
+      }
+      nav a {
+        color: #6060aa;
+        text-decoration: none;
+        font-size: 0.95em;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+      #controls {
+        margin: 1em auto;
+      }
+      #durationSelect,
+      #targetSelect {
+        font-size: 1em;
+        padding: 0.3em 0.5em;
+        margin-right: 1em;
+      }
+      #startBtn {
+        display: inline-block;
+        margin: 0 auto;
+        color: #6060aa;
+        background-color: rgba(0, 0, 0, 0);
+        border: 0.15em solid #6060ff;
+        border-radius: 0.3em;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        width: 8em;
+        height: 3em;
+        line-height: 2.7em;
+        cursor: pointer;
+        box-shadow:
+          0 0 0 rgba(0, 0, 0, 0.1),
+          inset 0 0 0 rgba(0, 0, 0, 0.1);
+      }
+      #startBtn:hover {
+        box-shadow:
+          0 0 2em rgba(0, 0, 0, 0.1),
+          inset 0 0 1em rgba(0, 0, 0, 0.1);
+      }
+      #startBtn:before {
+        content: "Start";
+      }
+      #startBtn.running {
+        background-color: #ff3030;
+        border-color: #ff6060;
+        color: #ffffff;
+      }
+      #startBtn.running:before {
+        content: "Abort";
+      }
+      #resetBtn {
+        display: inline-block;
+        color: #808080;
+        background-color: rgba(0, 0, 0, 0);
+        border: 0.15em solid #a0a0a0;
+        border-radius: 0.3em;
+        transition: all 0.3s;
+        box-sizing: border-box;
+        width: 6em;
+        height: 3em;
+        line-height: 2.7em;
+        cursor: pointer;
+        margin-left: 0.5em;
+        box-shadow:
+          0 0 0 rgba(0, 0, 0, 0.1),
+          inset 0 0 0 rgba(0, 0, 0, 0.1);
+      }
+      #resetBtn:hover {
+        box-shadow:
+          0 0 2em rgba(0, 0, 0, 0.1),
+          inset 0 0 1em rgba(0, 0, 0, 0.1);
+      }
+      #serverArea {
+        margin: 0.8em 0;
+      }
+      #server {
+        font-size: 1em;
+        padding: 0.2em;
+      }
+      #test {
+        margin-top: 2em;
+        margin-bottom: 2em;
+      }
+      div.testGroup {
+        display: block;
+        margin: 0 auto;
+      }
+      div.testArea2 {
+        display: inline-block;
+        width: 10em;
+        height: 7em;
+        position: relative;
+        box-sizing: border-box;
+        text-align: center;
+      }
+      div.testArea2 div.testName {
+        display: block;
+        text-align: center;
+        font-size: 1.4em;
+      }
+      div.testArea2 div.meterText {
+        display: inline-block;
+        font-size: 2.5em;
+      }
+      div.meterText:empty:before {
+        content: "0.00";
+      }
+      div.testArea2 div.unit {
+        display: inline-block;
+      }
+      #rating {
+        font-size: 1.3em;
+        font-weight: bold;
+        margin: 0.5em 0;
+      }
+      #rating.great {
+        color: #2ecc71;
+      }
+      #rating.good {
+        color: #27ae60;
+      }
+      #rating.poor {
+        color: #e67e22;
+      }
+      #rating.bad {
+        color: #e74c3c;
+      }
+      #rating.none {
+        color: #808080;
+      }
+      #chartContainer {
+        margin: 1em auto;
+        width: 95%;
+        max-width: 60em;
+        position: relative;
+      }
+      #pingChart {
+        width: 100%;
+        height: 280px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background: #fafafa;
+      }
+      #optionalControls {
+        margin: 1.5em auto;
+        max-width: 40em;
+      }
+      #optionalControls label {
+        display: block;
+        margin: 0.5em 0;
+      }
+      #alertThreshold {
+        vertical-align: middle;
+        width: 200px;
+      }
+      #downloadCsvBtn {
+        margin-top: 0.8em;
+        font-size: 0.9em;
+        padding: 0.4em 1em;
+        cursor: pointer;
+        border: 1px solid #6060aa;
+        background: none;
+        color: #6060aa;
+        border-radius: 0.3em;
+      }
+      #downloadCsvBtn:hover {
+        background: #6060aa;
+        color: #ffffff;
+      }
+      .footer {
+        margin: 2em 0 1em;
+      }
+      .footer a {
+        color: #808080;
+        font-size: 0.85em;
+      }
+      @media all and (max-width: 40em) {
+        body {
+          font-size: 0.8em;
+        }
+        #pingChart {
+          height: 200px;
+        }
+      }
+      @media all and (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #202020;
+          color: #f4f4f4;
+          color-scheme: dark;
+        }
+        h1 {
+          color: #e0e0e0;
+        }
+        nav a {
+          color: #9090ff;
+        }
+        #pingChart {
+          border-color: #404040;
+          background: #1a1a1a;
+        }
+        a {
+          color: #9090ff;
+        }
+        #startBtn {
+          color: #9090ff;
+          border-color: #7070ff;
+        }
+        #startBtn.running {
+          background-color: #ff3030;
+          border-color: #ff6060;
+          color: #ffffff;
+        }
+        #resetBtn {
+          color: #a0a0a0;
+          border-color: #606060;
+        }
+        #downloadCsvBtn {
+          color: #9090ff;
+          border-color: #9090ff;
+        }
+        #downloadCsvBtn:hover {
+          background: #9090ff;
+          color: #202020;
+        }
+        .footer a {
+          color: #a0a0a0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>LibreSpeed - Stability Test</h1>
+    <nav><a href="./">&larr; Speed Test</a></nav>
+
+    <div id="controls">
+      <select id="durationSelect">
+        <option value="60">60 Seconds</option>
+        <option value="90">90 Seconds</option>
+        <option value="120">2 Minutes</option>
+        <option value="180">3 Minutes</option>
+        <option value="300">5 Minutes</option>
+      </select>
+      <select id="targetSelect">
+        <option value="">Local Server</option>
+        <option value="https://www.google.com/generate_204">Google</option>
+        <option value="https://www.cloudflare.com/cdn-cgi/trace">Cloudflare</option>
+        <option value="https://www.apple.com/library/test/success.html">Apple</option>
+      </select>
+      <div id="startBtn" onclick="startStop()"></div>
+      <div id="resetBtn" onclick="resetTest()">Reset</div>
+    </div>
+
+    <div id="serverArea" style="display: none">
+      Server:
+      <select id="server" onchange="onServerChange(this.value)"></select>
+    </div>
+
+    <div id="rating" class="none">--</div>
+
+    <div id="test">
+      <div class="testGroup">
+        <div class="testArea2">
+          <div class="testName">Current</div>
+          <div id="statCurrent" class="meterText" style="color: #aa6060"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea2">
+          <div class="testName">Average</div>
+          <div id="statAvg" class="meterText" style="color: #aa6060"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea2">
+          <div class="testName">Jitter</div>
+          <div id="statJitter" class="meterText" style="color: #aa6060"></div>
+          <div class="unit">ms</div>
+        </div>
+      </div>
+      <div class="testGroup">
+        <div class="testArea2">
+          <div class="testName">Min</div>
+          <div id="statMin" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea2">
+          <div class="testName">Max</div>
+          <div id="statMax" class="meterText"></div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="testArea2">
+          <div class="testName">Loss</div>
+          <div id="statLoss" class="meterText"></div>
+          <div class="unit">%</div>
+        </div>
+        <div class="testArea2">
+          <div class="testName">Elapsed</div>
+          <div id="statElapsed" class="meterText">00:00</div>
+          <div class="unit"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="chartContainer">
+      <canvas id="pingChart"></canvas>
+    </div>
+
+    <div id="optionalControls">
+      <label>
+        Alert threshold:
+        <input
+          type="range"
+          id="alertThreshold"
+          min="0"
+          max="500"
+          step="10"
+          value="0"
+          oninput="updateThreshold(this.value)"
+        />
+        <span id="thresholdValue">Off</span>
+      </label>
+      <button id="downloadCsvBtn" onclick="downloadCsv()">Download CSV</button>
+    </div>
+
+    <div class="footer">
+      <a href="https://github.com/librespeed/speedtest">Source code</a>
+    </div>
+
+    <script type="text/javascript">
+      function I(i) {
+        return document.getElementById(i);
+      }
+
+      // Server configuration (same pattern as index.html)
+      var SPEEDTEST_SERVERS = [];
+
+      // State
+      var worker = null;
+      var updater = null;
+      var running = false;
+      var allPingData = []; // full dataset for chart and CSV
+      var latestData = null;
+      var alertThresholdMs = 0;
+      var lastBeepTime = 0;
+      var audioCtx = null;
+      var selectedServer = null;
+
+      // Dark mode detection for canvas colors
+      var isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      try {
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function (e) {
+          isDark = e.matches;
+        });
+      } catch (e) {}
+
+      // Chart constants
+      var VISIBLE_SECONDS = 60;
+      var CHART_PADDING_LEFT = 50;
+      var CHART_PADDING_RIGHT = 15;
+      var CHART_PADDING_TOP = 15;
+      var CHART_PADDING_BOTTOM = 30;
+
+      // Load server list dynamically (for Docker frontend/dual modes where servers.json exists)
+      function loadServers(callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          try {
+            var servers = JSON.parse(xhr.responseText);
+            if (Array.isArray(servers) && servers.length > 0) {
+              SPEEDTEST_SERVERS = servers;
+            }
+          } catch (e) {}
+          callback();
+        };
+        xhr.onerror = function () {
+          callback();
+        };
+        xhr.open("GET", "servers.json?r=" + Math.random());
+        try {
+          xhr.timeout = 2000;
+          xhr.ontimeout = xhr.onerror;
+        } catch (e) {}
+        xhr.send();
+      }
+
+      // Server initialization
+      function initServers() {
+        if (SPEEDTEST_SERVERS.length === 0) {
+          I("serverArea").style.display = "none";
+        } else {
+          I("serverArea").style.display = "";
+          // ping servers to find best one
+          var completed = 0;
+          var best = null;
+          for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
+            (function (idx) {
+              pingServer(SPEEDTEST_SERVERS[idx], function (server, rtt) {
+                SPEEDTEST_SERVERS[idx].pingT = rtt;
+                if (rtt > 0 && (best === null || rtt < best.pingT)) best = SPEEDTEST_SERVERS[idx];
+                completed++;
+                if (completed === SPEEDTEST_SERVERS.length) {
+                  // populate dropdown
+                  for (var j = 0; j < SPEEDTEST_SERVERS.length; j++) {
+                    if (SPEEDTEST_SERVERS[j].pingT <= 0) continue;
+                    var opt = document.createElement("option");
+                    opt.value = j;
+                    opt.textContent = SPEEDTEST_SERVERS[j].name;
+                    if (SPEEDTEST_SERVERS[j] === best) opt.selected = true;
+                    I("server").appendChild(opt);
+                  }
+                  selectedServer = best;
+                }
+              });
+            })(i);
+          }
+        }
+      }
+
+      function pingServer(server, callback) {
+        var url =
+          server.server + server.pingURL + (server.pingURL.match(/\?/) ? "&" : "?") + "cors=true&r=" + Math.random();
+        var xhr = new XMLHttpRequest();
+        var t = new Date().getTime();
+        xhr.onload = function () {
+          callback(server, new Date().getTime() - t);
+        };
+        xhr.onerror = function () {
+          callback(server, -1);
+        };
+        xhr.open("GET", url);
+        try {
+          xhr.timeout = 2000;
+          xhr.ontimeout = xhr.onerror;
+        } catch (e) {}
+        xhr.send();
+      }
+
+      function onServerChange(idx) {
+        selectedServer = SPEEDTEST_SERVERS[idx];
+      }
+
+      // Start/Stop
+      function startStop() {
+        if (running) {
+          // abort
+          if (worker) worker.postMessage("abort");
+          stopTest();
+        } else {
+          startTest();
+        }
+      }
+
+      function startTest() {
+        allPingData = [];
+        latestData = null;
+        resetUI();
+
+        running = true;
+        I("startBtn").className = "running";
+        I("durationSelect").disabled = true;
+        I("targetSelect").disabled = true;
+        I("server").disabled = true;
+
+        var externalTarget = I("targetSelect").value;
+        var workerSettings = {
+          duration: parseInt(I("durationSelect").value),
+          ping_allowPerformanceApi: true,
+          url_ping_external: externalTarget
+        };
+
+        if (!externalTarget && selectedServer) {
+          workerSettings.url_ping = selectedServer.server + selectedServer.pingURL;
+          workerSettings.mpot = true;
+        }
+
+        worker = new Worker("stability_worker.js?r=" + Math.random());
+        worker.onmessage = function (e) {
+          var data = JSON.parse(e.data);
+          latestData = data;
+
+          // accumulate ping data
+          if (data.pingData && data.pingData.length > 0) {
+            for (var i = 0; i < data.pingData.length; i++) {
+              allPingData.push(data.pingData[i]);
+            }
+          }
+
+          // check alert threshold
+          if (alertThresholdMs > 0 && data.currentPing > alertThresholdMs) {
+            playBeep();
+          }
+
+          if (data.testState >= 4) {
+            stopTest();
+          }
+        };
+        updater = setInterval(function () {
+          if (worker) worker.postMessage("status");
+        }, 200);
+        worker.postMessage("start " + JSON.stringify(workerSettings));
+      }
+
+      function stopTest() {
+        running = false;
+        I("startBtn").className = "";
+        I("durationSelect").disabled = false;
+        I("targetSelect").disabled = false;
+        I("server").disabled = false;
+        if (updater) {
+          clearInterval(updater);
+          updater = null;
+        }
+        // request final status
+        if (worker) {
+          worker.postMessage("status");
+          setTimeout(function () {
+            if (worker) {
+              try {
+                worker.terminate();
+              } catch (e) {}
+              worker = null;
+            }
+          }, 500);
+        }
+      }
+
+      function resetTest() {
+        if (running) {
+          if (worker) worker.postMessage("abort");
+          stopTest();
+        }
+        allPingData = [];
+        latestData = null;
+        resetUI();
+        drawChart();
+      }
+
+      function resetUI() {
+        I("statCurrent").textContent = "";
+        I("statAvg").textContent = "";
+        I("statMin").textContent = "";
+        I("statMax").textContent = "";
+        I("statJitter").textContent = "";
+        I("statLoss").textContent = "";
+        I("statElapsed").textContent = "";
+        I("rating").textContent = "--";
+        I("rating").className = "none";
+      }
+
+      // Format helpers
+      function fmt(v) {
+        v = Number(v);
+        if (isNaN(v) || v <= 0) return "--";
+        if (v < 10) return v.toFixed(2);
+        if (v < 100) return v.toFixed(1);
+        return v.toFixed(0);
+      }
+
+      function fmtTime(sec) {
+        var m = Math.floor(sec / 60);
+        var s = Math.floor(sec % 60);
+        return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+      }
+
+      // Rating calculation
+      function getRating(avg, jit, loss) {
+        if (avg <= 0) return { text: "--", cls: "none" };
+        if (avg < 30 && jit < 5 && loss < 0.5) return { text: "Great", cls: "great" };
+        if (avg < 60 && jit < 15 && loss < 2) return { text: "Good", cls: "good" };
+        if (avg < 100 && jit < 30 && loss < 5) return { text: "Poor", cls: "poor" };
+        return { text: "Bad", cls: "bad" };
+      }
+
+      // UI update loop
+      function updateUI() {
+        if (!latestData) return;
+        var d = latestData;
+        I("statCurrent").textContent = fmt(d.currentPing);
+        I("statAvg").textContent = fmt(d.avgPing);
+        I("statMin").textContent = d.minPing > 0 ? fmt(d.minPing) : "--";
+        I("statMax").textContent = fmt(d.maxPing);
+        I("statJitter").textContent = fmt(d.jitter);
+        I("statLoss").textContent = d.totalSamples > 0 ? d.packetLoss.toFixed(1) : "--";
+        I("statElapsed").textContent = fmtTime(d.elapsed);
+
+        var r = getRating(d.avgPing, d.jitter, d.packetLoss);
+        I("rating").textContent = r.text;
+        I("rating").className = r.cls;
+      }
+
+      // Canvas chart rendering
+      function drawChart() {
+        var canvas = I("pingChart");
+        var ctx = canvas.getContext("2d");
+        var dp = window.devicePixelRatio || 1;
+        var cw = canvas.clientWidth * dp;
+        var ch = canvas.clientHeight * dp;
+        if (canvas.width !== cw || canvas.height !== ch) {
+          canvas.width = cw;
+          canvas.height = ch;
+        }
+        ctx.clearRect(0, 0, cw, ch);
+
+        var padL = CHART_PADDING_LEFT * dp;
+        var padR = CHART_PADDING_RIGHT * dp;
+        var padT = CHART_PADDING_TOP * dp;
+        var padB = CHART_PADDING_BOTTOM * dp;
+        var plotW = cw - padL - padR;
+        var plotH = ch - padT - padB;
+
+        // colors based on theme
+        var lineColor = isDark ? "#9090FF" : "#6060AA";
+        var fillColor = isDark ? "rgba(144,144,255,0.15)" : "rgba(96,96,170,0.15)";
+        var gridColor = isDark ? "#404040" : "#E0E0E0";
+        var textColor = isDark ? "#A0A0A0" : "#808080";
+        var lostColor = "#e74c3c";
+        var thresholdColor = "rgba(231,76,60,0.6)";
+
+        // determine visible time window
+        var data = allPingData;
+        var maxTime = 0;
+        if (data.length > 0) maxTime = data[data.length - 1].t;
+        var timeStart, timeEnd;
+        if (maxTime <= VISIBLE_SECONDS) {
+          timeStart = 0;
+          timeEnd = Math.max(VISIBLE_SECONDS, maxTime);
+        } else {
+          timeEnd = maxTime;
+          timeStart = maxTime - VISIBLE_SECONDS;
+        }
+
+        // binary search to find first visible data point
+        var visStart = 0;
+        var lo = 0,
+          hi = data.length - 1;
+        while (lo <= hi) {
+          var mid = (lo + hi) >> 1;
+          if (data[mid].t < timeStart) lo = mid + 1;
+          else hi = mid - 1;
+        }
+        visStart = lo;
+
+        // determine Y-axis scale from visible data only
+        var yMax = 50; // minimum 50ms scale
+        for (var i = visStart; i < data.length && data[i].t <= timeEnd; i++) {
+          if (!data[i].lost && data[i].ping > yMax) yMax = data[i].ping;
+        }
+        yMax = Math.ceil((yMax * 1.2) / 10) * 10; // round up to nearest 10 with 20% headroom
+
+        var fontSize = 11 * dp;
+        ctx.font = fontSize + "px sans-serif";
+        ctx.textBaseline = "middle";
+
+        // grid lines - horizontal
+        var ySteps = getYSteps(yMax);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = dp;
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "right";
+        for (var s = 0; s < ySteps.length; s++) {
+          var yVal = ySteps[s];
+          if (yVal > yMax) continue;
+          var y = padT + plotH - (yVal / yMax) * plotH;
+          ctx.beginPath();
+          ctx.moveTo(padL, y);
+          ctx.lineTo(padL + plotW, y);
+          ctx.stroke();
+          ctx.fillText(yVal + "", padL - 5 * dp, y);
+        }
+
+        // grid lines - vertical (time ticks)
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        var timeSpan = timeEnd - timeStart;
+        var tickInterval = timeSpan <= 60 ? 10 : timeSpan <= 120 ? 15 : 30;
+        var firstTick = Math.ceil(timeStart / tickInterval) * tickInterval;
+        for (var t = firstTick; t <= timeEnd; t += tickInterval) {
+          var x = padL + ((t - timeStart) / timeSpan) * plotW;
+          ctx.beginPath();
+          ctx.strokeStyle = gridColor;
+          ctx.moveTo(x, padT);
+          ctx.lineTo(x, padT + plotH);
+          ctx.stroke();
+          ctx.fillStyle = textColor;
+          ctx.fillText(fmtTime(t), x, padT + plotH + 4 * dp);
+        }
+
+        // axis labels
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        ctx.fillText("ms", padL - 5 * dp, padT - 2 * dp);
+
+        // plot border
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = dp;
+        ctx.strokeRect(padL, padT, plotW, plotH);
+
+        // alert threshold line
+        if (alertThresholdMs > 0 && alertThresholdMs <= yMax) {
+          var threshY = padT + plotH - (alertThresholdMs / yMax) * plotH;
+          ctx.save();
+          ctx.setLineDash([6 * dp, 4 * dp]);
+          ctx.strokeStyle = thresholdColor;
+          ctx.lineWidth = 1.5 * dp;
+          ctx.beginPath();
+          ctx.moveTo(padL, threshY);
+          ctx.lineTo(padL + plotW, threshY);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (data.length < 2) return;
+
+        // filter visible data (using binary search start index)
+        var visible = [];
+        for (var i = visStart; i < data.length && data[i].t <= timeEnd; i++) {
+          visible.push(data[i]);
+        }
+        if (visible.length < 1) return;
+
+        // draw filled area
+        ctx.beginPath();
+        var started = false;
+        for (var i = 0; i < visible.length; i++) {
+          if (visible[i].lost) continue;
+          var px = padL + ((visible[i].t - timeStart) / timeSpan) * plotW;
+          var py = padT + plotH - (visible[i].ping / yMax) * plotH;
+          if (!started) {
+            ctx.moveTo(px, padT + plotH);
+            ctx.lineTo(px, py);
+            started = true;
+          } else {
+            ctx.lineTo(px, py);
+          }
+        }
+        // close the fill path
+        if (started) {
+          // find last non-lost point
+          for (var i = visible.length - 1; i >= 0; i--) {
+            if (!visible[i].lost) {
+              var px = padL + ((visible[i].t - timeStart) / timeSpan) * plotW;
+              ctx.lineTo(px, padT + plotH);
+              break;
+            }
+          }
+          ctx.closePath();
+          ctx.fillStyle = fillColor;
+          ctx.fill();
+        }
+
+        // draw line
+        ctx.beginPath();
+        started = false;
+        for (var i = 0; i < visible.length; i++) {
+          if (visible[i].lost) {
+            started = false;
+            continue;
+          }
+          var px = padL + ((visible[i].t - timeStart) / timeSpan) * plotW;
+          var py = padT + plotH - (visible[i].ping / yMax) * plotH;
+          if (!started) {
+            ctx.moveTo(px, py);
+            started = true;
+          } else {
+            ctx.lineTo(px, py);
+          }
+        }
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 2 * dp;
+        ctx.lineJoin = "round";
+        ctx.stroke();
+
+        // draw lost packet markers
+        for (var i = 0; i < visible.length; i++) {
+          if (!visible[i].lost) continue;
+          var px = padL + ((visible[i].t - timeStart) / timeSpan) * plotW;
+          ctx.beginPath();
+          ctx.arc(px, padT + plotH - 10 * dp, 3 * dp, 0, Math.PI * 2);
+          ctx.fillStyle = lostColor;
+          ctx.fill();
+        }
+      }
+
+      function getYSteps(yMax) {
+        // generate sensible Y-axis grid steps
+        if (yMax <= 50) return [10, 20, 30, 40, 50];
+        if (yMax <= 100) return [20, 40, 60, 80, 100];
+        if (yMax <= 200) return [50, 100, 150, 200];
+        if (yMax <= 500) return [100, 200, 300, 400, 500];
+        // for very high values
+        var step = Math.ceil(yMax / 5 / 100) * 100;
+        var steps = [];
+        for (var v = step; v <= yMax; v += step) steps.push(v);
+        return steps;
+      }
+
+      // Animation frame loop
+      window.requestAnimationFrame =
+        window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback) {
+          setTimeout(callback, 1000 / 60);
+        };
+      function frame() {
+        requestAnimationFrame(frame);
+        updateUI();
+        drawChart();
+      }
+      frame();
+
+      // Alert threshold
+      function updateThreshold(val) {
+        alertThresholdMs = parseInt(val);
+        I("thresholdValue").textContent = alertThresholdMs > 0 ? alertThresholdMs + " ms" : "Off";
+      }
+
+      function playBeep() {
+        var now = new Date().getTime();
+        if (now - lastBeepTime < 1000) return; // debounce 1s
+        lastBeepTime = now;
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.frequency.value = 800;
+          gain.gain.value = 0.3;
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+        } catch (e) {}
+      }
+
+      // CSV download
+      function downloadCsv() {
+        if (allPingData.length === 0) return;
+        var csv = "elapsed_s,ping_ms,lost\n";
+        for (var i = 0; i < allPingData.length; i++) {
+          var d = allPingData[i];
+          csv += d.t.toFixed(3) + "," + d.ping.toFixed(2) + "," + (d.lost ? "1" : "0") + "\n";
+        }
+        var blob = new Blob([csv], { type: "text/csv" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "stability_test_" + new Date().toISOString().slice(0, 19).replace(/:/g, "-") + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Init — load server list first (async), then initialize UI
+      loadServers(function () {
+        initServers();
+        drawChart();
+      });
+    </script>
+  </body>
+</html>

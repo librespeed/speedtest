@@ -12,6 +12,7 @@ rm -rf /var/www/html/*
 
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
+cp /speedtest/stability.html /var/www/html/
 
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
@@ -24,6 +25,11 @@ else
   echo "DEBIAN IMAGE"
 fi
 
+
+# Copy servers.json for stability page (frontend/dual modes)
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
+  cp /servers.json /var/www/html/servers.json
+fi
 
 # Set up backend side for standlone modes
 if [[ "$MODE" == "standalone" || "$MODE" == "dual" ]]; then
