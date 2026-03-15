@@ -26,6 +26,11 @@ else
 fi
 
 
+# Copy servers.json for stability page (frontend/dual modes)
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
+  cp /servers.json /var/www/html/servers.json
+fi
+
 # Set up backend side for standlone modes
 if [[ "$MODE" == "standalone" || "$MODE" == "dual" ]]; then
   cp -r /speedtest/backend/ /var/www/html/backend
