@@ -25,6 +25,7 @@ let settings = {
   url_ping: "backend/empty.php",
   url_ping_external: "", // external URL to ping (uses fetch no-cors, e.g. "https://www.google.com/generate_204")
   duration: 60, // seconds
+  ping_interval: 200, // minimum ms between pings to limit sample rate
   ping_allowPerformanceApi: true,
   mpot: false
 };
@@ -138,6 +139,16 @@ function recordLoss() {
   pingData.push({ t: elapsed, ping: 0, lost: true });
 }
 
+// pace pings to avoid excessive sample rates on low-latency links
+function schedulePing(rtt) {
+  const delay = Math.max(0, settings.ping_interval - rtt);
+  if (delay > 0) {
+    setTimeout(doPing, delay);
+  } else {
+    doPing();
+  }
+}
+
 function doPing() {
   if (aborted || testState >= 4) return;
 
@@ -177,12 +188,12 @@ function doPing() {
     }
 
     recordPing(instspd);
-    doPing();
+    schedulePing(instspd);
   };
   xhr.onerror = function () {
     if (aborted || testState >= 4) return;
     recordLoss();
-    doPing();
+    schedulePing(0);
   };
   xhr.ontimeout = xhr.onerror;
   xhr.open(
@@ -206,11 +217,11 @@ function doPingExternal() {
       if (aborted || testState >= 4) return;
       const instspd = new Date().getTime() - prevT;
       recordPing(instspd);
-      doPing();
+      schedulePing(instspd);
     })
     .catch(function () {
       if (aborted || testState >= 4) return;
       recordLoss();
-      doPing();
+      schedulePing(0);
     });
 }
