@@ -36,52 +36,58 @@
 
 		//SERVER AUTO SELECTION
 		function initServers() {
-			if (SPEEDTEST_SERVERS.length == 0) { //standalone installation
-				//just make the UI visible
+			var showStandaloneUI = function () {
 				I("loading").className = "hidden";
 				I("serverArea").style.display = "none";
 				I("testWrapper").className = "visible";
 				initUI();
+			}
+			var noServersAvailable = function () {
+				I("message").innerHTML = "No servers available";
+			}
+			var runServerSelect = function () {
+				s.selectServer(function (server) {
+					if (server != null) { //at least 1 server is available
+						I("loading").className = "hidden"; //hide loading message
+						//populate server list for manual selection
+						for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
+							if (SPEEDTEST_SERVERS[i].pingT == -1) continue;
+							var option = document.createElement("option");
+							option.value = i;
+							option.textContent = SPEEDTEST_SERVERS[i].name;
+							if (SPEEDTEST_SERVERS[i] === server) option.selected = true;
+							I("server").appendChild(option);
+						}
+						//show test UI
+						I("testWrapper").className = "visible";
+						initUI();
+					} else { //no servers are available, the test cannot proceed
+						noServersAvailable();
+					}
+				});
+			}
+			var loadServerList = function (serverListUrl, onFailure) {
+				s.loadServerList(serverListUrl, function (servers) {
+					if (servers == null || servers.length == 0) {
+						onFailure();
+					} else {
+						SPEEDTEST_SERVERS = servers;
+						s.addTestPoints(SPEEDTEST_SERVERS);
+						runServerSelect();
+					}
+				});
+			}
+
+			if (typeof SPEEDTEST_SERVERS === "string") {
+				//need to fetch list of servers from specified URL
+				loadServerList(SPEEDTEST_SERVERS, noServersAvailable);
+			} else if (SPEEDTEST_SERVERS.length == 0) {
+				//standalone installation by default, but use server-list.json if present
+				loadServerList("server-list.json", showStandaloneUI);
 			} else { //multiple servers
-				var noServersAvailable = function () {
-					I("message").innerHTML = "No servers available";
-				}
-				var runServerSelect = function () {
-					s.selectServer(function (server) {
-						if (server != null) { //at least 1 server is available
-							I("loading").className = "hidden"; //hide loading message
-							//populate server list for manual selection
-							for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
-								if (SPEEDTEST_SERVERS[i].pingT == -1) continue;
-								var option = document.createElement("option");
-								option.value = i;
-								option.textContent = SPEEDTEST_SERVERS[i].name;
-								if (SPEEDTEST_SERVERS[i] === server) option.selected = true;
-								I("server").appendChild(option);
-							}
-							//show test UI
-							I("testWrapper").className = "visible";
-							initUI();
-						} else { //no servers are available, the test cannot proceed
-							noServersAvailable();
-						}
-					});
-				}
-				if (typeof SPEEDTEST_SERVERS === "string") {
-					//need to fetch list of servers from specified URL
-					s.loadServerList(SPEEDTEST_SERVERS, function (servers) {
-						if (servers == null) { //failed to load server list
-							noServersAvailable();
-						} else { //server list loaded
-							SPEEDTEST_SERVERS = servers;
-							runServerSelect();
-						}
-					});
-				} else {
-					//hardcoded server list
-					s.addTestPoints(SPEEDTEST_SERVERS);
-					runServerSelect();
-				}
+				//hardcoded server list
+				s.addTestPoints(SPEEDTEST_SERVERS);
+				runServerSelect();
 			}
 		}
 
