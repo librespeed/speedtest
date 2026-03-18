@@ -59,6 +59,10 @@ A template to build an Android client for your LibreSpeed installation is availa
 
 A command line client is available [here](https://github.com/librespeed/speedtest-cli).
 
+## .NET client
+
+A .NET client library is available in the [`LibreSpeed.NET`](https://github.com/Memphizzz/LibreSpeed.NET) repo ([NuGet](https://www.nuget.org/packages/LibreSpeed.NET)), maintained by [MemphiZ](https://github.com/Memphizzz).
+
 ## Development
 
 If you want to contribute or develop with LibreSpeed, see [DEVELOPMENT.md](DEVELOPMENT.md) for information about using npm for development tasks, linting, and formatting.
