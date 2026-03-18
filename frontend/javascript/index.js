@@ -160,7 +160,13 @@ async function applyServerListJSON() {
     // dead servers don't appear.
     testState.speedtest.addTestPoints(servers);
     testState.speedtest.selectServer((bestServer) => {
-      const aliveServers = testState.servers.filter((s) => s.pingT !== -1);
+      const aliveServers = testState.servers.filter((s) => {
+        // Keep servers that responded to ping (pingT !== -1).
+        if (s.pingT !== -1) return true;
+        // Also keep protocol-relative servers ("//..."), which LibreSpeed skips
+        // from pinging by setting pingT = -1 even though they may be usable.
+        return typeof s.server === "string" && s.server.startsWith("//");
+      });
 
       // Prefer to show only reachable servers, but if none are reachable,
       // fall back to the full list so users can still pick a server manually.
