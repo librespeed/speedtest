@@ -25,6 +25,20 @@ testing servers. If you only have a single testing server, just provide a list
 with one item in it, being your server. The frontend will then skip doing an
 automatic server selection and will not allow the user to change servers.
 
+If you want to load the server list from a different URL, change the
+`SPEEDTEST_SERVERS` variable in `index-modern.html` before
+`javascript/index.js` is loaded. For example:
+
+```html
+<script type="text/javascript">
+  var SPEEDTEST_SERVERS = "https://example.com/custom-server-list.json";
+</script>
+<script type="text/javascript" src="javascript/index.js"></script>
+```
+
+You can also provide a relative URL, for example
+`var SPEEDTEST_SERVERS = "/speedtest/servers.json";`.
+
 For more advanced applications, you can override any of the settings that are
 defined in `speedtest_worker.js` using the file
 [`settings.json`](./settings.json). See

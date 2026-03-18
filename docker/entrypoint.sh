@@ -3,6 +3,7 @@
 echo "Setting up docker env..."
 echo "MODE: $MODE"
 echo "USE_NEW_DESIGN: $USE_NEW_DESIGN"
+echo "SERVER_LIST_URL: $SERVER_LIST_URL"
 echo "WEBPORT: $WEBPORT"
 echo "REDACT_IP_ADDRESSES: $REDACT_IP_ADDRESSES"
 echo "DB_TYPE: $DB_TYPE"
@@ -76,6 +77,12 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     echo "no /servers.json found, create one for local host"
     # generate config for just the local server
     echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  fi
+  if [ ! -z "$SERVER_LIST_URL" ]; then
+    echo "using SERVER_LIST_URL for frontend server list"
+    SERVER_LIST_URL_ESCAPED=$(printf '%s\n' "$SERVER_LIST_URL" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
+    sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/index-modern.html
+    sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
   fi
   
   # Replace GDPR email placeholder if GDPR_EMAIL is set

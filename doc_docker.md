@@ -58,6 +58,7 @@ Here's a list of additional environment variables available in this mode:
 
 * __`TITLE`__: Title of your speed test. Default value: `LibreSpeed`
 * __`USE_NEW_DESIGN`__: When set to `true`, enables the new modern frontend design. When set to `false` (default), uses the classic design. The design can also be switched using URL parameters (`?design=new` or `?design=old`). Default value: `false`
+* __`SERVER_LIST_URL`__: When set, both frontend designs load their server list from this URL instead of the generated or mounted `server-list.json`. This is useful if you want the containerized frontend to consume a remote shared server list.
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`OBFUSCATION_SALT`__: The salt string that is used to obfuscate the test IDs. The format shoud be a 2 byte hex string (e.g. `0x1234abcd`). If not specified, a random one will be generated.
@@ -150,6 +151,12 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
 The test can be accessed on port 80.
 
 The list of environment variables available in this mode is the same as [above in standalone mode](#standalone-mode).
+
+If you want the Docker frontend to load its server list from another URL instead of `/servers.json`, set `SERVER_LIST_URL`:
+
+```shell
+docker run -e MODE=frontend -e SERVER_LIST_URL="https://example.com/custom-server-list.json" -p 80:8080 -it ghcr.io/librespeed/speedtest
+```
 
 #### Example Frontend mode
 

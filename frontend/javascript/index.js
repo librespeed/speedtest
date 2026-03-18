@@ -136,13 +136,17 @@ async function applySettingsJSON() {
 }
 
 /**
- * Load server list from server-list.json on the server and populate the
- * dropdown
+ * Load server list from the configured source and populate the dropdown
  */
 async function applyServerListJSON() {
   try {
-    const response = await fetch("server-list.json");
-    const servers = await response.json();
+    const serverSource =
+      typeof globalThis.SPEEDTEST_SERVERS !== "undefined"
+        ? globalThis.SPEEDTEST_SERVERS
+        : "server-list.json";
+    const servers = Array.isArray(serverSource)
+      ? serverSource
+      : await fetch(serverSource).then((response) => response.json());
     if (!servers || !Array.isArray(servers) || servers.length === 0) {
       return console.error("Server list is empty or malformed");
     }
@@ -186,7 +190,7 @@ async function applyServerListJSON() {
       }
     });
   } catch (error) {
-    console.error("Failed to fetch server list:", error);
+    console.error("Failed to load server list:", error);
   }
 }
 
