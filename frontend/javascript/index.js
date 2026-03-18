@@ -166,10 +166,9 @@ async function applyServerListJSON() {
       // fall back to the full list so users can still pick a server manually.
       if (aliveServers.length > 0) {
         testState.servers = aliveServers;
-        populateDropdown(testState.servers);
-      } else {
-        populateDropdown(testState.servers);
       }
+      populateDropdown(testState.servers);
+
 
       if (bestServer) {
         selectServer(bestServer);
