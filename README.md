@@ -26,7 +26,7 @@ Works with mobile versions too.
 * Results sharing (optional)
 * Multiple Points of Test (optional)
 
-![Screenrecording of a running Speedtest](https://speedtest.fdossena.com/mpot_v6.gif)
+![Screenrecording of a running Speedtest](https://speedtest.fdossena.com/mpot_v7.gif)
 
 ## Server requirements
 

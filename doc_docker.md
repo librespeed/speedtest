@@ -37,7 +37,7 @@ services:
       #ENABLE_ID_OBFUSCATION: "false"
       #REDACT_IP_ADDRESSES: "false"
       #PASSWORD:
-      #EMAIL:
+      #GDPR_EMAIL: "privacy@example.com"
       #DISABLE_IPINFO: "false"
       #IPINFO_APIKEY: "your api key"
       #DISTANCE: "km"
@@ -57,6 +57,8 @@ The test can be accessed on port 80.
 Here's a list of additional environment variables available in this mode:
 
 * __`TITLE`__: Title of your speed test. Default value: `LibreSpeed`
+* __`USE_NEW_DESIGN`__: When set to `true`, enables the new modern frontend design. When set to `false` (default), uses the classic design. The design can also be switched using URL parameters (`?design=new` or `?design=old`). Default value: `false`
+* __`SERVER_LIST_URL`__: When set, both frontend designs load their server list from this URL instead of the generated or mounted `server-list.json`. This is useful if you want the containerized frontend to consume a remote shared server list.
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
 * __`ENABLE_ID_OBFUSCATION`__: When set to true with telemetry enabled, test IDs are obfuscated, to avoid exposing the database internal sequential IDs. Default value: `false`
 * __`OBFUSCATION_SALT`__: The salt string that is used to obfuscate the test IDs. The format shoud be a 2 byte hex string (e.g. `0x1234abcd`). If not specified, a random one will be generated.
@@ -70,7 +72,7 @@ Here's a list of additional environment variables available in this mode:
     * DB_USERNAME, DB_PASSWORD - credentials of the user with read and update permissions to the db
   * mssql - not supported in docker image yet (feel free to open a PR with that, has to be done in `entrypoint.sh`)
 * __`PASSWORD`__: Password to access the stats page. If not set, stats page will not allow accesses.
-* __`EMAIL`__: Email address for GDPR requests. Must be specified when telemetry is enabled.
+* __`GDPR_EMAIL`__: Email address displayed in the privacy policy for data deletion requests. If not set, the default placeholder text will be shown. This should be set to comply with GDPR requirements when running in production. Must be specified when telemetry is enabled.
 * __`DISABLE_IPINFO`__: If set to `true`, ISP info and distance will not be fetched from either [ipinfo.io](https://ipinfo.io) or the offline database. Default: value: `false`
 * __`IPINFO_APIKEY`__: API key for [ipinfo.io](https://ipinfo.io). Optional, but required if you want to use the full [ipinfo.io](https://ipinfo.io) APIs (required for distance measurement)
 * __`DISTANCE`__: When `DISABLE_IPINFO` is set to false, this specifies how the distance from the server is measured. Can be either `km` for kilometers, `mi` for miles, or an empty string to disable distance measurement. Requires an [ipinfo.io](https://ipinfo.io) API key. Default value: `km`
@@ -149,6 +151,12 @@ In frontend mode, LibreSpeed serves clients the Web UI and a list of servers. To
 The test can be accessed on port 80.
 
 The list of environment variables available in this mode is the same as [above in standalone mode](#standalone-mode).
+
+If you want the Docker frontend to load its server list from another URL instead of `/servers.json`, set `SERVER_LIST_URL`:
+
+```shell
+docker run -e MODE=frontend -e SERVER_LIST_URL="https://example.com/custom-server-list.json" -p 80:8080 -it ghcr.io/librespeed/speedtest
+```
 
 #### Example Frontend mode
 
