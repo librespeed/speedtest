@@ -162,9 +162,14 @@ async function applyServerListJSON() {
     testState.speedtest.selectServer((bestServer) => {
       const aliveServers = testState.servers.filter((s) => s.pingT !== -1);
 
-      // Only show reachable servers in the UI list
-      testState.servers = aliveServers;
-      populateDropdown(testState.servers);
+      // Prefer to show only reachable servers, but if none are reachable,
+      // fall back to the full list so users can still pick a server manually.
+      if (aliveServers.length > 0) {
+        testState.servers = aliveServers;
+        populateDropdown(testState.servers);
+      } else {
+        populateDropdown(testState.servers);
+      }
 
       if (bestServer) {
         selectServer(bestServer);
