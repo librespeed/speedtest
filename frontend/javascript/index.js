@@ -163,8 +163,9 @@ async function applyServerListJSON() {
       const aliveServers = testState.servers.filter((s) => {
         // Keep servers that responded to ping (pingT !== -1).
         if (s.pingT !== -1) return true;
-        // Also keep protocol-relative servers ("//..."), which LibreSpeed skips
-        // from pinging by setting pingT = -1 even though they may be usable.
+        // Also keep protocol-relative servers ("//...") as a defensive fallback.
+        // LibreSpeed normalizes them to the page protocol before pinging, so they
+        // are normally treated like any other server and get a real pingT value.
         return typeof s.server === "string" && s.server.startsWith("//");
       });
 
