@@ -27,8 +27,6 @@ COPY index-modern.html /speedtest/
 COPY config.json /speedtest/
 COPY favicon.ico /speedtest/
 
-COPY docker/servers.json /servers.json
-
 COPY docker/*.php /speedtest/
 COPY docker/entrypoint.sh /
 

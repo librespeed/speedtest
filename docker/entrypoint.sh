@@ -69,8 +69,11 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   
   # Copy frontend config files
   cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
-  if [ ! -f /var/www/html/server-list.json ]; then
-    echo "no server-list.json found, create one for local host"
+  if [ -f /servers.json ]; then
+    echo "using mounted /servers.json for server-list.json"
+    cp /servers.json /var/www/html/server-list.json
+  else
+    echo "no /servers.json found, create one for local host"
     # generate config for just the local server
     echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
   fi
