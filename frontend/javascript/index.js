@@ -146,20 +146,34 @@ async function applyServerListJSON() {
     if (!servers || !Array.isArray(servers) || servers.length === 0) {
       return console.error("Server list is empty or malformed");
     }
+
     testState.servers = servers;
-    populateDropdown(testState.servers);
-    if (servers.length > 1) {
-      testState.speedtest.addTestPoints(servers);
-      testState.speedtest.selectServer((server) => {
-        if (server) {
-          selectServer(server);
-        } else {
-          alert(
-            "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network."
-          );
-        }
-      });
+
+    // If there's only one server, just show it. No reachability checks needed.
+    if (servers.length === 1) {
+      populateDropdown(servers);
+      return;
     }
+
+    // For multiple servers: first run the built-in selection (which pings servers
+    // and annotates them with pingT). Only then populate the dropdown so that
+    // dead servers don't appear.
+    testState.speedtest.addTestPoints(servers);
+    testState.speedtest.selectServer((bestServer) => {
+      const aliveServers = testState.servers.filter((s) => s.pingT !== -1);
+
+      // Only show reachable servers in the UI list
+      testState.servers = aliveServers;
+      populateDropdown(testState.servers);
+
+      if (bestServer) {
+        selectServer(bestServer);
+      } else {
+        alert(
+          "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network."
+        );
+      }
+    });
   } catch (error) {
     console.error("Failed to fetch server list:", error);
   }
@@ -174,6 +188,12 @@ function populateDropdown(servers) {
   const serverSelector = document.querySelector("div.server-selector");
   const serverList = serverSelector.querySelector("ul.servers");
 
+  // Reset previous state (populateDropdown can be called multiple times)
+  serverSelector.classList.remove("single-server");
+  serverSelector.classList.remove("active");
+  serverList.classList.remove("active");
+  serverList.innerHTML = "";
+
   // If we have only a single server, just show it
   if (servers.length === 1) {
     serverSelector.classList.add("single-server");
@@ -182,14 +202,18 @@ function populateDropdown(servers) {
   }
   serverSelector.classList.add("active");
 
-  // Make the dropdown open and close
-  serverSelector.addEventListener("click", () => {
-    serverList.classList.toggle("active");
-  });
-  document.addEventListener("click", (e) => {
-    if (e.target.closest("div.server-selector") !== serverSelector)
-      serverList.classList.remove("active");
-  });
+  // Make the dropdown open and close (hook only once)
+  if (serverSelector.dataset.hooked !== "1") {
+    serverSelector.dataset.hooked = "1";
+
+    serverSelector.addEventListener("click", () => {
+      serverList.classList.toggle("active");
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("div.server-selector") !== serverSelector)
+        serverList.classList.remove("active");
+    });
+  }
 
   // Populate the list to choose from
   servers.forEach((server) => {
