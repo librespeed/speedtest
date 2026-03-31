@@ -91,10 +91,10 @@ function initServers(){
 }
 
 // Gauge colours — change these in custom.css comments to stay consistent
-var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#EAEAEA":"#80808040";
-var dlColor="#3b82f6",  // blue-500  — matches portal accent
-    ulColor="#64748b";  // slate-500
-var progColor=meterBk;
+var meterBk=/Trident.*rv:(\d+\.\d+)/i.test(navigator.userAgent)?"#525E6C":"#525E6C40";
+var dlColor="#3174BA",  // blue   — from brand palette
+    ulColor="#FF8000";  // orange — from brand palette
+var progColor="#F9B541"; // amber progress bar
 
 //CODE FOR GAUGES
 function drawMeter(c,amount,bk,fg,progress,prog){
