@@ -1,0 +1,447 @@
+/**
+ * custom.css — Visual styles for LibreSpeed
+ *
+ * Styled to match the Portal dashboard (slate-900 navbar, slate-100 body).
+ * Edit this file to change colours, fonts, and layout.
+ * Do NOT edit speedtest.js or speedtest_worker.js.
+ *
+ * ICONS
+ * -----
+ * Replace icons/favicon.ico with your own .ico/.png file.
+ * To use a PNG: change <link rel="shortcut icon"> in index.html.
+ *
+ * KEY COLOURS
+ * -----------
+ * #0f172a  — navbar background (slate-900)
+ * #f1f5f9  — page background  (slate-100)
+ * #1e293b  — body text        (slate-800)
+ * #3b82f6  — download gauge   (blue-500)
+ * #64748b  — upload gauge     (slate-500)
+ * #ef4444  — ping/jitter text (red-500)
+ * #2563eb  — start button     (blue-600)
+ * #dc2626  — abort button     (red-600)
+ */
+
+/* ---- Myanmar font ---- */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap');
+
+/* ---- Reset ---- */
+html, body {
+  border: none; padding: 0; margin: 0;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+body {
+  font-family: "Noto Sans Myanmar", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: #2563eb; }
+
+/* ---- Navbar (matches portal base.html) ---- */
+#navbar {
+  background: #0f172a;
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+#navBrand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.nav-link {
+  color: #cbd5e1;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover { color: #ffffff; }
+.nav-link.active { color: #ffffff; }
+
+/* ---- Page content wrapper ---- */
+.content-wrap {
+  max-width: 56rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+/* ---- Card panel ---- */
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ---- Loading spinner ---- */
+#loading {
+  padding: 3rem 0;
+  color: #475569;
+}
+
+span.loadCircle {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  vertical-align: middle;
+  border: 2px solid #cbd5e1;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  margin-right: 0.5em;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ---- Start / Abort button ---- */
+#startStopBtn {
+  display: inline-block;
+  margin: 0 auto 0.75rem;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0 2rem;
+  width: auto;
+  min-width: 8rem;
+  height: 2.75rem;
+  line-height: 2.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+#startStopBtn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+#startStopBtn.running {
+  background: #dc2626;
+  box-shadow: none;
+}
+
+#startStopBtn.running:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.25);
+}
+
+/* ---- Privacy link ---- */
+a.privacy {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 0 0.5rem;
+  text-decoration: none;
+}
+a.privacy:hover { color: #64748b; }
+
+/* ---- Server selector ---- */
+#serverArea {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+#server {
+  font-size: 0.9rem;
+  padding: 0.3em 0.5em;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #1e293b;
+  font-family: inherit;
+  margin-left: 0.25rem;
+}
+
+/* ---- Test area layout ---- */
+#test {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+div.testArea {
+  display: inline-block;
+  width: 16em;
+  height: 12.5em;
+  position: relative;
+  box-sizing: border-box;
+}
+
+div.testArea2 {
+  display: inline-block;
+  width: 14em;
+  height: 7em;
+  position: relative;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+div.testArea div.testName {
+  position: absolute;
+  top: 0.1em; left: 0;
+  width: 100%;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #475569;
+  z-index: 9;
+}
+
+div.testArea2 div.testName {
+  display: block;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #475569;
+}
+
+div.testArea div.meterText {
+  position: absolute;
+  bottom: 1.55em; left: 0;
+  width: 100%;
+  font-size: 2.5em;
+  font-weight: 700;
+  z-index: 9;
+}
+
+div.testArea2 div.meterText {
+  display: inline-block;
+  font-size: 2.5em;
+  font-weight: 700;
+}
+
+div.meterText:empty:before {
+  content: "0.00";
+  color: #94a3b8;
+}
+
+div.testArea div.unit {
+  position: absolute;
+  bottom: 2em; left: 0;
+  width: 100%;
+  font-size: 0.8em;
+  color: #94a3b8;
+  z-index: 9;
+}
+
+div.testArea2 div.unit {
+  display: inline-block;
+  font-size: 0.8em;
+  color: #94a3b8;
+}
+
+/* Ping / Jitter value colour */
+#pingText, #jitText {
+  color: #ef4444;
+}
+
+div.testArea canvas {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 1;
+}
+
+div.testGroup {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ---- IP display ---- */
+#ipArea {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* ---- Share / results ---- */
+#shareArea {
+  width: 95%;
+  max-width: 38rem;
+  margin: 1.5rem auto 0;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  padding: 1.25rem;
+  text-align: left;
+}
+
+#shareArea h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+#shareArea p {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+#shareArea > * {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.25em 0;
+  box-sizing: border-box;
+}
+
+#resultsURL {
+  font-size: 0.8rem;
+  padding: 0.4em 0.6em;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #334155;
+  font-family: monospace;
+  cursor: pointer;
+}
+
+/* ---- Source code link ---- */
+#sourceCodeLink {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+#sourceCodeLink:hover { color: #64748b; }
+
+/* ---- Privacy policy modal ---- */
+#privacyPolicy {
+  position: fixed;
+  top: 2rem; bottom: 2rem; left: 2rem; right: 2rem;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  z-index: 999999;
+  text-align: left;
+  padding: 2rem;
+}
+
+#privacyPolicy h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+  color: #0f172a;
+}
+
+div.closePrivacyPolicy {
+  width: 100%;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+div.closePrivacyPolicy a.privacy {
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #f1f5f9;
+}
+
+div.closePrivacyPolicy a.privacy:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* ---- Responsive ---- */
+@media all and (max-width: 40em) {
+  body { font-size: 0.85em; }
+  #privacyPolicy { top: 0.5rem; bottom: 0.5rem; left: 0.5rem; right: 0.5rem; padding: 1rem; }
+}
+
+/* ---- Visibility animations ---- */
+div.visible {
+  animation: fadeIn 0.35s ease;
+  display: block;
+}
+
+div.hidden {
+  animation: fadeOut 0.35s ease;
+  display: none;
+}
+
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; display: block; } to { opacity: 0; display: block; } }
+
+/* ---- Dark mode ---- */
+@media all and (prefers-color-scheme: dark) {
+  html, body {
+    background: #0f172a;
+    color: #e2e8f0;
+    color-scheme: dark;
+  }
+
+  #navbar { background: #020617; }
+
+  h1 { color: #f1f5f9; }
+
+  a { color: #60a5fa; }
+
+  .card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  #loading { color: #94a3b8; }
+
+  span.loadCircle {
+    border-color: #334155;
+    border-top-color: #60a5fa;
+  }
+
+  #server {
+    background: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+
+  div.testArea div.testName,
+  div.testArea2 div.testName { color: #94a3b8; }
+
+  #privacyPolicy { background: #1e293b; }
+  #privacyPolicy h2 { color: #f1f5f9; }
+
+  div.closePrivacyPolicy a.privacy {
+    background: #0f172a;
+    border-color: #475569;
+    color: #94a3b8;
+  }
+
+  #shareArea {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  #resultsURL {
+    background: #0f172a;
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+
+  #resultsImg { filter: invert(1); }
+}
