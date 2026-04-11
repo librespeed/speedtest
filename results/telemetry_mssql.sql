@@ -1,3 +1,9 @@
+CREATE DATABASE librespeed;
+GO
+
+USE librespeed;
+GO
+
 SET ANSI_NULLS ON
 GO
 

@@ -1,7 +1,17 @@
 #!/bin/bash
 
+echo "Setting up docker env..."
+echo "MODE: $MODE"
+echo "USE_NEW_DESIGN: $USE_NEW_DESIGN"
+echo "SERVER_LIST_URL: $SERVER_LIST_URL"
+echo "WEBPORT: $WEBPORT"
+echo "REDACT_IP_ADDRESSES: $REDACT_IP_ADDRESSES"
+echo "DB_TYPE: $DB_TYPE"
+echo "ENABLE_ID_OBFUSCATION: $ENABLE_ID_OBFUSCATION"
+echo "GDPR_EMAIL: $GDPR_EMAIL"
+
 set -e
-set -x
+#set -x
 
 is_alpine() {
   [ -f /etc/alpine-release ]
@@ -12,6 +22,10 @@ rm -rf /var/www/html/*
 
 # Copy frontend files
 cp /speedtest/*.js /var/www/html/
+
+# Copy design switch files
+cp /speedtest/config.json /var/www/html/
+cp /speedtest/design-switch.js /var/www/html/
 
 # Copy favicon
 cp /speedtest/favicon.ico /var/www/html/
@@ -40,14 +54,58 @@ if [ "$MODE" == "backend" ]; then
   fi
 fi
 
-# Set up unified index.php
-if [ "$MODE" != "backend" ]; then
-  cp /speedtest/ui.php /var/www/html/index.php
+# Set up index.php for frontend-only or standalone modes
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]]; then
+  # Copy design files (switcher + both designs)
+  cp /speedtest/index.html /var/www/html/
+  cp /speedtest/index-classic.html /var/www/html/
+  cp /speedtest/index-modern.html /var/www/html/
+  
+  # Copy frontend assets directly to root-level subdirectories (no frontend/ parent dir)
+  mkdir -p /var/www/html/styling /var/www/html/javascript /var/www/html/images /var/www/html/fonts
+  cp -a /speedtest/frontend/styling/* /var/www/html/styling/
+  cp -a /speedtest/frontend/javascript/* /var/www/html/javascript/
+  cp -a /speedtest/frontend/images/* /var/www/html/images/
+  cp -a /speedtest/frontend/fonts/* /var/www/html/fonts/ 2>/dev/null || true
+  
+  # Copy frontend config files
+  cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
+  if [ -f /servers.json ]; then
+    echo "using mounted /servers.json for server-list.json"
+    cp /servers.json /var/www/html/server-list.json
+  else
+    echo "no /servers.json found, create one for local host"
+    # generate config for just the local server
+    echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+  fi
+  if [ ! -z "$SERVER_LIST_URL" ]; then
+    echo "using SERVER_LIST_URL for frontend server list"
+    SERVER_LIST_URL_ESCAPED=$(printf '%s\n' "$SERVER_LIST_URL" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
+    sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/index-modern.html
+    sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
+  fi
+  
+  # Replace GDPR email placeholder if GDPR_EMAIL is set
+  if [ ! -z "$GDPR_EMAIL" ]; then
+    # Escape special sed characters: & (replacement), / (delimiter), \ (escape), $ (variable)
+    GDPR_EMAIL_ESCAPED=$(printf '%s\n' "$GDPR_EMAIL" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
+    
+    for html_file in /var/www/html/index-modern.html /var/www/html/index-classic.html; do
+      if [ -f "$html_file" ]; then
+        sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL_ESCAPED/g; s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL_ESCAPED/g" "$html_file"
+      fi
+    done
+  fi
+fi
+# Configure design preference via config.json
+if [ "$USE_NEW_DESIGN" == "true" ]; then
+  sed -i 's/"useNewDesign": false/"useNewDesign": true/' /var/www/html/config.json
 fi
 
 # Apply Telemetry settings when running in standalone or frontend mode and telemetry is enabled
 if [[ "$TELEMETRY" == "true" && ("$MODE" == "frontend" || "$MODE" == "standalone" || "$MODE" == "dual") ]]; then
   cp -r /speedtest/results /var/www/html/results
+  sed -i 's/telemetry_level": ".*"/telemetry_level": "basic"/' /var/www/html/settings.json
 
   if [ "$MODE" == "frontend" ]; then
     mkdir /var/www/html/backend
