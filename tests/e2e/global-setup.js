@@ -1,13 +1,27 @@
 const { execSync } = require('node:child_process');
+const http = require('node:http');
+const https = require('node:https');
 
 const COMPOSE_FILE = 'tests/docker-compose-playwright.yml';
+
+function isHttpOk(url) {
+  return new Promise((resolve, reject) => {
+    const client = url.startsWith('https://') ? https : http;
+    const req = client.get(url, (res) => {
+      const status = res.statusCode || 0;
+      // Drain body so sockets can be reused/closed cleanly.
+      res.resume();
+      resolve(status >= 200 && status < 300);
+    });
+    req.on('error', reject);
+  });
+}
 
 async function waitForReady(name, url, timeoutMs) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const response = await fetch(url, { redirect: 'manual' });
-      if (response.ok) {
+      if (await isHttpOk(url)) {
         return;
       }
     } catch {
