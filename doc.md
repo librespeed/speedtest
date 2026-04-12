@@ -1,7 +1,7 @@
 # LibreSpeed
 
 > by Federico Dossena
-> Version 6.0.0pre1
+> Version 6.0.1
 > [https://github.com/librespeed/speedtest/](https://github.com/librespeed/speedtest/)
 
 ## Introduction
