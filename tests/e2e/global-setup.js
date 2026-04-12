@@ -4,16 +4,37 @@ const https = require('node:https');
 
 const COMPOSE_FILE = 'tests/docker-compose-playwright.yml';
 
-function isHttpOk(url) {
-  return new Promise((resolve, reject) => {
+function isHttpOk(url, requestTimeoutMs = 10_000) {
+  return new Promise((resolve) => {
     const client = url.startsWith('https://') ? https : http;
+    let settled = false;
+    const settle = (value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve(value);
+    };
+
     const req = client.get(url, (res) => {
       const status = res.statusCode || 0;
       // Drain body so sockets can be reused/closed cleanly.
       res.resume();
-      resolve(status >= 200 && status < 300);
+      settle(status >= 200 && status < 300);
     });
-    req.on('error', reject);
+
+    req.setTimeout(requestTimeoutMs, () => {
+      req.destroy(new Error(`Request timed out after ${requestTimeoutMs}ms`));
+    });
+
+    req.on('timeout', () => {
+      req.destroy(new Error(`Request timed out after ${requestTimeoutMs}ms`));
+    });
+
+    req.on('error', () => {
+      // Connection issues/timeouts are expected while services are starting.
+      settle(false);
+    });
   });
 }
 
