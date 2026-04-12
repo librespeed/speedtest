@@ -1,9 +1,9 @@
 name: Playwright E2E
 
+# Manual-only by design:
+# - Automatic e2e runs that gate Docker image builds live in docker-publish.yml.
+# - Keeping this workflow manual avoids running the same e2e suite twice on master pushes.
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
 
 jobs:
