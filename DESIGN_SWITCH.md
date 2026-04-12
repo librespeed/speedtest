@@ -35,7 +35,7 @@ In Docker deployments, the frontend assets are flattened to root-level subdirect
 
 ## Browser Compatibility
 
-The feature switch uses modern JavaScript features (URLSearchParams, fetch API). It is compatible with all modern browsers. The new design itself requires modern browser features and has no backwards compatibility with older browsers (see `frontend/README.md`).
+The feature switch uses modern JavaScript features (URLSearchParams, XMLHttpRequest). It is compatible with all modern browsers. The new design itself requires modern browser features and has no backwards compatibility with older browsers (see `frontend/README.md`).
 
 ## Enabling the New Design
 
@@ -58,7 +58,7 @@ This will make the new design the default for all users visiting your site.
 You can override the configuration by adding a URL parameter:
 
 - To use the new design: `http://yoursite.com/?design=new`
-- To use the old design: `http://yoursite.com/?design=old`
+- To use the classic design: `http://yoursite.com/?design=classic` or ?design=old
 
 URL parameters take precedence over the configuration file, making them useful for testing or allowing users to choose their preferred design.
 
