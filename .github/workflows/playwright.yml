@@ -1,10 +1,10 @@
 name: Playwright E2E
 
 on:
-  pull_request:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   e2e:
