@@ -24,6 +24,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Keep e2e in this workflow so Docker image build/push is hard-gated by test success.
+  # Do not move automatic e2e back to playwright.yml, otherwise master pushes run duplicate e2e jobs.
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 45
