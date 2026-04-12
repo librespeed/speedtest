@@ -85,6 +85,12 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
   fi
   
+  # Support legacy EMAIL env var as fallback for GDPR_EMAIL
+  if [ -z "$GDPR_EMAIL" ] && [ ! -z "$EMAIL" ]; then
+    echo "WARNING: EMAIL env var is deprecated, please use GDPR_EMAIL instead"
+    GDPR_EMAIL="$EMAIL"
+  fi
+
   # Replace GDPR email placeholder if GDPR_EMAIL is set
   if [ ! -z "$GDPR_EMAIL" ]; then
     # Escape special sed characters: & (replacement), / (delimiter), \ (escape), $ (variable)
