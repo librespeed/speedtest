@@ -252,6 +252,8 @@
 			color: #6060AA;
 			background-color: rgba(0, 0, 0, 0);
 			border: 0.15em solid #6060FF;
+			padding: 0;
+			font: inherit;
 			border-radius: 0.3em;
 			transition: all 0.3s;
 			box-sizing: border-box;
@@ -490,7 +492,7 @@
 		<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
 	</div>
 	<div id="testWrapper" class="hidden">
-		<div id="startStopBtn" onclick="startStop()"></div><br />
+		<button id="startStopBtn" onclick="startStop()"></button><br />
 		<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
 		<div id="serverArea">
 			Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
