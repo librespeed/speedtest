@@ -87,8 +87,9 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
   if [ -z "$GDPR_EMAIL" ] && [ ! -z "$EMAIL" ]; then
-    echo "WARNING: EMAIL env var is deprecated, please use GDPR_EMAIL instead"
+    echo "WARNING: EMAIL env var is deprecated, please use GDPR_EMAIL instead" >&2
     GDPR_EMAIL="$EMAIL"
+    echo "GDPR_EMAIL: $GDPR_EMAIL"
   fi
 
   # Replace GDPR email placeholder if GDPR_EMAIL is set
