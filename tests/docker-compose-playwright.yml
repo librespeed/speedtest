@@ -1,0 +1,68 @@
+services:
+  backend-testpoint:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - MODE=backend
+      - WEBPORT=8080
+
+  standalone:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - MODE=standalone
+      - WEBPORT=8080
+      - USE_NEW_DESIGN=false
+    ports:
+      - "18180:8080"
+
+  standalone-new:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - MODE=standalone
+      - WEBPORT=8080
+      - USE_NEW_DESIGN=true
+    ports:
+      - "18185:8080"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - MODE=backend
+      - WEBPORT=8080
+    ports:
+      - "18181:8080"
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      - backend-testpoint
+    environment:
+      - MODE=frontend
+      - WEBPORT=8080
+    volumes:
+      - ./e2e/fixtures/servers-frontend.json:/servers.json:ro
+    ports:
+      - "18182:8080"
+
+  dual:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      - backend-testpoint
+    environment:
+      - MODE=dual
+      - WEBPORT=8080
+    volumes:
+      - ./e2e/fixtures/servers-dual.json:/servers.json:ro
+    ports:
+      - "18183:8080"

@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Backend testpoint",
+    "server": "http://backend-testpoint/",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php",
+    "id": 1
+  }
+]
