@@ -60,15 +60,18 @@ function startStop(){
 		s.abort();
 		data=null;
 		I("startStopBtn").className="";
+		I("startStopBtn").setAttribute("aria-label","Start");
 		initUI();
 	}else{
 		//test is not running, begin
 		I("startStopBtn").className="running";
+		I("startStopBtn").setAttribute("aria-label","Abort");
 		s.onupdate=function(data){
             uiData=data;
 		};
 		s.onend=function(aborted){
             I("startStopBtn").className="";
+            I("startStopBtn").setAttribute("aria-label","Start");
             updateUI(true);
 		};
 		s.start();
@@ -225,7 +228,7 @@ function initUI(){
 <body>
 <h1>LibreSpeed Example</h1>
 <div id="testWrapper">
-	<button id="startStopBtn" onclick="startStop()"></button>
+	<button id="startStopBtn" onclick="startStop()" aria-label="Start"></button>
 	<div id="test">
         <div class="testGroup">
 			<div class="testArea2">

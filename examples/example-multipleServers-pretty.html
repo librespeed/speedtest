@@ -42,6 +42,7 @@ s.onupdate=function(data){ //callback to update data in UI
 }
 s.onend=function(aborted){ //callback for test ended/aborted
     I("startStopBtn").className=""; //show start button again
+    I("startStopBtn").setAttribute("aria-label","Start");
     if(aborted){ //if the test was aborted, clear the UI and prepare for new test
 		initUI();
     }
@@ -83,6 +84,7 @@ function startStop(){ //start/stop button pressed
 		//test is not running, begin
 		s.start();
 		I("startStopBtn").className="running";
+		I("startStopBtn").setAttribute("aria-label","Abort");
 	}
 }
 
@@ -207,7 +209,7 @@ function I(id){return document.getElementById(id);}
 </head>
 <body>
 <h1>LibreSpeed Example</h1>
-<button id="startStopBtn" onclick="startStop()"></button>
+<button id="startStopBtn" onclick="startStop()" aria-label="Start"></button>
 <div id="serverId">Selecting server...</div>
 <div id="test">
 	<div class="testGroup">
