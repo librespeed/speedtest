@@ -84,6 +84,14 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/index-modern.html
     sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
   fi
+
+  # Replace title placeholders if TITLE is set
+  if [ ! -z "$TITLE" ]; then
+    TITLE_ESCAPED=$(printf '%s\n' "$TITLE" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
+    sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g; s/<h1>LibreSpeed<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-classic.html
+    sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g" /var/www/html/index.html
+    sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g" /var/www/html/index-modern.html
+  fi
   
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
   if [ -z "$GDPR_EMAIL" ] && [ ! -z "$EMAIL" ]; then
