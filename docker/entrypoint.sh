@@ -17,6 +17,19 @@ is_alpine() {
   [ -f /etc/alpine-release ]
 }
 
+html_escape() {
+  printf '%s' "$1" | sed \
+    -e 's/&/\&amp;/g' \
+    -e 's/</\&lt;/g' \
+    -e 's/>/\&gt;/g' \
+    -e 's/"/\&quot;/g' \
+    -e "s/'/\&#39;/g"
+}
+
+sed_escape() {
+  printf '%s\n' "$1" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g'
+}
+
 # Cleanup
 rm -rf /var/www/html/*
 
@@ -87,7 +100,10 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
 
   # Replace title placeholders if TITLE is set
   if [ ! -z "$TITLE" ]; then
-    TITLE_ESCAPED=$(printf '%s\n' "$TITLE" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
+    TITLE_ONE_LINE=${TITLE//$'\r'/}
+    TITLE_ONE_LINE=${TITLE_ONE_LINE//$'\n'/ }
+    TITLE_HTML_ESCAPED=$(html_escape "$TITLE_ONE_LINE")
+    TITLE_ESCAPED=$(sed_escape "$TITLE_HTML_ESCAPED")
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g; s/<h1>LibreSpeed<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-classic.html
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g" /var/www/html/index.html
     sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g" /var/www/html/index-modern.html
