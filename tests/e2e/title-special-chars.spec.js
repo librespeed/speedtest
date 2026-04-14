@@ -7,6 +7,7 @@ test.describe('TITLE special characters', () => {
   test('modern page title supports umlauts and quotes', async ({ page }) => {
     await page.goto(`${baseUrls.standaloneNew}/index-modern.html`);
     await expect(page).toHaveTitle(`${specialTitle} - Free and Open Source Speedtest`);
+    await expect(page.locator('main > h1')).toHaveText(specialTitle);
   });
 
   test('classic heading supports umlauts and quotes', async ({ page }) => {
