@@ -106,7 +106,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     TITLE_ESCAPED=$(sed_escape "$TITLE_HTML_ESCAPED")
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g; s/<h1>LibreSpeed<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-classic.html
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g" /var/www/html/index.html
-    sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g" /var/www/html/index-modern.html
+    sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g; s/<h1>Free and Open Source Speedtest\\.<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-modern.html
   fi
   
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
