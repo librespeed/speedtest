@@ -26,6 +26,7 @@ services:
       - MODE=standalone
       - WEBPORT=8080
       - USE_NEW_DESIGN=true
+      - 'TITLE=Grüße "Tempo" ''Österreich'''
     ports:
       - "18185:8080"
 
