@@ -51,22 +51,24 @@
 						if (server != null) { //at least 1 server is available
 							I("loading").className = "hidden"; //hide loading message
 							//sort servers by country, then by city
-							SPEEDTEST_SERVERS.sort(function (a, b) {
-								var commaA = a.name.lastIndexOf(",");
-								var commaB = b.name.lastIndexOf(",");
-								var countryA = commaA >= 0 ? a.name.substring(commaA + 1).trim() : a.name;
-								var countryB = commaB >= 0 ? b.name.substring(commaB + 1).trim() : b.name;
-								var cityA = commaA >= 0 ? a.name.substring(0, commaA).trim() : "";
-								var cityB = commaB >= 0 ? b.name.substring(0, commaB).trim() : "";
+							var sortedServers = SPEEDTEST_SERVERS.slice().sort(function (a, b) {
+								var nameA = a.name || "";
+								var nameB = b.name || "";
+								var commaA = nameA.lastIndexOf(",");
+								var commaB = nameB.lastIndexOf(",");
+								var countryA = commaA >= 0 ? nameA.substring(commaA + 1).trim() : nameA;
+								var countryB = commaB >= 0 ? nameB.substring(commaB + 1).trim() : nameB;
+								var cityA = commaA >= 0 ? nameA.substring(0, commaA).trim() : "";
+								var cityB = commaB >= 0 ? nameB.substring(0, commaB).trim() : "";
 								return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
 							});
 							//populate server list for manual selection
-							for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
-								if (SPEEDTEST_SERVERS[i].pingT == -1) continue;
+							for (var i = 0; i < sortedServers.length; i++) {
+								if (sortedServers[i].pingT == -1) continue;
 								var option = document.createElement("option");
-								option.value = i;
-								option.textContent = SPEEDTEST_SERVERS[i].name;
-								if (SPEEDTEST_SERVERS[i] === server) option.selected = true;
+								option.value = SPEEDTEST_SERVERS.indexOf(sortedServers[i]);
+								option.textContent = sortedServers[i].name;
+								if (sortedServers[i] === server) option.selected = true;
 								I("server").appendChild(option);
 							}
 							//show test UI
