@@ -50,6 +50,16 @@
 					s.selectServer(function (server) {
 						if (server != null) { //at least 1 server is available
 							I("loading").className = "hidden"; //hide loading message
+							//sort servers by country, then by city
+							SPEEDTEST_SERVERS.sort(function (a, b) {
+								var commaA = a.name.lastIndexOf(",");
+								var commaB = b.name.lastIndexOf(",");
+								var countryA = commaA >= 0 ? a.name.substring(commaA + 1).trim() : a.name;
+								var countryB = commaB >= 0 ? b.name.substring(commaB + 1).trim() : b.name;
+								var cityA = commaA >= 0 ? a.name.substring(0, commaA).trim() : "";
+								var cityB = commaB >= 0 ? b.name.substring(0, commaB).trim() : "";
+								return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
+							});
 							//populate server list for manual selection
 							for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
 								if (SPEEDTEST_SERVERS[i].pingT == -1) continue;
