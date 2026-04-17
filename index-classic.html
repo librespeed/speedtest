@@ -69,18 +69,22 @@
 								country = country.replace(/\s*\([^)]*\)\s*/g, "").trim();
 								return { country: country, city: city };
 							}
-							var sortedServers = SPEEDTEST_SERVERS.slice().sort(function (a, b) {
-								var pa = parseServerName(a.name);
-								var pb = parseServerName(b.name);
+							var indexed = [];
+							for (var j = 0; j < SPEEDTEST_SERVERS.length; j++) {
+								indexed.push({ idx: j, server: SPEEDTEST_SERVERS[j] });
+							}
+							indexed.sort(function (a, b) {
+								var pa = parseServerName(a.server.name);
+								var pb = parseServerName(b.server.name);
 								return pa.country.localeCompare(pb.country) || pa.city.localeCompare(pb.city);
 							});
 							//populate server list for manual selection
-							for (var i = 0; i < sortedServers.length; i++) {
-								if (sortedServers[i].pingT == -1) continue;
+							for (var i = 0; i < indexed.length; i++) {
+								if (indexed[i].server.pingT == -1) continue;
 								var option = document.createElement("option");
-								option.value = SPEEDTEST_SERVERS.indexOf(sortedServers[i]);
-								option.textContent = sortedServers[i].name;
-								if (sortedServers[i] === server) option.selected = true;
+								option.value = indexed[i].idx;
+								option.textContent = indexed[i].server.name;
+								if (indexed[i].server === server) option.selected = true;
 								I("server").appendChild(option);
 							}
 							//show test UI
