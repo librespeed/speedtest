@@ -230,17 +230,30 @@ function populateDropdown(servers) {
     });
   }
 
-  // Sort servers by country, then by city within the same country
+  // Sort servers by country, then by city within the same country.
+  // Name formats: "City, Country", "City, Country (qualifier)", "City, Country, Provider", "Country"
+  const parseServerName = (name) => {
+    const parts = (name || "").split(",").map((s) => s.trim());
+    let country, city;
+    if (parts.length >= 3) {
+      // "City, Country, Provider" — use second part as country
+      country = parts[1];
+      city = parts[0];
+    } else if (parts.length === 2) {
+      country = parts[1];
+      city = parts[0];
+    } else {
+      country = parts[0];
+      city = "";
+    }
+    // Strip parenthetical qualifiers for sorting: "Germany (1) (Hetzner)" → "Germany"
+    country = country.replace(/\s*\([^)]*\)\s*/g, "").trim();
+    return { country, city };
+  };
   const sorted = [...servers].sort((a, b) => {
-    const nameA = a.name || "";
-    const nameB = b.name || "";
-    const commaA = nameA.lastIndexOf(",");
-    const commaB = nameB.lastIndexOf(",");
-    const countryA = commaA >= 0 ? nameA.substring(commaA + 1).trim() : nameA;
-    const countryB = commaB >= 0 ? nameB.substring(commaB + 1).trim() : nameB;
-    const cityA = commaA >= 0 ? nameA.substring(0, commaA).trim() : "";
-    const cityB = commaB >= 0 ? nameB.substring(0, commaB).trim() : "";
-    return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
+    const pa = parseServerName(a.name);
+    const pb = parseServerName(b.name);
+    return pa.country.localeCompare(pb.country) || pa.city.localeCompare(pb.city);
   });
 
   // Populate the list to choose from

@@ -51,16 +51,28 @@
 						if (server != null) { //at least 1 server is available
 							I("loading").className = "hidden"; //hide loading message
 							//sort servers by country, then by city
+							//name formats: "City, Country", "City, Country (qualifier)", "City, Country, Provider", "Country"
+							function parseServerName(name) {
+								var parts = (name || "").split(",");
+								for (var p = 0; p < parts.length; p++) parts[p] = parts[p].trim();
+								var country, city;
+								if (parts.length >= 3) {
+									country = parts[1];
+									city = parts[0];
+								} else if (parts.length === 2) {
+									country = parts[1];
+									city = parts[0];
+								} else {
+									country = parts[0];
+									city = "";
+								}
+								country = country.replace(/\s*\([^)]*\)\s*/g, "").trim();
+								return { country: country, city: city };
+							}
 							var sortedServers = SPEEDTEST_SERVERS.slice().sort(function (a, b) {
-								var nameA = a.name || "";
-								var nameB = b.name || "";
-								var commaA = nameA.lastIndexOf(",");
-								var commaB = nameB.lastIndexOf(",");
-								var countryA = commaA >= 0 ? nameA.substring(commaA + 1).trim() : nameA;
-								var countryB = commaB >= 0 ? nameB.substring(commaB + 1).trim() : nameB;
-								var cityA = commaA >= 0 ? nameA.substring(0, commaA).trim() : "";
-								var cityB = commaB >= 0 ? nameB.substring(0, commaB).trim() : "";
-								return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
+								var pa = parseServerName(a.name);
+								var pb = parseServerName(b.name);
+								return pa.country.localeCompare(pb.country) || pa.city.localeCompare(pb.city);
 							});
 							//populate server list for manual selection
 							for (var i = 0; i < sortedServers.length; i++) {
