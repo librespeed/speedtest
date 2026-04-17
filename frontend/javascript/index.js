@@ -231,18 +231,20 @@ function populateDropdown(servers) {
   }
 
   // Sort servers by country, then by city within the same country
-  servers.sort((a, b) => {
-    const commaA = a.name.lastIndexOf(",");
-    const commaB = b.name.lastIndexOf(",");
-    const countryA = commaA >= 0 ? a.name.substring(commaA + 1).trim() : a.name;
-    const countryB = commaB >= 0 ? b.name.substring(commaB + 1).trim() : b.name;
-    const cityA = commaA >= 0 ? a.name.substring(0, commaA).trim() : "";
-    const cityB = commaB >= 0 ? b.name.substring(0, commaB).trim() : "";
+  const sorted = [...servers].sort((a, b) => {
+    const nameA = a.name || "";
+    const nameB = b.name || "";
+    const commaA = nameA.lastIndexOf(",");
+    const commaB = nameB.lastIndexOf(",");
+    const countryA = commaA >= 0 ? nameA.substring(commaA + 1).trim() : nameA;
+    const countryB = commaB >= 0 ? nameB.substring(commaB + 1).trim() : nameB;
+    const cityA = commaA >= 0 ? nameA.substring(0, commaA).trim() : "";
+    const cityB = commaB >= 0 ? nameB.substring(0, commaB).trim() : "";
     return countryA.localeCompare(countryB) || cityA.localeCompare(cityB);
   });
 
   // Populate the list to choose from
-  servers.forEach((server) => {
+  sorted.forEach((server) => {
     const item = document.createElement("li");
     const link = document.createElement("a");
     link.href = "#";
