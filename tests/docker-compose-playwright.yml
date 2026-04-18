@@ -27,8 +27,21 @@ services:
       - WEBPORT=8080
       - USE_NEW_DESIGN=true
       - 'TITLE=Grüße "Tempo" ''Österreich'''
+      - 'TAGLINE=No "Flash", <No Java>, No Websockets & No Bullsh*t'
     ports:
       - "18185:8080"
+
+  standalone-apostrophe:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      - MODE=standalone
+      - WEBPORT=8080
+      - USE_NEW_DESIGN=true
+      - "TAGLINE=It'd rather be fast!"
+    ports:
+      - "18186:8080"
 
   backend:
     build:

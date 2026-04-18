@@ -46,6 +46,7 @@ COPY docker/entrypoint.sh /
 
 # Prepare default environment variables
 ENV TITLE=LibreSpeed
+ENV TAGLINE="No Flash, No Java, No Websockets, No Bullsh*t"
 ENV MODE=standalone
 ENV PASSWORD=password
 ENV TELEMETRY=false
