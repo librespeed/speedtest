@@ -108,6 +108,15 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g" /var/www/html/index.html
     sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g; s/<h1>Free and Open Source Speedtest\\.<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-modern.html
   fi
+
+  # Replace modern page tagline if TAGLINE is set
+  if [ ! -z "$TAGLINE" ]; then
+    TAGLINE_ONE_LINE=${TAGLINE//$'\r'/}
+    TAGLINE_ONE_LINE=${TAGLINE_ONE_LINE//$'\n'/ }
+    TAGLINE_HTML_ESCAPED=$(html_escape "$TAGLINE_ONE_LINE")
+    TAGLINE_ESCAPED=$(sed_escape "$TAGLINE_HTML_ESCAPED")
+    sed -i "s/<p class=\"tagline\">No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p>/<p class=\"tagline\">$TAGLINE_ESCAPED<\\/p>/g" /var/www/html/index-modern.html
+  fi
   
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
   if [ -z "$GDPR_EMAIL" ] && [ ! -z "$EMAIL" ]; then

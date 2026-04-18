@@ -33,6 +33,7 @@ services:
     environment:
       MODE: standalone
       #TITLE: "LibreSpeed"
+      #TAGLINE: "No Flash, No Java, No Websockets, No Bullsh*t"
       #TELEMETRY: "false"
       #ENABLE_ID_OBFUSCATION: "false"
       #REDACT_IP_ADDRESSES: "false"
@@ -57,6 +58,7 @@ The test can be accessed on port 80.
 Here's a list of additional environment variables available in this mode:
 
 * __`TITLE`__: Title of your speed test. Default value: `LibreSpeed`
+* __`TAGLINE`__: Slogan shown below the heading on the modern frontend (`index-modern.html`). Default value: `No Flash, No Java, No Websockets, No Bullsh*t`
 * __`USE_NEW_DESIGN`__: When set to `true`, enables the new modern frontend design. When set to `false` (default), uses the classic design. The design can also be switched using URL parameters (`?design=new` or `?design=old`). Default value: `false`
 * __`SERVER_LIST_URL`__: When set, both frontend designs load their server list from this URL instead of the generated or mounted `server-list.json`. This is useful if you want the containerized frontend to consume a remote shared server list.
 * __`TELEMETRY`__: Whether to enable telemetry or not. If enabled, you maybe want your data to be persisted. See below. Default value: `false`
