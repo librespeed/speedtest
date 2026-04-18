@@ -115,7 +115,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     TAGLINE_ONE_LINE=${TAGLINE_ONE_LINE//$'\n'/ }
     TAGLINE_HTML_ESCAPED=$(html_escape "$TAGLINE_ONE_LINE")
     TAGLINE_ESCAPED=$(sed_escape "$TAGLINE_HTML_ESCAPED")
-    sed -i "s#<p class=\"tagline\">No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p>#<p class=\"tagline\">$TAGLINE_ESCAPED<\\/p>#g" /var/www/html/index-modern.html
+    sed -i "s/<p class=\"tagline\">No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p>/<p class=\"tagline\">$TAGLINE_ESCAPED<\\/p>/g" /var/www/html/index-modern.html
   fi
   
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
