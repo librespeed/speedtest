@@ -4,7 +4,7 @@ const { baseUrls } = require('./helpers/env');
 const specialTitle = 'Grüße "Tempo" \'Österreich\'';
 const specialTagline = 'No "Flash", <No Java>, No Websockets & No Bullsh*t';
 
-test.describe('TITLE special characters', () => {
+test.describe('TITLE and TAGLINE special characters', () => {
   test('modern page title supports umlauts and quotes', async ({ page }) => {
     await page.goto(`${baseUrls.standaloneNew}/index-modern.html`);
     await expect(page).toHaveTitle(`${specialTitle} - Free and Open Source Speedtest`);
