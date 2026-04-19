@@ -50,13 +50,41 @@
 					s.selectServer(function (server) {
 						if (server != null) { //at least 1 server is available
 							I("loading").className = "hidden"; //hide loading message
+							//sort servers by country, then by city
+							//name formats: "City, Country", "City, Country (qualifier)", "City, Country, Provider", "Country"
+							function parseServerName(name) {
+								var parts = (name || "").split(",");
+								for (var p = 0; p < parts.length; p++) parts[p] = parts[p].trim();
+								var country, city;
+								if (parts.length >= 3) {
+									country = parts[1];
+									city = parts[0];
+								} else if (parts.length === 2) {
+									country = parts[1];
+									city = parts[0];
+								} else {
+									country = parts[0];
+									city = "";
+								}
+								country = country.replace(/\s*\([^)]*\)\s*/g, "").trim();
+								return { country: country, city: city };
+							}
+							var indexed = [];
+							for (var j = 0; j < SPEEDTEST_SERVERS.length; j++) {
+								indexed.push({ idx: j, server: SPEEDTEST_SERVERS[j] });
+							}
+							indexed.sort(function (a, b) {
+								var pa = parseServerName(a.server.name);
+								var pb = parseServerName(b.server.name);
+								return pa.country.localeCompare(pb.country) || pa.city.localeCompare(pb.city);
+							});
 							//populate server list for manual selection
-							for (var i = 0; i < SPEEDTEST_SERVERS.length; i++) {
-								if (SPEEDTEST_SERVERS[i].pingT == -1) continue;
+							for (var i = 0; i < indexed.length; i++) {
+								if (indexed[i].server.pingT == -1) continue;
 								var option = document.createElement("option");
-								option.value = i;
-								option.textContent = SPEEDTEST_SERVERS[i].name;
-								if (SPEEDTEST_SERVERS[i] === server) option.selected = true;
+								option.value = indexed[i].idx;
+								option.textContent = indexed[i].server.name;
+								if (indexed[i].server === server) option.selected = true;
 								I("server").appendChild(option);
 							}
 							//show test UI
