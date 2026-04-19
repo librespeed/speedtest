@@ -3,7 +3,6 @@ backend/getIP_serverLocation.php
 db-dir/
 .vscode/
 node_modules/
-package-lock.json
 playwright-report/
 test-results/
 results/speedtest_telemetry.db
