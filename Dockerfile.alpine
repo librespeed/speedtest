@@ -1,7 +1,8 @@
-FROM php:8-alpine
+FROM alpine:3.23
 RUN apk add --quiet --no-cache \
     bash \
     apache2 \
+    php \
     php-apache2 \
     php-ctype \
     php-phar \
@@ -14,12 +15,6 @@ RUN apk add --quiet --no-cache \
     php-pgsql \
     php-session \
     php-sqlite3
-
-# # use docker-php-extension-installer for automatically get the right packages installed
-# ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-
-# # Install extensions
-# RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql
 
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
