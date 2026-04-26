@@ -24,6 +24,12 @@ RUN apk add --quiet --no-cache \
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
 
+COPY docker/librespeed-php.ini /tmp/librespeed-php.ini
+RUN scan_dir="$(/usr/bin/php -r 'echo rtrim(PHP_CONFIG_FILE_SCAN_DIR);')" \
+    && [ -n "$scan_dir" ] \
+    && install -D -m 0644 /tmp/librespeed-php.ini "$scan_dir/99-librespeed.ini" \
+    && rm /tmp/librespeed-php.ini
+
 # Prepare files and folders
 RUN mkdir -p /speedtest/
 
