@@ -10,6 +10,11 @@ RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# PHP_INI_DIR is set by the official php:8-apache image to /usr/local/etc/php
+# and has been stable across PHP majors. Using the env var documents intent
+# and follows any future upstream change to the path automatically.
+COPY docker/librespeed-php.ini ${PHP_INI_DIR}/conf.d/99-librespeed.ini
+
 # Prepare files and folders
 RUN mkdir -p /speedtest/
 
