@@ -24,11 +24,22 @@ RUN apk add --quiet --no-cache \
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
 
+# This image has two PHP installs: the FROM php:8-alpine binary (conf.d at
+# /usr/local/etc/php/conf.d) and the apk-installed php-apache2 (conf.d at
+# /etc/phpXX/conf.d). mod_php uses the apk one — glob /etc/php*/conf.d to
+# find it without pinning the PHP major.
 COPY docker/librespeed-php.ini /tmp/librespeed-php.ini
-RUN scan_dir="$(/usr/bin/php -r 'echo rtrim(PHP_CONFIG_FILE_SCAN_DIR);')" \
-    && [ -n "$scan_dir" ] \
-    && install -D -m 0644 /tmp/librespeed-php.ini "$scan_dir/99-librespeed.ini" \
-    && rm /tmp/librespeed-php.ini
+RUN set -eu; \
+    scan_dir=""; \
+    for d in /etc/php*/conf.d; do \
+      [ -d "$d" ] && scan_dir="$d" && break; \
+    done; \
+    if [ -z "$scan_dir" ]; then \
+      echo "ERROR: no /etc/php*/conf.d directory found; apk php-apache2 install layout may have changed" >&2; \
+      exit 1; \
+    fi; \
+    install -D -m 0644 /tmp/librespeed-php.ini "$scan_dir/99-librespeed.ini"; \
+    rm /tmp/librespeed-php.ini
 
 # Prepare files and folders
 RUN mkdir -p /speedtest/
