@@ -2,6 +2,7 @@ FROM alpine:3.23
 RUN apk add --quiet --no-cache \
     bash \
     apache2 \
+    ca-certificates \
     php \
     php-apache2 \
     php-ctype \
