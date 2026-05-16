@@ -314,7 +314,7 @@
           <div class="unit">ms</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Loss</div>
+          <div class="testName">Failed Requests</div>
           <div id="statLoss" class="meterText"></div>
           <div class="unit">%</div>
         </div>
@@ -813,7 +813,7 @@
         ctx.lineJoin = "round";
         ctx.stroke();
 
-        // draw lost packet markers
+        // draw failed request markers
         for (var i = 0; i < visible.length; i++) {
           if (!visible[i].lost) continue;
           var px = padL + ((visible[i].t - timeStart) / timeSpan) * plotW;
@@ -879,7 +879,7 @@
       // CSV download
       function downloadCsv() {
         if (allPingData.length === 0) return;
-        var csv = "elapsed_s,ping_ms,lost\n";
+        var csv = "elapsed_s,ping_ms,failed\n";
         for (var i = 0; i < allPingData.length; i++) {
           var d = allPingData[i];
           csv += d.t.toFixed(3) + "," + d.ping.toFixed(2) + "," + (d.lost ? "1" : "0") + "\n";

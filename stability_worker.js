@@ -11,7 +11,7 @@ let avgPing = 0;
 let minPing = -1;
 let maxPing = 0;
 let jitter = 0;
-let packetLoss = 0;
+let packetLoss = 0; // failed request percentage
 let elapsed = 0;
 let progress = 0;
 
@@ -121,7 +121,7 @@ function recordPing(instspd) {
   }
   prevInstspd = instspd;
 
-  // packet loss
+  // failed request percentage
   packetLoss = totalSamples > 0 ? parseFloat(((failedSamples / totalSamples) * 100).toFixed(2)) : 0;
 
   // record data point
