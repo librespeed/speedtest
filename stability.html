@@ -63,13 +63,29 @@
           0 0 2em rgba(0, 0, 0, 0.1),
           inset 0 0 1em rgba(0, 0, 0, 0.1);
       }
+      #startBtn.disabled {
+        color: #a0a0a0;
+        border-color: #c0c0c0;
+        cursor: default;
+        opacity: 0.8;
+      }
+      #startBtn.disabled:hover {
+        box-shadow:
+          0 0 0 rgba(0, 0, 0, 0.1),
+          inset 0 0 0 rgba(0, 0, 0, 0.1);
+      }
       #startBtn:before {
         content: "Start";
+      }
+      #startBtn.finding:before {
+        content: "Finding...";
       }
       #startBtn.running {
         background-color: #ff3030;
         border-color: #ff6060;
         color: #ffffff;
+        cursor: pointer;
+        opacity: 1;
       }
       #startBtn.running:before {
         content: "Abort";
@@ -232,6 +248,10 @@
           color: #9090ff;
           border-color: #7070ff;
         }
+        #startBtn.disabled {
+          color: #707070;
+          border-color: #505050;
+        }
         #startBtn.running {
           background-color: #ff3030;
           border-color: #ff6060;
@@ -267,13 +287,13 @@
         <option value="180">3 Minutes</option>
         <option value="300">5 Minutes</option>
       </select>
-      <select id="targetSelect">
+      <select id="targetSelect" onchange="updateStartButtonState()">
         <option value="">Local Server</option>
         <option value="https://www.google.com/generate_204">Google</option>
         <option value="https://www.cloudflare.com/cdn-cgi/trace">Cloudflare</option>
         <option value="https://www.apple.com/library/test/success.html">Apple</option>
       </select>
-      <div id="startBtn" onclick="startStop()"></div>
+      <div id="startBtn" class="disabled finding" onclick="startStop()" aria-disabled="true" title="Finding best server..."></div>
       <div id="resetBtn" onclick="resetTest()">Reset</div>
     </div>
 
@@ -370,6 +390,8 @@
       var lastBeepTime = 0;
       var audioCtx = null;
       var selectedServer = null;
+      var localServerReady = false;
+      var serverDiscoveryPending = false;
 
       // Dark mode detection for canvas colors
       var isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -449,10 +471,23 @@
 
       // Server initialization
       function initServers() {
+        selectedServer = null;
+        localServerReady = false;
+        serverDiscoveryPending = false;
+        I("server").innerHTML = "";
         if (SPEEDTEST_SERVERS.length === 0) {
           I("serverArea").style.display = "none";
+          localServerReady = true;
+          updateStartButtonState();
         } else {
           I("serverArea").style.display = "";
+          serverDiscoveryPending = true;
+          I("server").disabled = true;
+          var pendingOpt = document.createElement("option");
+          pendingOpt.value = "";
+          pendingOpt.textContent = "Finding best server...";
+          I("server").appendChild(pendingOpt);
+          updateStartButtonState();
           // ping servers to find best one
           var completed = 0;
           var best = null;
@@ -464,6 +499,7 @@
                 completed++;
                 if (completed === SPEEDTEST_SERVERS.length) {
                   // populate dropdown
+                  I("server").innerHTML = "";
                   for (var j = 0; j < SPEEDTEST_SERVERS.length; j++) {
                     if (SPEEDTEST_SERVERS[j].pingT <= 0) continue;
                     var opt = document.createElement("option");
@@ -473,6 +509,10 @@
                     I("server").appendChild(opt);
                   }
                   selectedServer = best;
+                  serverDiscoveryPending = false;
+                  localServerReady = selectedServer !== null || I("server").options.length > 0;
+                  I("server").disabled = !localServerReady;
+                  updateStartButtonState();
                 }
               });
             })(i);
@@ -500,7 +540,24 @@
       }
 
       function onServerChange(idx) {
+        if (idx === "") return;
         selectedServer = SPEEDTEST_SERVERS[idx];
+        updateStartButtonState();
+      }
+
+      function canStartTest() {
+        return !!I("targetSelect").value || localServerReady;
+      }
+
+      function updateStartButtonState() {
+        if (running) return;
+
+        var startBtn = I("startBtn");
+        var canStart = canStartTest();
+        startBtn.className = canStart ? "" : serverDiscoveryPending ? "disabled finding" : "disabled";
+        startBtn.setAttribute("aria-disabled", canStart ? "false" : "true");
+        startBtn.title = canStart ? "" : serverDiscoveryPending ? "Finding best server..." : "No reachable local server found";
+        I("server").disabled = !localServerReady || serverDiscoveryPending;
       }
 
       // Start/Stop
@@ -510,11 +567,14 @@
           if (worker) worker.postMessage("abort");
           stopTest();
         } else {
+          if (!canStartTest()) return;
           startTest();
         }
       }
 
       function startTest() {
+        if (!canStartTest()) return;
+
         allPingData = [];
         latestData = null;
         resetUI();
@@ -572,6 +632,7 @@
         I("durationSelect").disabled = false;
         I("targetSelect").disabled = false;
         I("server").disabled = false;
+        updateStartButtonState();
         if (updater) {
           clearInterval(updater);
           updater = null;
