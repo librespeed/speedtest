@@ -26,6 +26,7 @@ let settings = {
   url_ping_external: "", // external URL to ping (uses fetch no-cors, e.g. "https://www.google.com/generate_204")
   duration: 60, // seconds
   ping_interval: 200, // minimum ms between pings to limit sample rate
+  ping_timeout: 5000,
   ping_allowPerformanceApi: true,
   mpot: false
 };
@@ -202,7 +203,7 @@ function doPing() {
     true
   );
   try {
-    xhr.timeout = 5000;
+    xhr.timeout = settings.ping_timeout;
   } catch (e) {}
   xhr.send();
 }
@@ -210,16 +211,33 @@ function doPing() {
 // ping an external host using fetch with no-cors (opaque response, but timing still works)
 function doPingExternal() {
   const prevT = new Date().getTime();
+  const remainingMs = Math.max(1, settings.duration * 1000 - (prevT - startTime));
+  const timeoutMs = Math.min(settings.ping_timeout, remainingMs);
   const url =
     settings.url_ping_external + (settings.url_ping_external.indexOf("?") >= 0 ? "&" : "?") + "r=" + Math.random();
-  fetch(url, { mode: "no-cors", cache: "no-store" })
+
+  let timeoutId = null;
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const fetchOptions = { mode: "no-cors", cache: "no-store" };
+  if (controller) fetchOptions.signal = controller.signal;
+
+  const timeout = new Promise(function (_, reject) {
+    timeoutId = setTimeout(function () {
+      if (controller) controller.abort();
+      reject(new Error("timeout"));
+    }, timeoutMs);
+  });
+
+  Promise.race([fetch(url, fetchOptions), timeout])
     .then(function () {
+      if (timeoutId) clearTimeout(timeoutId);
       if (aborted || testState >= 4) return;
       const instspd = new Date().getTime() - prevT;
       recordPing(instspd);
       schedulePing(instspd);
     })
     .catch(function () {
+      if (timeoutId) clearTimeout(timeoutId);
       if (aborted || testState >= 4) return;
       recordLoss();
       schedulePing(0);

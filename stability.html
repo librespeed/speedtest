@@ -357,7 +357,8 @@
       }
 
       // Server configuration (same pattern as index.html)
-      var SPEEDTEST_SERVERS = [];
+      // Set this to a different URL to load the server list from another location.
+      var SPEEDTEST_SERVERS = "server-list.json";
 
       // State
       var worker = null;
@@ -385,22 +386,60 @@
       var CHART_PADDING_TOP = 15;
       var CHART_PADDING_BOTTOM = 30;
 
-      // Load server list dynamically (for Docker frontend/dual modes where servers.json exists)
+      function joinServerUrl(server, path) {
+        if (!server) return path;
+        if (!path) return server;
+        if (server.charAt(server.length - 1) === "/" || path.charAt(0) === "/") return server + path;
+        return server + "/" + path;
+      }
+
+      // Load server list dynamically (Docker exposes server-list.json; older setups may expose servers.json)
       function loadServers(callback) {
+        if (Array.isArray(SPEEDTEST_SERVERS)) {
+          callback();
+          return;
+        }
+
+        var serverListUrl = typeof SPEEDTEST_SERVERS === "string" ? SPEEDTEST_SERVERS : "";
+        if (!serverListUrl) {
+          SPEEDTEST_SERVERS = [];
+          callback();
+          return;
+        }
+
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
+          var loadedServers = null;
           try {
             var servers = JSON.parse(xhr.responseText);
-            if (Array.isArray(servers) && servers.length > 0) {
-              SPEEDTEST_SERVERS = servers;
+            if (Array.isArray(servers)) {
+              loadedServers = servers;
             }
           } catch (e) {}
-          callback();
+
+          if (loadedServers !== null) {
+            SPEEDTEST_SERVERS = loadedServers;
+            callback();
+          } else if (!xhr._fallbackTried) {
+            xhr._fallbackTried = true;
+            xhr.open("GET", "servers.json?r=" + Math.random());
+            xhr.send();
+          } else {
+            SPEEDTEST_SERVERS = [];
+            callback();
+          }
         };
         xhr.onerror = function () {
-          callback();
+          if (xhr._fallbackTried) {
+            SPEEDTEST_SERVERS = [];
+            callback();
+          } else {
+            xhr._fallbackTried = true;
+            xhr.open("GET", "servers.json?r=" + Math.random());
+            xhr.send();
+          }
         };
-        xhr.open("GET", "servers.json?r=" + Math.random());
+        xhr.open("GET", serverListUrl + (serverListUrl.match(/\?/) ? "&" : "?") + "r=" + Math.random());
         try {
           xhr.timeout = 2000;
           xhr.ontimeout = xhr.onerror;
@@ -442,8 +481,8 @@
       }
 
       function pingServer(server, callback) {
-        var url =
-          server.server + server.pingURL + (server.pingURL.match(/\?/) ? "&" : "?") + "cors=true&r=" + Math.random();
+        var baseUrl = joinServerUrl(server.server, server.pingURL);
+        var url = baseUrl + (baseUrl.match(/\?/) ? "&" : "?") + "cors=true&r=" + Math.random();
         var xhr = new XMLHttpRequest();
         var t = new Date().getTime();
         xhr.onload = function () {
@@ -494,12 +533,14 @@
         };
 
         if (!externalTarget && selectedServer) {
-          workerSettings.url_ping = selectedServer.server + selectedServer.pingURL;
+          workerSettings.url_ping = joinServerUrl(selectedServer.server, selectedServer.pingURL);
           workerSettings.mpot = true;
         }
 
-        worker = new Worker("stability_worker.js?r=" + Math.random());
+        var currentWorker = new Worker("stability_worker.js?r=" + Math.random());
+        worker = currentWorker;
         worker.onmessage = function (e) {
+          if (worker !== currentWorker) return;
           var data = JSON.parse(e.data);
           latestData = data;
 
@@ -537,12 +578,13 @@
         }
         // request final status
         if (worker) {
-          worker.postMessage("status");
+          var stoppedWorker = worker;
+          stoppedWorker.postMessage("status");
           setTimeout(function () {
-            if (worker) {
-              try {
-                worker.terminate();
-              } catch (e) {}
+            try {
+              stoppedWorker.terminate();
+            } catch (e) {}
+            if (worker === stoppedWorker) {
               worker = null;
             }
           }, 500);
