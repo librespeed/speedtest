@@ -79,14 +79,14 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   cp /speedtest/index.html /var/www/html/
   cp /speedtest/index-classic.html /var/www/html/
   cp /speedtest/index-modern.html /var/www/html/
-  
+  cp /speedtest/stability.html /var/www/html/
   # Copy frontend assets directly to root-level subdirectories (no frontend/ parent dir)
   mkdir -p /var/www/html/styling /var/www/html/javascript /var/www/html/images /var/www/html/fonts
   cp -a /speedtest/frontend/styling/* /var/www/html/styling/
   cp -a /speedtest/frontend/javascript/* /var/www/html/javascript/
   cp -a /speedtest/frontend/images/* /var/www/html/images/
   cp -a /speedtest/frontend/fonts/* /var/www/html/fonts/ 2>/dev/null || true
-  
+
   # Copy frontend config files
   cp /speedtest/frontend/settings.json /var/www/html/settings.json 2>/dev/null || true
   if [ -f /servers.json ]; then
@@ -103,6 +103,11 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/index-modern.html
     sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
     sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/stability.html
+  fi
+
+  # The stability page reads the same local server list as the main UI when present.
+  if [ -f /var/www/html/server-list.json ]; then
+    cp /var/www/html/server-list.json /var/www/html/servers.json
   fi
 
   # Replace title placeholders if TITLE is set
@@ -124,7 +129,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     TAGLINE_ESCAPED=$(sed_escape "$TAGLINE_HTML_ESCAPED")
     sed -i "s/<p class=\"tagline\">No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p>/<p class=\"tagline\">$TAGLINE_ESCAPED<\\/p>/g" /var/www/html/index-modern.html
   fi
-  
+
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
   if [ -z "$GDPR_EMAIL" ] && [ ! -z "$EMAIL" ]; then
     echo "WARNING: EMAIL env var is deprecated, please use GDPR_EMAIL instead" >&2
@@ -136,7 +141,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   if [ ! -z "$GDPR_EMAIL" ]; then
     # Escape special sed characters: & (replacement), / (delimiter), \ (escape), $ (variable)
     GDPR_EMAIL_ESCAPED=$(printf '%s\n' "$GDPR_EMAIL" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
-    
+
     for html_file in /var/www/html/index-modern.html /var/www/html/index-classic.html; do
       if [ -f "$html_file" ]; then
         sed -i "s/TO BE FILLED BY DEVELOPER/$GDPR_EMAIL_ESCAPED/g; s/PUT@YOUR_EMAIL.HERE/$GDPR_EMAIL_ESCAPED/g" "$html_file"
