@@ -357,7 +357,8 @@
       }
 
       // Server configuration (same pattern as index.html)
-      var SPEEDTEST_SERVERS = [];
+      // Set this to a different URL to load the server list from another location.
+      var SPEEDTEST_SERVERS = "server-list.json";
 
       // State
       var worker = null;
@@ -394,30 +395,51 @@
 
       // Load server list dynamically (Docker exposes server-list.json; older setups may expose servers.json)
       function loadServers(callback) {
+        if (Array.isArray(SPEEDTEST_SERVERS)) {
+          callback();
+          return;
+        }
+
+        var serverListUrl = typeof SPEEDTEST_SERVERS === "string" ? SPEEDTEST_SERVERS : "";
+        if (!serverListUrl) {
+          SPEEDTEST_SERVERS = [];
+          callback();
+          return;
+        }
+
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
+          var loadedServers = null;
           try {
             var servers = JSON.parse(xhr.responseText);
-            if (Array.isArray(servers) && servers.length > 0) {
-              SPEEDTEST_SERVERS = servers;
+            if (Array.isArray(servers)) {
+              loadedServers = servers;
             }
           } catch (e) {}
-          if (SPEEDTEST_SERVERS.length > 0 || xhr._fallbackTried) callback();
-          else {
+
+          if (loadedServers !== null) {
+            SPEEDTEST_SERVERS = loadedServers;
+            callback();
+          } else if (!xhr._fallbackTried) {
             xhr._fallbackTried = true;
             xhr.open("GET", "servers.json?r=" + Math.random());
             xhr.send();
+          } else {
+            SPEEDTEST_SERVERS = [];
+            callback();
           }
         };
         xhr.onerror = function () {
-          if (xhr._fallbackTried) callback();
-          else {
+          if (xhr._fallbackTried) {
+            SPEEDTEST_SERVERS = [];
+            callback();
+          } else {
             xhr._fallbackTried = true;
             xhr.open("GET", "servers.json?r=" + Math.random());
             xhr.send();
           }
         };
-        xhr.open("GET", "server-list.json?r=" + Math.random());
+        xhr.open("GET", serverListUrl + (serverListUrl.match(/\?/) ? "&" : "?") + "r=" + Math.random());
         try {
           xhr.timeout = 2000;
           xhr.ontimeout = xhr.onerror;
@@ -515,8 +537,10 @@
           workerSettings.mpot = true;
         }
 
-        worker = new Worker("stability_worker.js?r=" + Math.random());
+        var currentWorker = new Worker("stability_worker.js?r=" + Math.random());
+        worker = currentWorker;
         worker.onmessage = function (e) {
+          if (worker !== currentWorker) return;
           var data = JSON.parse(e.data);
           latestData = data;
 
@@ -554,12 +578,13 @@
         }
         // request final status
         if (worker) {
-          worker.postMessage("status");
+          var stoppedWorker = worker;
+          stoppedWorker.postMessage("status");
           setTimeout(function () {
-            if (worker) {
-              try {
-                worker.terminate();
-              } catch (e) {}
+            try {
+              stoppedWorker.terminate();
+            } catch (e) {}
+            if (worker === stoppedWorker) {
               worker = null;
             }
           }, 500);
