@@ -1,7 +1,7 @@
 # LibreSpeed
 
 > by Federico Dossena
-> Version 5.5.1
+> Version 6.1.0
 > [https://github.com/librespeed/speedtest/](https://github.com/librespeed/speedtest/)
 
 ## Introduction
@@ -83,23 +83,7 @@ Log into your database using phpMyAdmin or a similar software and create a new d
 
 Open `results/telemetry_settings.php` in a text editor. Set `$db_type` to either `mysql`,`postgresql`, `mssql` or `sqlite`.
 
-If you chose to use SQLite, the default configuration stores the database at `__DIR__ . '/../../speedtest_telemetry.db'`, which places it two directories up from the `results/` folder. This is designed to keep the database **outside your web-accessible directory** for security.
-
-**Critical Security Requirements**:
-1. **Web Server Configuration**: Configure your web server's document root to point to the application directory, NOT its parent. For example:
-   - Install application files to: `/var/www/speedtest/`
-   - Set Apache/nginx document root to: `/var/www/speedtest/` (NOT `/var/www/`)
-   - Database will be at: `/var/www/speedtest_telemetry.db` (outside document root, not web-accessible)
-
-2. **Alternative: Use Absolute Path**: For maximum security, especially if you cannot control the document root configuration, modify `$Sqlite_db_file` in `results/telemetry_settings.php` to use an absolute path completely outside your web directories:
-   ```php
-   $Sqlite_db_file = '/var/lib/speedtest/speedtest_telemetry.db';  // or /opt/speedtest_data/speedtest_telemetry.db
-   ```
-   Ensure the web server has write permissions to this directory.
-
-3. **Verification**: After running at least one speed test or accessing `sanitycheck.php` (which creates the database), try accessing `http://yourserver/speedtest_telemetry.db` in a browser - you should get a 404 error. If the file downloads, your configuration is insecure. Note: The database file won't exist until the first test is recorded, so you'll get a 404 initially even with correct configuration.
-
-SQLite doesn't require any additional configuration beyond setting a secure path and ensuring proper permissions.
+If you chose to use SQLite, you might want to change `$Sqlite_db_file` to another path where you want the database to be stored. Just make sure that the file cannot be downloaded by users. Sqlite doesn't require any additional configuration, you can skip the rest of this section.
 
 If you chose to use MySQL, you must set your database credentials:
 
@@ -190,18 +174,25 @@ Requirements:
   * FreeType 2 and its PHP module
   * The PHP gd library
 
-To install the speed test frontend, copy the following files to your web server:
+To install the speed test frontend, copy the project files to your web server and keep the modern UI assets next to the HTML files:
 
+* `index.html`
+* `index-classic.html`
+* `index-modern.html`
+* `design-switch.js`
+* `config.json`
 * `speedtest.js`
 * `speedtest_worker.js`
+* `favicon.ico`
+* the `backend` folder
+* the contents of `frontend/`, copied so `styling/`, `javascript/`, `images/`, and `fonts/` sit next to the HTML files
 * Optionally, the `results` folder
-* `index.html` (or one of the example UIs in the `examples` folder)
 
-__Important:__ The speed test needs write permissions in the installation folder!
+__Important:__ The speed test needs read and execute permissions in the installation folder where applicable!
 
 ##### Server list
 
-Edit `index.html` and uncomment the list of servers:
+Edit `index-classic.html` and uncomment the list of servers:
 
 ```js
 var SPEEDTEST_SERVERS=[
@@ -871,9 +862,6 @@ s.setParameter("test_order","P_D_U");
 ```
 
 This will point to our static files and set the test to only do ping/jitter, download and upload tests.
-
-There is also an example to achieve this with nginx backend here:
-https://github.com/librespeed/speedtest/issues/375#issuecomment-3769211254
 
 ## Troubleshooting
 

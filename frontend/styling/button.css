@@ -1,0 +1,83 @@
+/* The main "start the test" button and the share button */
+
+button {
+  height: 6.8rem;
+  min-width: 26.4rem;
+  padding: 0 5rem;
+  margin: 2.5rem;
+  border-radius: 3.4rem;
+  border: 0;
+
+  font-family: "Inter", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.1rem;
+  color: var(--button-text-color);
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0.4rem 1.6rem 0 var(--button-shadow-color);
+
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: scale(1) translate3d(0, 0, 0) perspective(1px);
+
+  background: var(--button-gradient-1-color-1);
+  transition: background-position 0.2s, transform 0.2s;
+  background-position: 0% 0%;
+  background: linear-gradient(
+    92.97deg,
+    var(--button-gradient-1-color-1) 0%,
+    var(--button-gradient-1-color-1) 33%,
+    var(--button-gradient-1-color-2) 40%,
+    var(--button-gradient-1-color-3) 66.71%,
+    var(--button-gradient-1-color-3) 100%
+  );
+  background-size: 300% 100%;
+
+  &.disabled {
+    cursor: default;
+    transform: scale(1) translate3d(0, 0, 0) perspective(1px);
+    background: var(--button-disabled-background-color);
+  }
+  &.small {
+    height: 4.7rem;
+    min-width: 20.2rem;
+    text-transform: lowercase;
+  }
+  &.inverted {
+    border: 1px solid var(--button-gradient-1-color-1);
+    color: transparent;
+    background-clip: text;
+  }
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  &:hover {
+    background-position: 60% 0%;
+    transform: scale(1.03) translate3d(0, 0, 0) perspective(1px);
+  }
+  &.active,
+  &:active {
+    background-position: 100% 0%;
+    animation: pulse 0.7s;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1.03) translate3d(0, 0, 0) perspective(1px);
+  }
+  20% {
+    transform: scale(1.2) translate3d(0, 0, 0) perspective(1px);
+  }
+  40% {
+    transform: scale(1) translate3d(0, 0, 0) perspective(1px);
+  }
+  60% {
+    transform: scale(1.1) translate3d(0, 0, 0) perspective(1px);
+  }
+  100% {
+    transform: scale(1) translate3d(0, 0, 0) perspective(1px);
+  }
+}

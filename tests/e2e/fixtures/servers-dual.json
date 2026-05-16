@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Local dual backend",
+    "server": "/",
+    "dlURL": "backend/garbage.php",
+    "ulURL": "backend/empty.php",
+    "pingURL": "backend/empty.php",
+    "getIpURL": "backend/getIP.php",
+    "id": 1
+  },
+  {
+    "name": "External backend testpoint",
+    "server": "http://backend-testpoint/",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php",
+    "id": 2
+  }
+]

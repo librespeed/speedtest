@@ -1,0 +1,36 @@
+:root {
+  --theme-green: #5cf9fd;
+  --theme-pink: #d63bc6;
+
+  --background-backup-color: #0e0720;
+  --background-overlay-color: rgb(41 26 70 / 71%);
+
+  --primary-text-color: #ffffff;
+  --tagline-text-color: var(--theme-green);
+  --secondary-text-color: #898591;
+  --primary-text-disabled-color: #888888;
+  --secondary-text-disabled-color: #2e7d7f;
+
+  --button-text-color: #3e2f50;
+  --button-gradient-1-color-1: #f5f5f5;
+  --button-gradient-1-color-2: var(--theme-green);
+  --button-gradient-1-color-3: var(--theme-pink);
+  --button-shadow-color: #5cf9fd47;
+  --button-disabled-background-color: #a2a2a2;
+
+  --server-selector-border-color: #625b6b;
+  --server-selector-hover-border-color: var(--theme-green);
+  --server-selector-background-color: #251b32;
+  --server-selector-hover-background-color: var(--server-selector-border-color);
+
+  --gauge-background-color: #3e2f50;
+  --gauge-progress-color: #726c7a;
+  --gauge-pointer-green: #e2fbfc;
+  --gauge-pointer-pink: #d091ca;
+
+  --ping-and-jitter-primary-text-color: #f5f5f5;
+  --ping-and-jitter-secondary-text-color: #7b7b7b;
+
+  --popup-background-color: #251b32;
+  --popup-shadow-color: #000000;
+}

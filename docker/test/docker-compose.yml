@@ -4,14 +4,14 @@ x-shared:
   speedtest-service: &speedtest-service
     environment:
       - PASSWORD=gimmeTheStats1337
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
       - TELEMETRY=true
 
 services:
-###################### POSTGRESQL ################################
+  ###################### POSTGRESQL ################################
   pg:
     image: postgres:alpine
     environment:
@@ -32,7 +32,7 @@ services:
       - DB_PASSWORD=Not4SecureProduction
       - DB_TYPE=postgresql
       - DB_USERNAME=librespeed
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -48,7 +48,7 @@ services:
     ports:
       - 9124:8080
 
-####################### MYSQL ##############################
+  ####################### MYSQL ##############################
 
   mysql:
     image: mysql:lts
@@ -73,7 +73,7 @@ services:
       - DB_PASSWORD=Not4SecureProduction
       - DB_TYPE=mysql
       - DB_USERNAME=librespeed
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -88,7 +88,72 @@ services:
     ports:
       - 9126:8080
 
-################ SQLITE ####################################
+  ####################### MSSQL ##############################
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Not4SecureProduction1337
+      - MSSQL_PID=Express
+    healthcheck:
+      test:
+        ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$SA_PASSWORD -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+
+  mssql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      - SA_PASSWORD=Not4SecureProduction1337
+    volumes:
+      - ../../results/telemetry_mssql.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    command: >
+      bash -c '
+        echo "Waiting for MSSQL to be ready...";
+        until /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P "$$SA_PASSWORD" -C -Q "SELECT 1"; do
+          sleep 1;
+        done;
+        echo "Running init scripts...";
+        for f in /docker-entrypoint-initdb.d/*.sql; do
+          echo "Executing $$f...";
+          /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P "$$SA_PASSWORD" -C -i "$$f";
+        done;
+        echo "Initialization complete!";
+      '
+
+  speedtest-debian-mssql:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment: &env_vars_mssql
+      - PASSWORD=gimmeTheStats1337
+      - DB_HOSTNAME=mssql
+      - DB_NAME=librespeed
+      - DB_PASSWORD=Not4SecureProduction1337
+      - DB_TYPE=mssql
+      - DB_USERNAME=sa
+      - GDPR_EMAIL=test@example.com
+      - ENABLE_ID_OBFUSCATION=true
+      - MODE=standalone
+      - REDACT_IP_ADDRESSES=true
+      - TELEMETRY=true
+    ports:
+      - 9130:8080
+
+  speedtest-alpine-mssql:
+    build:
+      context: ../..
+      dockerfile: Dockerfile.alpine
+    environment: *env_vars_mssql
+    ports:
+      - 9131:8080
+
+  ################ SQLITE ####################################
 
   speedtest-debian-sqlite:
     # check at http://localhost:9125/results/sanitycheck.php
@@ -97,7 +162,7 @@ services:
       dockerfile: Dockerfile
     environment: &env_vars_sqlite
       - PASSWORD=gimmeTheStats1337
-      - EMAIL=test@example.com
+      - GDPR_EMAIL=test@example.com
       - ENABLE_ID_OBFUSCATION=true
       - MODE=standalone
       - REDACT_IP_ADDRESSES=true
@@ -126,14 +191,16 @@ services:
     ports:
       - 9129:8080
 
-##############  TEST CONTAINER  ###############################################################
+  ##############  TEST CONTAINER  ###############################################################
   test-container:
     image: alpine
     depends_on:
       - pg
       - mysql
+      - mssql-init
       - speedtest-alpine-mysql
       - speedtest-alpine-pg
+      - speedtest-alpine-mssql
     volumes:
       - ./test-script.sh:/test-script.sh
     command:

@@ -24,7 +24,32 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  # Keep e2e in this workflow so Docker image build/push is hard-gated by test success.
+  # Do not move automatic e2e back to playwright.yml, otherwise master pushes run duplicate e2e jobs.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
   build:
+    needs: e2e
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

@@ -1,0 +1,58 @@
+/* Texts on the front page */
+
+main {
+  text-align: center;
+  padding: 0 2rem;
+  flex: 1;
+
+  & > h1 {
+    margin: 0.2rem;
+    font-size: 3.6rem;
+    font-weight: 400;
+    letter-spacing: -0.2rem;
+    color: var(--primary-text-color);
+  }
+
+  & p {
+    margin-top: 8rem;
+    font-size: 1.6rem;
+    line-height: 2.5rem;
+    font-weight: 400;
+    letter-spacing: -0.1rem;
+    color: var(--secondary-text-color);
+
+    &#privacy-warning {
+      min-height: 5.3rem;
+
+      & > span {
+        font-weight: 700;
+        color: var(--theme-green);
+      }
+      &.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+  }
+
+  & > p.tagline {
+    margin-top: 0;
+    margin-bottom: 6rem;
+    font-size: 2rem;
+    color: var(--tagline-text-color);
+  }
+
+  & a {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.1rem;
+    color: var(--secondary-text-color);
+    text-underline-offset: 0.3rem;
+    transition: text-underline-offset 0.2s;
+
+    &:hover {
+      color: var(--theme-green);
+      text-underline-offset: 0.5rem;
+    }
+  }
+}

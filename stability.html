@@ -385,7 +385,14 @@
       var CHART_PADDING_TOP = 15;
       var CHART_PADDING_BOTTOM = 30;
 
-      // Load server list dynamically (for Docker frontend/dual modes where servers.json exists)
+      function joinServerUrl(server, path) {
+        if (!server) return path;
+        if (!path) return server;
+        if (server.charAt(server.length - 1) === "/" || path.charAt(0) === "/") return server + path;
+        return server + "/" + path;
+      }
+
+      // Load server list dynamically (Docker exposes server-list.json; older setups may expose servers.json)
       function loadServers(callback) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
@@ -395,12 +402,22 @@
               SPEEDTEST_SERVERS = servers;
             }
           } catch (e) {}
-          callback();
+          if (SPEEDTEST_SERVERS.length > 0 || xhr._fallbackTried) callback();
+          else {
+            xhr._fallbackTried = true;
+            xhr.open("GET", "servers.json?r=" + Math.random());
+            xhr.send();
+          }
         };
         xhr.onerror = function () {
-          callback();
+          if (xhr._fallbackTried) callback();
+          else {
+            xhr._fallbackTried = true;
+            xhr.open("GET", "servers.json?r=" + Math.random());
+            xhr.send();
+          }
         };
-        xhr.open("GET", "servers.json?r=" + Math.random());
+        xhr.open("GET", "server-list.json?r=" + Math.random());
         try {
           xhr.timeout = 2000;
           xhr.ontimeout = xhr.onerror;
@@ -442,8 +459,8 @@
       }
 
       function pingServer(server, callback) {
-        var url =
-          server.server + server.pingURL + (server.pingURL.match(/\?/) ? "&" : "?") + "cors=true&r=" + Math.random();
+        var baseUrl = joinServerUrl(server.server, server.pingURL);
+        var url = baseUrl + (baseUrl.match(/\?/) ? "&" : "?") + "cors=true&r=" + Math.random();
         var xhr = new XMLHttpRequest();
         var t = new Date().getTime();
         xhr.onload = function () {
@@ -494,7 +511,7 @@
         };
 
         if (!externalTarget && selectedServer) {
-          workerSettings.url_ping = selectedServer.server + selectedServer.pingURL;
+          workerSettings.url_ping = joinServerUrl(selectedServer.server, selectedServer.pingURL);
           workerSettings.mpot = true;
         }
 

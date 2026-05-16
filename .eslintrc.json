@@ -27,7 +27,12 @@
     "addEventListener": "readonly"
   },
   "rules": {
-    "no-unused-vars": ["warn", { "args": "none" }],
+    "no-unused-vars": [
+      "warn",
+      {
+        "args": "none"
+      }
+    ],
     "no-console": "off",
     "no-empty": "warn",
     "no-undef": "warn",

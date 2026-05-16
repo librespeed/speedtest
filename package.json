@@ -1,10 +1,12 @@
 {
   "name": "librespeed-speedtest",
-  "version": "5.5.1",
+  "version": "6.1.0",
   "description": "LibreSpeed - A Free and Open Source speed test that you can host on your server(s)",
   "main": "speedtest.js",
   "scripts": {
     "test": "echo \"No automated tests configured yet\" && exit 0",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
     "lint": "eslint speedtest.js speedtest_worker.js stability_worker.js",
     "lint:fix": "eslint --fix speedtest.js speedtest_worker.js stability_worker.js",
     "format": "prettier --write \"*.js\"",
@@ -37,6 +39,7 @@
   },
   "homepage": "https://github.com/librespeed/speedtest#readme",
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "eslint": "^8.57.0",
     "prettier": "^3.1.1"
   },
