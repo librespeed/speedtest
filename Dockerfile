@@ -21,7 +21,6 @@ COPY results/*.php /speedtest/results/
 COPY results/*.ttf /speedtest/results/
 
 COPY *.js /speedtest/
-COPY stability.html /speedtest/
 COPY index.html /speedtest/
 COPY index-classic.html /speedtest/
 COPY index-modern.html /speedtest/
