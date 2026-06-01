@@ -66,7 +66,7 @@ Speedtest.prototype = {
    * - parameter: string with the name of the parameter that you want to set
    * - value: new value for the parameter
    *
-   * Invalid values or nonexistant parameters will be ignored by the speed test worker.
+   * Invalid values or nonexistent parameters will be ignored by the speed test worker.
    */
   setParameter: function(parameter, value) {
     if (this._state == 3)
