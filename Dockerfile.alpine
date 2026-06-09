@@ -20,7 +20,7 @@ RUN apk add --quiet --no-cache \
 RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
     ln -sf /dev/stderr /var/log/apache2/error.log
 
-# Use PHP's scan dir without pinning the apk PHP major.
+# Install the ini into the scan dir PHP itself reports.
 COPY docker/librespeed-php.ini /tmp/librespeed-php.ini
 RUN set -eu; \
     scan_dir="$(php -r 'echo rtrim(PHP_CONFIG_FILE_SCAN_DIR);')"; \
