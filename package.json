@@ -50,6 +50,8 @@
     "stability.html",
     "index.html",
     "favicon.ico",
+    "manifest.webmanifest",
+    "images/",
     "backend/",
     "examples/",
     "results/"

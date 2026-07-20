@@ -37,6 +37,8 @@ COPY index-modern.html /speedtest/
 COPY config.json /speedtest/
 COPY stability.html /speedtest/
 COPY favicon.ico /speedtest/
+COPY manifest.webmanifest /speedtest/
+COPY images/ /speedtest/images/
 
 COPY docker/entrypoint.sh /
 
