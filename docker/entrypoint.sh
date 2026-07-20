@@ -41,8 +41,10 @@ cp /speedtest/stability.html /var/www/html/
 cp /speedtest/config.json /var/www/html/
 cp /speedtest/design-switch.js /var/www/html/
 
-# Copy favicon
+# Copy PWA metadata and icons
 cp /speedtest/favicon.ico /var/www/html/
+cp /speedtest/manifest.webmanifest /var/www/html/
+cp -r /speedtest/images /var/www/html/
 
 # Set custom webroot on alpine
 if is_alpine; then
