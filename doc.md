@@ -60,6 +60,20 @@ Let's install the speed test.
 
 Put all files on your web server via FTP or by copying them directly. You can install it in the root, or in a subdirectory.
 
+**Web server upload limit:** The upload test sends POST requests up to 20 MB (configurable with `xhr_ul_blob_megabytes`). Without proper configuration, the server will reject these with HTTP 413, causing wildly inaccurate upload speeds. Configure your web server to accept large request bodies:
+
+Nginx:
+```
+client_max_body_size 128m;
+```
+
+Apache:
+```
+LimitRequestBody 134217728
+```
+
+IIS: Set `maxAllowedContentLength` in `web.config`.
+
 __Important:__ The speed test needs write permissions in the installation folder!
 
 #### ipinfo.io

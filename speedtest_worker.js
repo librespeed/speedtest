@@ -502,9 +502,20 @@ function ulTest(done) {
 							prevLoaded = event.loaded;
 						}.bind(this);
 						xhr[i].upload.onload = function() {
-							// this stream sent all the garbage data, start again
-							tverb("ul stream finished " + i);
-							testStream(i, 0);
+							// check HTTP status - non-2xx means server rejected the request (e.g. 413 body too large)
+							if (xhr[i].status >= 200 && xhr[i].status < 300) {
+								// this stream sent all the garbage data, start again
+								tverb("ul stream finished " + i);
+								testStream(i, 0);
+							} else {
+								tverb("ul stream failed with HTTP " + xhr[i].status + " " + i);
+								if (settings.xhr_ignoreErrors === 0) failed = true; //abort
+								try {
+									xhr[i].abort();
+								} catch (e) {}
+								delete xhr[i];
+								if (settings.xhr_ignoreErrors === 1) testStream(i, 0); //restart stream
+							}
 						}.bind(this);
 						xhr[i].upload.onerror = function() {
 							tverb("ul stream failed " + i);
