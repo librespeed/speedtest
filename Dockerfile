@@ -10,6 +10,8 @@ RUN install-php-extensions iconv gd pdo pdo_mysql pdo_pgsql pgsql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+COPY docker/librespeed-php.ini ${PHP_INI_DIR}/conf.d/99-librespeed.ini
+
 # Prepare files and folders
 RUN mkdir -p /speedtest/
 
