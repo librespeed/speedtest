@@ -1,7 +1,7 @@
 [
   {
     "name": "Backend testpoint",
-    "server": "http://backend-testpoint/",
+    "server": "http://backend-testpoint:8080/",
     "dlURL": "garbage.php",
     "ulURL": "empty.php",
     "pingURL": "empty.php",
