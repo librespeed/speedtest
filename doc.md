@@ -72,7 +72,16 @@ Apache:
 LimitRequestBody 134217728
 ```
 
-IIS: Set `maxAllowedContentLength` in `web.config`.
+IIS: Add the following to `web.config` (value is in bytes):
+```xml
+<system.webServer>
+  <security>
+    <requestFiltering>
+      <requestLimits maxAllowedContentLength="134217728" />
+    </requestFiltering>
+  </security>
+</system.webServer>
+```
 
 __Important:__ The speed test needs write permissions in the installation folder!
 
