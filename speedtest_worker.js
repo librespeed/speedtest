@@ -515,6 +515,16 @@ function ulTest(done) {
 							delete xhr[i];
 							if (settings.xhr_ignoreErrors === 1) testStream(i, 0); //restart stream
 						}.bind(this);
+						xhr[i].onload = function() {
+							// check HTTP status after full response is available
+							if (xhr[i].status >= 200 && xhr[i].status < 300) return;
+							tverb("ul stream failed with HTTP " + xhr[i].status + " " + i);
+							if (settings.xhr_ignoreErrors === 0) failed = true; //abort
+							try {
+								xhr[i].abort();
+							} catch (e) {}
+							delete xhr[i];
+						}.bind(this);
 						// send xhr
 						xhr[i].open("POST", settings.url_ul + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
 						try {
