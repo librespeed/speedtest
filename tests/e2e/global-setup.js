@@ -1,13 +1,48 @@
 const { execSync } = require('node:child_process');
+const http = require('node:http');
+const https = require('node:https');
 
 const COMPOSE_FILE = 'tests/docker-compose-playwright.yml';
+
+function isHttpOk(url, requestTimeoutMs = 10_000) {
+  return new Promise((resolve) => {
+    const client = url.startsWith('https://') ? https : http;
+    let settled = false;
+    const settle = (value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve(value);
+    };
+
+    const req = client.get(url, (res) => {
+      const status = res.statusCode || 0;
+      // Drain body so sockets can be reused/closed cleanly.
+      res.resume();
+      settle(status >= 200 && status < 300);
+    });
+
+    req.setTimeout(requestTimeoutMs, () => {
+      req.destroy(new Error(`Request timed out after ${requestTimeoutMs}ms`));
+    });
+
+    req.on('timeout', () => {
+      req.destroy(new Error(`Request timed out after ${requestTimeoutMs}ms`));
+    });
+
+    req.on('error', () => {
+      // Connection issues/timeouts are expected while services are starting.
+      settle(false);
+    });
+  });
+}
 
 async function waitForReady(name, url, timeoutMs) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const response = await fetch(url, { redirect: 'manual' });
-      if (response.ok) {
+      if (await isHttpOk(url)) {
         return;
       }
     } catch {
