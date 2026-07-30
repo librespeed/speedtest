@@ -502,18 +502,28 @@ function ulTest(done) {
 							prevLoaded = event.loaded;
 						}.bind(this);
 						xhr[i].upload.onload = function() {
-							// this stream sent all the garbage data, start again
-							tverb("ul stream finished " + i);
-							testStream(i, 0);
+							// body uploaded, but response not yet available.
+							// xhr.onload below handles the full lifecycle.
 						}.bind(this);
 						xhr[i].upload.onerror = function() {
 							tverb("ul stream failed " + i);
-							if (settings.xhr_ignoreErrors === 0) failed = true; //abort
-							try {
-								xhr[i].abort();
-							} catch (e) {}
+							if (settings.xhr_ignoreErrors === 0) failed = true;
+							try { x.abort(); } catch (e) {}
 							delete xhr[i];
-							if (settings.xhr_ignoreErrors === 1) testStream(i, 0); //restart stream
+							if (settings.xhr_ignoreErrors === 1) testStream(i, 0);
+						}.bind(this);
+						xhr[i].onload = function() {
+							// response complete — check status on captured x, not xhr[i]
+							if (x.status >= 200 && x.status < 300) {
+								tverb("ul stream finished " + i);
+								testStream(i, 0);
+							} else {
+								tverb("ul stream failed with HTTP " + x.status + " " + i);
+								if (settings.xhr_ignoreErrors === 0) failed = true;
+								try { x.abort(); } catch (e) {}
+								delete xhr[i];
+								if (settings.xhr_ignoreErrors === 1) testStream(i, 0);
+							}
 						}.bind(this);
 						// send xhr
 						xhr[i].open("POST", settings.url_ul + url_sep(settings.url_ul) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true); // random string to prevent caching
