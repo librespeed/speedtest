@@ -27,6 +27,9 @@ function getAnalyticsData() {
         'avg_upload' => 0,
         'avg_ping' => 0,
         'avg_jitter' => 0,
+        'max_download' => 0,
+        'max_upload' => 0,
+        'min_ping' => 0,
         'tests_by_day' => [],
         'download_distribution' => [],
         'upload_distribution' => [],
@@ -44,25 +47,39 @@ function getAnalyticsData() {
         $stmt = $pdo->query('SELECT COUNT(*) as total FROM speedtest_users');
         $data['total_tests'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Average speeds
-        $stmt = $pdo->query('SELECT
-            AVG(CAST(dl AS DECIMAL(10,2))) as avg_dl,
-            AVG(CAST(ul AS DECIMAL(10,2))) as avg_ul,
-            AVG(CAST(ping AS DECIMAL(10,2))) as avg_ping,
-            AVG(CAST(jitter AS DECIMAL(10,2))) as avg_jitter,
-            MAX(CAST(dl AS DECIMAL(10,2))) as max_dl,
-            MAX(CAST(ul AS DECIMAL(10,2))) as max_ul,
-            MIN(CAST(ping AS DECIMAL(10,2))) as min_ping
-            FROM speedtest_users
-            WHERE dl IS NOT NULL AND dl != ""');
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $data['avg_download'] = round((float)$row['avg_dl'], 2);
-        $data['avg_upload'] = round((float)$row['avg_ul'], 2);
-        $data['avg_ping'] = round((float)$row['avg_ping'], 2);
-        $data['avg_jitter'] = round((float)$row['avg_jitter'], 2);
-        $data['max_download'] = round((float)$row['max_dl'], 2);
-        $data['max_upload'] = round((float)$row['max_ul'], 2);
-        $data['min_ping'] = round((float)$row['min_ping'], 2);
+        // Download speed values (used for average/max and distribution)
+        $stmt = $pdo->query('SELECT dl FROM speedtest_users WHERE dl IS NOT NULL AND dl != \'\'');
+        $downloads = array_map('floatval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        $data['download_distribution'] = createSpeedBuckets($downloads);
+        if ($downloads) {
+            $data['avg_download'] = round(array_sum($downloads) / count($downloads), 2);
+            $data['max_download'] = round(max($downloads), 2);
+        }
+
+        // Upload speed values
+        $stmt = $pdo->query('SELECT ul FROM speedtest_users WHERE ul IS NOT NULL AND ul != \'\'');
+        $uploads = array_map('floatval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        $data['upload_distribution'] = createSpeedBuckets($uploads);
+        if ($uploads) {
+            $data['avg_upload'] = round(array_sum($uploads) / count($uploads), 2);
+            $data['max_upload'] = round(max($uploads), 2);
+        }
+
+        // Ping values
+        $stmt = $pdo->query('SELECT ping FROM speedtest_users WHERE ping IS NOT NULL AND ping != \'\'');
+        $pings = array_map('floatval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        $data['ping_distribution'] = createPingBuckets($pings);
+        if ($pings) {
+            $data['avg_ping'] = round(array_sum($pings) / count($pings), 2);
+            $data['min_ping'] = round(min($pings), 2);
+        }
+
+        // Jitter values
+        $stmt = $pdo->query('SELECT jitter FROM speedtest_users WHERE jitter IS NOT NULL AND jitter != \'\'');
+        $jitters = array_map('floatval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        if ($jitters) {
+            $data['avg_jitter'] = round(array_sum($jitters) / count($jitters), 2);
+        }
 
         // Tests by day (last 30 days)
         if ('mssql' === $db_type) {
@@ -81,6 +98,14 @@ function getAnalyticsData() {
                 WHERE timestamp >= NOW() - INTERVAL '30 days'
                 GROUP BY TO_CHAR(timestamp, 'YYYY-MM-DD')
                 ORDER BY day ASC");
+        } elseif ('mysql' === $db_type) {
+            $stmt = $pdo->query("SELECT
+                DATE(timestamp) as day,
+                COUNT(*) as count
+                FROM speedtest_users
+                WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                GROUP BY DATE(timestamp)
+                ORDER BY day ASC");
         } else {
             $stmt = $pdo->query("SELECT
                 DATE(timestamp) as day,
@@ -92,23 +117,8 @@ function getAnalyticsData() {
         }
         $data['tests_by_day'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Download speed distribution (buckets)
-        $stmt = $pdo->query('SELECT dl FROM speedtest_users WHERE dl IS NOT NULL AND dl != ""');
-        $downloads = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $data['download_distribution'] = createSpeedBuckets($downloads);
-
-        // Upload speed distribution
-        $stmt = $pdo->query('SELECT ul FROM speedtest_users WHERE ul IS NOT NULL AND ul != ""');
-        $uploads = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $data['upload_distribution'] = createSpeedBuckets($uploads);
-
-        // Ping distribution
-        $stmt = $pdo->query('SELECT ping FROM speedtest_users WHERE ping IS NOT NULL AND ping != ""');
-        $pings = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $data['ping_distribution'] = createPingBuckets($pings);
-
         // Browser distribution from user agent
-        $stmt = $pdo->query('SELECT ua FROM speedtest_users WHERE ua IS NOT NULL AND ua != ""');
+        $stmt = $pdo->query('SELECT ua FROM speedtest_users WHERE ua IS NOT NULL AND ua != \'\'');
         $userAgents = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $data['browsers'] = parseBrowsers($userAgents);
 
@@ -121,7 +131,7 @@ function getAnalyticsData() {
         $data['recent_speeds'] = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
 
         // Location data from ispinfo
-        $stmt = $pdo->query('SELECT ispinfo FROM speedtest_users WHERE ispinfo IS NOT NULL AND ispinfo != ""');
+        $stmt = $pdo->query('SELECT ispinfo FROM speedtest_users WHERE ispinfo IS NOT NULL AND ispinfo != \'\'');
         $ispInfos = $stmt->fetchAll(PDO::FETCH_COLUMN);
         $locationData = parseLocationData($ispInfos);
         $data['countries'] = $locationData['countries'];
