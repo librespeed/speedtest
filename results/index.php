@@ -31,6 +31,15 @@ function tryFont($name)
  */
 function format($d)
 {
+    // Rows written before the telemetry endpoint validated its input can hold
+    // anything, and the columns are declared `text` in every schema. An empty
+    // string reaching number_format() is a TypeError on PHP 8, which killed the
+    // whole image before its Content-Type header was even sent, so a result
+    // with a blank measurement answered 500 rather than drawing a zero.
+    if (!is_numeric($d)) {
+        $d = 0;
+    }
+
     if ($d < 10) {
         return number_format($d, 2, '.', '');
     }
