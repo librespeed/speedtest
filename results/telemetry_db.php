@@ -189,8 +189,54 @@ function isObfuscationEnabled()
 /**
  * @return string|false returns the id of the inserted column or false on error if returnErrorMessage is false or a error message if returnErrorMessage is true
  */
+/**
+ * Normalises a measurement into a number, or null when it is not one.
+ *
+ * The four measurement columns are declared `text` in every schema shipped
+ * here, and nothing validated what went into them, so a client could store any
+ * string it liked. That has consequences beyond statistics: `format()` in
+ * index.php hands the value to `number_format()`, which on PHP 8 raises a
+ * TypeError for a string, so a single empty `dl=` turned that result's share
+ * image into a 500.
+ *
+ * Storing null instead keeps the row — the test still happened, and the IP,
+ * user agent and timestamp are still worth having — while leaving the value out
+ * of aggregates, which skip nulls. `COUNT(*) - COUNT(dl)` then reports how many
+ * submissions arrived malformed, so nothing is hidden by accepting them.
+ *
+ * No upper bound is imposed: links keep getting faster, and a cap would
+ * silently discard the fastest real results.
+ *
+ * @param mixed $value
+ *
+ * @return float|null
+ */
+function normalizeMeasurement($value)
+{
+    if (is_array($value) || is_object($value) || is_bool($value) || null === $value) {
+        return null;
+    }
+
+    $value = trim((string) $value);
+    if ('' === $value || !is_numeric($value)) {
+        return null;
+    }
+
+    $number = (float) $value;
+    if (!is_finite($number) || $number < 0) {
+        return null;
+    }
+
+    return $number;
+}
+
 function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log, $returnExceptionOnError = false)
 {
+    $dl = normalizeMeasurement($dl);
+    $ul = normalizeMeasurement($ul);
+    $ping = normalizeMeasurement($ping);
+    $jitter = normalizeMeasurement($jitter);
+
     $pdo = getPdo();
     if (!($pdo instanceof PDO)) {
 		if($returnExceptionOnError){
