@@ -138,6 +138,10 @@ function getPdo($returnErrorMessage = false)
                 `log`       longtext
                 );
             ');
+            // Every query that is not a lookup by id orders or filters by
+            // timestamp, and without this the table is scanned in full each
+            // time. The other schemas declare the same index.
+            $pdo->exec('CREATE INDEX IF NOT EXISTS `speedtest_users_timestamp` ON `speedtest_users` (`timestamp`);');
 
             return $pdo;
         }
