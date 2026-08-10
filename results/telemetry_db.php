@@ -326,6 +326,74 @@ function getSpeedtestUserById($id,$returnExceptionOnError = false)
 }
 
 /**
+ * The database's own idea of the current time.
+ *
+ * Which month a row belongs to is decided by comparing against the timestamp
+ * column, so it always comes out consistent with whatever the column holds. But
+ * deciding which month is the current one cannot be done from PHP's clock: the
+ * backends disagree on what they record. SQLite's CURRENT_TIMESTAMP is UTC,
+ * PostgreSQL's now() and MSSQL's getdate() are the server's local time, and
+ * MySQL's depends on the session time zone. Asking the database keeps that
+ * decision in the same frame as the data.
+ *
+ * @return string|null "YYYY-MM-DD HH:MM:SS"
+ */
+function getDatabaseNow()
+{
+    $pdo = getPdo();
+    if (!($pdo instanceof PDO)) {
+        return null;
+    }
+
+    try {
+        // ANSI, and accepted by all four supported backends.
+        $stmt = $pdo->query('SELECT CURRENT_TIMESTAMP');
+        $value = $stmt->fetchColumn();
+        if (!is_string($value) || '' === $value) {
+            return null;
+        }
+
+        return $value;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/**
+ * Streams the rows of a half-open period for aggregation.
+ *
+ * Returns the statement rather than an array: a month of a busy instance is
+ * more rows than should be materialised at once, and the caller only needs to
+ * pass over them. Only the columns the summary reads are selected — the log is
+ * the largest column in the table and nothing aggregates it.
+ *
+ * @param string $from inclusive
+ * @param string $to   exclusive
+ *
+ * @return PDOStatement|false
+ */
+function getSpeedtestUsersBetween($from, $to)
+{
+    $pdo = getPdo();
+    if (!($pdo instanceof PDO)) {
+        return false;
+    }
+
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT timestamp, ip, ispinfo, ua, dl, ul, ping, jitter
+            FROM speedtest_users
+            WHERE timestamp >= ? AND timestamp < ?'
+        );
+        $stmt->execute([$from, $to]);
+
+        return $stmt;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
  * @return array|false
  */
 function getLatestSpeedtestUsers()
