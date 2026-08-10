@@ -58,6 +58,12 @@ You can override the configuration by adding a URL parameter:
 
 URL parameters take precedence over the configuration file, making them useful for testing or allowing users to choose their preferred design.
 
+### Shared Result Images
+
+The `useNewDesign` setting also controls the default style of shared result
+images. Result images can be explicitly overridden with `?style=modern` or
+`?style=classic`.
+
 ## Design Locations
 
 ### Non-Docker Deployments
