@@ -41,8 +41,7 @@ Works with mobile versions too.
 Assuming you have PHP and a web server installed, the installation steps are quite simple.
 
 1. Download the source code and extract it
-1. Copy the project files to your web server's shared folder (ie. `/var/www/html/speedtest` for Apache). For the current layout, the web root should contain `index.html`, `index-classic.html`, `index-modern.html`, `stability.html`, `design-switch.js`, `config.json`, `speedtest.js`, `speedtest_worker.js`, `stability_worker.js`, `favicon.ico`, and the `backend` folder.
-1. Also copy the contents of `frontend/` into the same web root so the modern UI assets end up in `styling/`, `javascript/`, `images/`, and `fonts/` next to the HTML files.
+1. Copy the project files to your web server's shared folder (ie. `/var/www/html/speedtest` for Apache), keeping the layout as it is in the repository. The modern UI loads its assets from `frontend/`, so that directory is copied as a whole rather than unpacked.
 1. Optionally, copy the results folder too, and set up the database using the config file in it.
 1. Be sure your permissions allow read and execute access where needed.
 1. Visit YOURSITE/speedtest/index.html and voila!

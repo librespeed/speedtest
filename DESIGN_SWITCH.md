@@ -73,9 +73,9 @@ URL parameters take precedence over the configuration file, making them useful f
 ### Docker Deployments
 - **Entry Point**: Root `index.html` file (lightweight redirect page)
 - **Old Design**: `index-classic.html` at root
-- **New Design**: `index-modern.html` at root (references assets in root subdirectories)
-- **Assets**: Frontend assets copied directly to root subdirectories (`styling/`, `javascript/`, `images/`, `fonts/`)
-- **No `frontend/` directory** - Assets are flattened to root level
+- **New Design**: `index-modern.html` at root (references assets in `frontend/` subdirectory)
+- **Assets**: Frontend assets in `frontend/`, copied into the web root unchanged
+- Same layout as a non-Docker deployment, so the two cannot drift apart
 
 Both designs are at the same directory level, ensuring that relative paths to shared resources like `backend/` and `results/` work correctly for both.
 
@@ -93,4 +93,4 @@ Both design HTML files are at the root level, eliminating path issues.
 The modern design references assets from the `frontend/` subdirectory (e.g., `frontend/styling/index.css`), while both designs can access shared resources like `backend/` and `results/` using the same relative paths.
 
 ### Docker
-In Docker deployments, the `frontend/` directory is flattened during container startup. Assets are copied directly to root-level subdirectories (`styling/`, `javascript/`, `images/`, `fonts/`), and `index-modern.html` references these root-level paths. This eliminates the `frontend/` parent directory in the container.
+In Docker deployments, `frontend/` is copied into the web root as it stands during container startup, so the container serves the same layout the repository has and the same paths `index-modern.html` asks for.

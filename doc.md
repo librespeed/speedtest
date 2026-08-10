@@ -197,18 +197,20 @@ Requirements:
   * FreeType 2 and its PHP module
   * The PHP gd library
 
-To install the speed test frontend, copy the project files to your web server and keep the modern UI assets next to the HTML files:
+To install the speed test frontend, copy the project files to your web server, keeping the layout they have in the repository:
 
 * `index.html`
 * `index-classic.html`
 * `index-modern.html`
 * `design-switch.js`
 * `config.json`
+* `settings.json`
+* `server-list.json`
 * `speedtest.js`
 * `speedtest_worker.js`
 * `favicon.ico`
 * the `backend` folder
-* the contents of `frontend/`, copied so `styling/`, `javascript/`, `images/`, and `fonts/` sit next to the HTML files
+* the `frontend` folder, copied as a whole: the modern UI loads its assets from `frontend/`
 * Optionally, the `results` folder
 
 __Important:__ The speed test needs read and execute permissions in the installation folder where applicable!
