@@ -31,6 +31,17 @@ services:
     ports:
       - "18185:8080"
 
+  standalone-alpine:
+    build:
+      context: ..
+      dockerfile: Dockerfile.alpine
+    environment:
+      - MODE=standalone
+      - WEBPORT=8080
+      - USE_NEW_DESIGN=true
+    ports:
+      - "18187:8080"
+
   standalone-apostrophe:
     build:
       context: ..

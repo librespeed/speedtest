@@ -68,6 +68,7 @@ module.exports = async () => {
   const timeoutMs = 180_000;
   await waitForReady('standalone', 'http://127.0.0.1:18180/index.html', timeoutMs);
   await waitForReady('standalone-new', 'http://127.0.0.1:18185/index.html', timeoutMs);
+  await waitForReady('standalone-alpine', 'http://127.0.0.1:18187/index.html', timeoutMs);
   await waitForReady('backend', 'http://127.0.0.1:18181/empty.php', timeoutMs);
   await waitForReady('frontend', 'http://127.0.0.1:18182/index-modern.html', timeoutMs);
   await waitForReady('dual', 'http://127.0.0.1:18183/index-modern.html', timeoutMs);

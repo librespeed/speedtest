@@ -23,6 +23,15 @@ test.describe('Runtime mode smoke coverage', () => {
     await expect(page.locator('main > p.tagline')).toHaveText(defaultTagline);
   });
 
+  test('Alpine standalone serves modern frontend settings', async ({ page, request }) => {
+    const settings = await request.get(`${baseUrls.standaloneAlpine}/settings.json`);
+    expect(settings.ok()).toBeTruthy();
+    await expect(settings.json()).resolves.toMatchObject({ telemetry_level: 'off', time_dl_max: 12 });
+
+    await page.goto(`${baseUrls.standaloneAlpine}/index-modern.html`);
+    await expect(modernStartButton(page)).toBeVisible();
+  });
+
   test('backend exposes only local backend contract endpoints', async ({ request }) => {
     for (const endpoint of ['/empty.php', '/garbage.php', '/getIP.php']) {
       const response = await request.get(`${baseUrls.backend}${endpoint}`);
