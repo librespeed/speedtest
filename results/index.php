@@ -42,6 +42,30 @@ function format($d)
 }
 
 /**
+ * Drops the fractional seconds a database may keep on the timestamp column.
+ *
+ * How much precision that column carries is decided by the backend, and the
+ * three schemas shipped here disagree: MySQL declares `timestamp`, which keeps
+ * none, PostgreSQL uses `timestamp without time zone DEFAULT now()`, which
+ * keeps microseconds, and MSSQL uses `datetime`, which keeps milliseconds. The
+ * value was drawn exactly as the database returned it, so the same result reads
+ * as "2026-08-10 02:04:13" on one deployment and "2026-08-10 02:04:13.957789"
+ * on another.
+ *
+ * The fraction is matched against the seconds field it belongs to rather than
+ * the end of the string, so a value carrying a zone offset after it, such as
+ * "2026-08-10 02:04:13.957789+00", is handled as well.
+ *
+ * @param string $timestamp
+ *
+ * @return string
+ */
+function formatTimestamp($timestamp)
+{
+    return preg_replace('/(:\d{2})\.\d+/', '$1', (string) $timestamp);
+}
+
+/**
  * @param array $speedtest
  *
  * @return array
@@ -53,7 +77,7 @@ function formatSpeedtestDataForImage($speedtest)
     $speedtest['ul'] = format($speedtest['ul']);
     $speedtest['ping'] = format($speedtest['ping']);
     $speedtest['jitter'] = format($speedtest['jitter']);
-    $speedtest['timestamp'] = $speedtest['timestamp'];
+    $speedtest['timestamp'] = formatTimestamp($speedtest['timestamp']);
 
     $ispinfo = json_decode($speedtest['ispinfo'], true)['processedString'];
     $dash = strpos($ispinfo, '-');
