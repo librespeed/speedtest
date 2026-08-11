@@ -15,23 +15,19 @@ By default, LibreSpeed uses the **classic design** (located in `index-classic.ht
 - **`frontend/`** - Directory containing modern design assets (CSS, JS, images, fonts) - kept for non-Docker deployments
 
 ### File Structure (Docker)
-In Docker deployments, the frontend assets are flattened to root-level subdirectories:
+Docker deployments preserve the same layout as non-Docker deployments:
 - **`index.html`** - Entry point (lightweight switcher)
-- **`index-classic.html`** - Classic design
-- **`index-modern.html`** - Modern design  
-- **`styling/`** - CSS files for modern design
-- **`javascript/`** - JS files for modern design
-- **`images/`** - Images for modern design
-- **`fonts/`** - Fonts for modern design
-- **No `frontend/` directory** - Assets are copied directly to root subdirectories
+- **`index-classic.html`** - Classic design at root
+- **`index-modern.html`** - Modern design at root
+- **`frontend/`** - Modern design assets, copied into the web root unchanged
+- **`settings.json` and `server-list.json`** - Configuration files at root, next to `index-modern.html`
 
-### Benefits of Root-Level Design Files
-✅ Both designs at same level - no path confusion
-✅ `results/` accessible from both designs with same relative path
-✅ `backend/` accessible from both designs with same relative path  
-✅ No subdirectory nesting issues
-✅ Clean separation of concerns
-✅ Docker containers have no `frontend/` parent directory
+### Benefits of the Shared Layout
+✅ Docker and non-Docker deployments use the same paths
+✅ Both designs are at the same level
+✅ `results/` and `backend/` use the same relative paths from both designs
+✅ The modern design loads assets consistently from `frontend/`
+✅ Configuration files stay at the web root, where the modern page expects them
 
 ## Browser Compatibility
 
