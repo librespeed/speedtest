@@ -18,6 +18,11 @@ module.exports = defineConfig({
   },
   globalSetup: require.resolve('./tests/e2e/global-setup.js'),
   globalTeardown: require.resolve('./tests/e2e/global-teardown.js'),
+  webServer: {
+    command: 'python3 -m http.server 18184 --bind 127.0.0.1 --directory .',
+    url: 'http://127.0.0.1:18184',
+    reuseExistingServer: !process.env.CI,
+  },
   projects: [
     {
       name: 'chromium',
