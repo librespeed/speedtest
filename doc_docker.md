@@ -165,7 +165,7 @@ docker run -e MODE=frontend -e SERVER_LIST_URL="https://example.com/custom-serve
 This command starts LibreSpeed in frontend mode, with a given `servers.json` file, and with telemetry, ID obfuscation, and a stats password and a persistant sqlite database for results:
 
 ```shell
-docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $PWD/servers.json:/servers.json -v $PWD/db-dir/:/database -p 80:80 -it ghcr.io/librespeed/speedtest
+docker run -e MODE=frontend -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -v $PWD/servers.json:/servers.json -v $PWD/db-dir/:/database -p 80:8080 -it ghcr.io/librespeed/speedtest
 ```
 
 ### Dual mode
