@@ -419,7 +419,10 @@ function startRenderingLoop() {
             window.location.href.lastIndexOf("/")
           ) +
           "/results/?id=" +
-          testState.testData.testId;
+          testState.testData.testId +
+          // Ask for the design this frontend matches; the classic frontend
+          // links the same URL and gets the classic image without asking.
+          "&style=modern";
       }
 
       testState.testDataDirty = false;

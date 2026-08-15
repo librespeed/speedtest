@@ -188,7 +188,7 @@
 						try {
 							var testId = uiData.testId;
 							if (testId != null) {
-								var shareURL = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/results/?id=" + testId;
+								var shareURL = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/results/?id=" + testId + "&style=classic";
 								I("resultsImg").src = shareURL;
 								I("resultsURL").value = shareURL;
 								I("testId").innerHTML = testId;
