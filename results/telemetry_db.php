@@ -138,6 +138,10 @@ function getPdo($returnErrorMessage = false)
                 `log`       longtext
                 );
             ');
+            // Every query that is not a lookup by id orders or filters by
+            // timestamp, and without this the table is scanned in full each
+            // time. The other schemas declare the same index.
+            $pdo->exec('CREATE INDEX IF NOT EXISTS `speedtest_users_timestamp` ON `speedtest_users` (`timestamp`);');
 
             return $pdo;
         }
@@ -189,8 +193,54 @@ function isObfuscationEnabled()
 /**
  * @return string|false returns the id of the inserted column or false on error if returnErrorMessage is false or a error message if returnErrorMessage is true
  */
+/**
+ * Normalises a measurement into a number, or null when it is not one.
+ *
+ * The four measurement columns are declared `text` in every schema shipped
+ * here, and nothing validated what went into them, so a client could store any
+ * string it liked. That has consequences beyond statistics: `format()` in
+ * index.php hands the value to `number_format()`, which on PHP 8 raises a
+ * TypeError for a string, so a single empty `dl=` turned that result's share
+ * image into a 500.
+ *
+ * Storing null instead keeps the row — the test still happened, and the IP,
+ * user agent and timestamp are still worth having — while leaving the value out
+ * of aggregates, which skip nulls. `COUNT(*) - COUNT(dl)` then reports how many
+ * submissions arrived malformed, so nothing is hidden by accepting them.
+ *
+ * No upper bound is imposed: links keep getting faster, and a cap would
+ * silently discard the fastest real results.
+ *
+ * @param mixed $value
+ *
+ * @return float|null
+ */
+function normalizeMeasurement($value)
+{
+    if (is_array($value) || is_object($value) || is_bool($value) || null === $value) {
+        return null;
+    }
+
+    $value = trim((string) $value);
+    if ('' === $value || !is_numeric($value)) {
+        return null;
+    }
+
+    $number = (float) $value;
+    if (!is_finite($number) || $number < 0) {
+        return null;
+    }
+
+    return $number;
+}
+
 function insertSpeedtestUser($ip, $ispinfo, $extra, $ua, $lang, $dl, $ul, $ping, $jitter, $log, $returnExceptionOnError = false)
 {
+    $dl = normalizeMeasurement($dl);
+    $ul = normalizeMeasurement($ul);
+    $ping = normalizeMeasurement($ping);
+    $jitter = normalizeMeasurement($jitter);
+
     $pdo = getPdo();
     if (!($pdo instanceof PDO)) {
 		if($returnExceptionOnError){
@@ -273,6 +323,74 @@ function getSpeedtestUserById($id,$returnExceptionOnError = false)
     }
 
     return $row;
+}
+
+/**
+ * The database's own idea of the current time.
+ *
+ * Which month a row belongs to is decided by comparing against the timestamp
+ * column, so it always comes out consistent with whatever the column holds. But
+ * deciding which month is the current one cannot be done from PHP's clock: the
+ * backends disagree on what they record. SQLite's CURRENT_TIMESTAMP is UTC,
+ * PostgreSQL's now() and MSSQL's getdate() are the server's local time, and
+ * MySQL's depends on the session time zone. Asking the database keeps that
+ * decision in the same frame as the data.
+ *
+ * @return string|null "YYYY-MM-DD HH:MM:SS"
+ */
+function getDatabaseNow()
+{
+    $pdo = getPdo();
+    if (!($pdo instanceof PDO)) {
+        return null;
+    }
+
+    try {
+        // ANSI, and accepted by all four supported backends.
+        $stmt = $pdo->query('SELECT CURRENT_TIMESTAMP');
+        $value = $stmt->fetchColumn();
+        if (!is_string($value) || '' === $value) {
+            return null;
+        }
+
+        return $value;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/**
+ * Streams the rows of a half-open period for aggregation.
+ *
+ * Returns the statement rather than an array: a month of a busy instance is
+ * more rows than should be materialised at once, and the caller only needs to
+ * pass over them. Only the columns the summary reads are selected — the log is
+ * the largest column in the table and nothing aggregates it.
+ *
+ * @param string $from inclusive
+ * @param string $to   exclusive
+ *
+ * @return PDOStatement|false
+ */
+function getSpeedtestUsersBetween($from, $to)
+{
+    $pdo = getPdo();
+    if (!($pdo instanceof PDO)) {
+        return false;
+    }
+
+    try {
+        $stmt = $pdo->prepare(
+            'SELECT timestamp, ip, ispinfo, ua, dl, ul, ping, jitter
+            FROM speedtest_users
+            WHERE timestamp >= ? AND timestamp < ?'
+        );
+        $stmt->execute([$from, $to]);
+
+        return $stmt;
+    } catch (Exception $e) {
+        return false;
+    }
 }
 
 /**
