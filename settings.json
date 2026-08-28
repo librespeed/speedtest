@@ -5,5 +5,10 @@
   "time_ul_max": 12,
   "time_dlGraceTime": 0,
   "time_ulGraceTime": 0,
-  "time_auto": false
+  "time_auto": false,
+  "overhead_auto": true,
+  "overhead_mtu": 1500,
+  "overhead_ipVersion": 4,
+  "overhead_ackFactor": 1.023,
+  "report_connection_info": true
 }

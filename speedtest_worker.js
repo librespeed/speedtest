@@ -17,6 +17,18 @@ let ulProgress = 0; //progress of upload test 0-1
 let pingProgress = 0; //progress of ping+jitter test 0-1
 let testId = null; //test ID (sent back by telemetry if used, null otherwise)
 
+// real-world transport metrics: payload throughput vs estimated line rate, connection setup timings
+let dlPayloadStatus = ""; // download payload throughput in Mbit/s (no overhead compensation)
+let ulPayloadStatus = ""; // upload payload throughput in Mbit/s (no overhead compensation)
+let dlOverheadPct = ""; // estimated transport overhead for download, as a percentage
+let ulOverheadPct = ""; // estimated transport overhead for upload, as a percentage
+let tcpHandshakeMs = 0; // TCP connection setup time in ms
+let tlsHandshakeMs = 0; // TLS handshake time in ms
+let ttfbMs = 0; // time to first byte in ms
+let nextHopProtocol = ""; // negotiated protocol (h2 / h3 / http/1.1)
+let dlCurve = []; // download throughput samples over time [{t, speed}] (payload Mbit/s)
+let ulCurve = []; // upload throughput samples over time [{t, speed}] (payload Mbit/s)
+
 let log = ""; //telemetry log
 function tlog(s) {
 	if (settings.telemetry_level >= 2) {
@@ -60,7 +72,12 @@ let settings = {
 	garbagePhp_chunkSize: 100, // size of chunks sent by garbage.php (can be different if enable_quirks is active)
 	enable_quirks: true, // enable quirks for specific browsers. currently it overrides settings to optimize for specific browsers, unless they are already being overridden with the start command
 	ping_allowPerformanceApi: true, // if enabled, the ping test will attempt to calculate the ping more precisely using the Performance API. Currently works perfectly in Chrome, badly in Edge, and not at all in Firefox. If Performance API is not supported or the result is obviously wrong, a fallback is provided.
-	overheadCompensationFactor: 1.06, //can be changed to compensate for transport overhead. (see doc.md for some other values)
+	overheadCompensationFactor: 1.06, //manual transport overhead factor, used when overhead_auto is false (see doc.md for some other values)
+	overhead_auto: true, //if true, estimate transport overhead from the model below (MTU/IP/TCP/TLS/ACK) instead of using the fixed overheadCompensationFactor
+	overhead_mtu: 1500, //MTU in bytes used by the overhead model (1500 is typical for the internet)
+	overhead_ipVersion: 4, //IP version used by the overhead model: 4 or 6
+	overhead_ackFactor: 1.023, //extra factor for reverse ACK traffic (~2.3% = 1 ACK every 2 segments)
+	report_connection_info: true, //collect and report TCP/TLS handshake, TTFB and negotiated protocol via Resource Timing
 	useMebibits: false, //if set to true, speed will be reported in mebibits/s instead of megabits/s
 	telemetry_level: 0, // 0=disabled, 1=basic (results only), 2=full (results and timing) 3=debug (results+log)
 	url_telemetry: "results/telemetry.php", // path to the script that adds telemetry data to the database
@@ -80,6 +97,73 @@ function url_sep(url) {
 }
 
 /*
+  Estimate the ratio between raw wire bits and payload bits (transport overhead).
+  This models a typical Ethernet + IP + TCP + TLS 1.3 connection so that the
+  measured application-layer throughput can be converted into an estimated line rate.
+*/
+function currentOverheadFactor() {
+	if (!settings.overhead_auto) return settings.overheadCompensationFactor || 1;
+	const mtu = Number(settings.overhead_mtu) || 1500;
+	const ip = Number(settings.overhead_ipVersion) === 6 ? 40 : 20;
+	const tcp = 20; // typical TCP header (no options)
+	const eth = 38; // preamble+sfd(8) + eth header(14) + fcs(4) + interframe gap(12)
+	const tls = 21; // TLS 1.3 record header(5) + AEAD tag(16) per record
+	const tlsRec = 16384; // max TLS record payload
+	const ack = Number(settings.overhead_ackFactor) || 1.023;
+	const mss = mtu - ip - tcp;
+	if (mss <= 0) return settings.overheadCompensationFactor || 1;
+	return (1 + (eth + ip + tcp) / mss + tls / tlsRec) * ack;
+}
+
+/*
+  Read PerformanceResourceTiming entries produced by this worker to extract the
+  real connection setup timings (TCP/TLS handshake, TTFB) and the negotiated
+  protocol. Values are written to the module-level variables consumed by the
+  status handler. Cross-origin entries only expose these fields when the server
+  sends a Timing-Allow-Origin header.
+*/
+function collectNetworkInfo() {
+	if (!settings.report_connection_info) return;
+	try {
+		const entries = performance.getEntriesByType("resource");
+		if (!entries || !entries.length) return;
+		const bases = [settings.url_dl, settings.url_ul, settings.url_ping, settings.url_getIp]
+			.map(function(u) { return (u || "").split("?")[0]; })
+			.filter(function(u) { return u.length > 0; });
+		let tcp = 0, tls = 0, ttfb = 0, proto = "";
+		for (let i = entries.length - 1; i >= 0; i--) {
+			const e = entries[i];
+			const name = (e.name || "").split("?")[0];
+			let matched = false;
+			for (let b = 0; b < bases.length; b++) {
+				if (name.indexOf(bases[b]) !== -1) { matched = true; break; }
+			}
+			if (!matched) continue;
+			if (!proto && e.nextHopProtocol) proto = e.nextHopProtocol;
+			if (e.secureConnectionStart > 0 && e.connectStart > 0) {
+				const tlsMs = e.connectEnd - e.secureConnectionStart;
+				const tcpMs = e.secureConnectionStart - e.connectStart;
+				if (tlsMs > tls) tls = tlsMs;
+				if (tcpMs > tcp) tcp = tcpMs;
+			} else if (e.connectStart > 0) {
+				const tcpMs = e.connectEnd - e.connectStart;
+				if (tcpMs > tcp) tcp = tcpMs;
+			}
+			if (e.requestStart > 0 && e.responseStart > 0) {
+				const ttfbMs = e.responseStart - e.requestStart;
+				if (ttfbMs > 0 && (!ttfb || ttfbMs < ttfb)) ttfb = ttfbMs;
+			}
+		}
+		tcpHandshakeMs = Math.round(tcp);
+		tlsHandshakeMs = Math.round(tls);
+		ttfbMs = Math.round(ttfb);
+		nextHopProtocol = proto;
+	} catch (e) {
+		// Resource Timing unavailable or entries unreadable: leave metrics at 0
+	}
+}
+
+/*
 	listener for commands from main thread to this worker.
 	commands:
 	-status: returns the current status as a JSON string containing testState, dlStatus, ulStatus, pingStatus, clientIp, jitterStatus, dlProgress, ulProgress, pingProgress
@@ -91,6 +175,7 @@ this.addEventListener("message", function(e) {
 	const params = e.data.split(" ");
 	if (params[0] === "status") {
 		// return status
+		collectNetworkInfo();
 		postMessage(
 			JSON.stringify({
 				testState: testState,
@@ -102,7 +187,17 @@ this.addEventListener("message", function(e) {
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
 				pingProgress: pingProgress,
-				testId: testId
+				testId: testId,
+				dlPayloadStatus: dlPayloadStatus,
+				ulPayloadStatus: ulPayloadStatus,
+				dlOverheadPct: dlOverheadPct,
+				ulOverheadPct: ulOverheadPct,
+				tcpHandshakeMs: tcpHandshakeMs,
+				tlsHandshakeMs: tlsHandshakeMs,
+				ttfbMs: ttfbMs,
+				nextHopProtocol: nextHopProtocol,
+				dlCurve: dlCurve,
+				ulCurve: ulCurve
 			})
 		);
 	}
@@ -261,6 +356,16 @@ this.addEventListener("message", function(e) {
 		dlProgress = 0;
 		ulProgress = 0;
 		pingProgress = 0;
+		dlPayloadStatus = "";
+		ulPayloadStatus = "";
+		dlOverheadPct = "";
+		ulOverheadPct = "";
+		tcpHandshakeMs = 0;
+		tlsHandshakeMs = 0;
+		ttfbMs = 0;
+		nextHopProtocol = "";
+		dlCurve = [];
+		ulCurve = [];
 	}
 });
 // stops all XHR activity, aggressively
@@ -326,7 +431,10 @@ function dlTest(done) {
 		startT = new Date().getTime(), // timestamp when test was started
 		bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 		graceTimeDone = false, //set to true after the grace time is past
-		failed = false; // set to true if a stream fails
+		failed = false, // set to true if a stream fails
+		curveStartT = new Date().getTime(), // monotonic clock used for the throughput curve
+		curveLast = 0; // previous totLoaded value, used to sample instantaneous throughput
+	dlCurve = [];
 	xhr = [];
 	// function to create a download stream. streams are slightly delayed so that they will not end at the same time
 	const testStream = function(i, delay) {
@@ -389,6 +497,12 @@ function dlTest(done) {
 			tverb("DL: " + dlStatus + (graceTimeDone ? "" : " (in grace time)"));
 			const t = new Date().getTime() - startT;
 			if (graceTimeDone) dlProgress = (t + bonusT) / (settings.time_dl_max * 1000);
+			// sample instantaneous throughput for the slow-start curve (bytes in the last 200ms)
+			const curveDelta = totLoaded - curveLast;
+			curveLast = totLoaded;
+			if (curveDelta >= 0) {
+				dlCurve.push({ t: new Date().getTime() - curveStartT, speed: (curveDelta / 0.2) * 8 / (settings.useMebibits ? 1048576 : 1000000) });
+			}
 			if (t < 200) return;
 			if (!graceTimeDone) {
 				if (t > 1000 * settings.time_dlGraceTime) {
@@ -407,8 +521,12 @@ function dlTest(done) {
 					const bonus = (5.0 * speed) / 100000;
 					bonusT += bonus > 400 ? 400 : bonus;
 				}
-				//update status
-				dlStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+				//update status. speed is multiplied by 8 to go from bytes to bits, then divided by 1048576 or 1000000 to go to megabits/mebibits
+				const payloadMbps = (speed * 8) / (settings.useMebibits ? 1048576 : 1000000);
+				const overhead = currentOverheadFactor();
+				dlPayloadStatus = payloadMbps.toFixed(2);
+				dlOverheadPct = ((overhead - 1) * 100).toFixed(1);
+				dlStatus = (payloadMbps * overhead).toFixed(2);
 				if ((t + bonusT) / 1000.0 > settings.time_dl_max || failed) {
 					// test is over, stop streams and timer
 					if (failed || isNaN(dlStatus)) dlStatus = "Fail";
@@ -452,7 +570,10 @@ function ulTest(done) {
 			startT = new Date().getTime(), // timestamp when test was started
 			bonusT = 0, //how many milliseconds the test has been shortened by (higher on faster connections)
 			graceTimeDone = false, //set to true after the grace time is past
-			failed = false; // set to true if a stream fails
+			failed = false, // set to true if a stream fails
+			curveStartT = new Date().getTime(), // monotonic clock used for the throughput curve
+			curveLast = 0; // previous totLoaded value, used to sample instantaneous throughput
+		ulCurve = [];
 		xhr = [];
 		// function to create an upload stream. streams are slightly delayed so that they will not end at the same time
 		const testStream = function(i, delay) {
@@ -547,6 +668,12 @@ function ulTest(done) {
 				tverb("UL: " + ulStatus + (graceTimeDone ? "" : " (in grace time)"));
 				const t = new Date().getTime() - startT;
 				if (graceTimeDone) ulProgress = (t + bonusT) / (settings.time_ul_max * 1000);
+				// sample instantaneous throughput for the slow-start curve (bytes in the last 200ms)
+				const curveDelta = totLoaded - curveLast;
+				curveLast = totLoaded;
+				if (curveDelta >= 0) {
+					ulCurve.push({ t: new Date().getTime() - curveStartT, speed: (curveDelta / 0.2) * 8 / (settings.useMebibits ? 1048576 : 1000000) });
+				}
 				if (t < 200) return;
 				if (!graceTimeDone) {
 					if (t > 1000 * settings.time_ulGraceTime) {
@@ -565,8 +692,12 @@ function ulTest(done) {
 						const bonus = (5.0 * speed) / 100000;
 						bonusT += bonus > 400 ? 400 : bonus;
 					}
-					//update status
-					ulStatus = ((speed * 8 * settings.overheadCompensationFactor) / (settings.useMebibits ? 1048576 : 1000000)).toFixed(2); // speed is multiplied by 8 to go from bytes to bits, overhead compensation is applied, then everything is divided by 1048576 or 1000000 to go to megabits/mebibits
+					//update status. speed is multiplied by 8 to go from bytes to bits, then divided by 1048576 or 1000000 to go to megabits/mebibits
+					const payloadMbps = (speed * 8) / (settings.useMebibits ? 1048576 : 1000000);
+					const overhead = currentOverheadFactor();
+					ulPayloadStatus = payloadMbps.toFixed(2);
+					ulOverheadPct = ((overhead - 1) * 100).toFixed(1);
+					ulStatus = (payloadMbps * overhead).toFixed(2);
 					if ((t + bonusT) / 1000.0 > settings.time_ul_max || failed) {
 						// test is over, stop streams and timer
 						if (failed || isNaN(ulStatus)) ulStatus = "Fail";

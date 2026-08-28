@@ -69,6 +69,29 @@
         </div>
       </div>
 
+      <div class="transport-details hidden" id="transport-details">
+        <div class="detail-row">
+          <span class="detail-label">Download</span>
+          <span class="detail-value">payload <b id="dl-payload">&mdash;</b> Mbps</span>
+          <span class="detail-value">line <b id="dl-line">&mdash;</b> Mbps</span>
+          <span class="detail-value">overhead <b id="dl-overhead">&mdash;</b>%</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Upload</span>
+          <span class="detail-value">payload <b id="ul-payload">&mdash;</b> Mbps</span>
+          <span class="detail-value">line <b id="ul-line">&mdash;</b> Mbps</span>
+          <span class="detail-value">overhead <b id="ul-overhead">&mdash;</b>%</span>
+        </div>
+        <div class="detail-row connection">
+          <span class="detail-label">Connection</span>
+          <span class="detail-value">TCP <b id="conn-tcp">&mdash;</b> ms</span>
+          <span class="detail-value">TLS <b id="conn-tls">&mdash;</b> ms</span>
+          <span class="detail-value">TTFB <b id="conn-ttfb">&mdash;</b> ms</span>
+          <span class="detail-value">proto <b id="conn-proto">&mdash;</b></span>
+        </div>
+        <canvas id="throughput-chart" class="hidden" width="600" height="160"></canvas>
+      </div>
+
       <button class="small inverted hidden" id="share-results">
         Share results
       </button>

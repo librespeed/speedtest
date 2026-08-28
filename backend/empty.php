@@ -2,6 +2,9 @@
 
 header('HTTP/1.1 200 OK');
 
+// Expose detailed timing to the browser's Resource Timing API (cross-origin too).
+header('Timing-Allow-Origin: *');
+
 if (isset($_GET['cors'])) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST');

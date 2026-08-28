@@ -305,6 +305,17 @@ function startRenderingLoop() {
   const shareResults = document.querySelector("#share-results");
   const copyLink = document.querySelector("#copy-link");
   const resultsImage = document.querySelector("#results");
+  const transportDetails = document.querySelector("#transport-details");
+  const dlPayload = document.querySelector("#dl-payload");
+  const dlLine = document.querySelector("#dl-line");
+  const dlOverhead = document.querySelector("#dl-overhead");
+  const ulPayload = document.querySelector("#ul-payload");
+  const ulLine = document.querySelector("#ul-line");
+  const ulOverhead = document.querySelector("#ul-overhead");
+  const connTcp = document.querySelector("#conn-tcp");
+  const connTls = document.querySelector("#conn-tls");
+  const connTtfb = document.querySelector("#conn-ttfb");
+  const connProto = document.querySelector("#conn-proto");
 
   const buttonTexts = {
     [INITIALIZING]: "Loading...",
@@ -394,6 +405,30 @@ function startRenderingLoop() {
       ping.textContent = numberToText(testState.testData.pingStatus);
       jitter.textContent = numberToText(testState.testData.jitterStatus);
 
+      // Transport details: payload vs line rate vs overhead, connection info
+      if (testState.testData.dlPayloadStatus) {
+        dlPayload.textContent = testState.testData.dlPayloadStatus;
+        dlLine.textContent = testState.testData.dlStatus;
+        dlOverhead.textContent = testState.testData.dlOverheadPct || "0";
+        ulPayload.textContent = testState.testData.ulPayloadStatus;
+        ulLine.textContent = testState.testData.ulStatus;
+        ulOverhead.textContent = testState.testData.ulOverheadPct || "0";
+        transportDetails.classList.remove("hidden");
+      }
+      if (
+        testState.testData.tcpHandshakeMs ||
+        testState.testData.tlsHandshakeMs ||
+        testState.testData.ttfbMs
+      ) {
+        connTcp.textContent = testState.testData.tcpHandshakeMs || "0";
+        connTls.textContent = testState.testData.tlsHandshakeMs || "0";
+        connTtfb.textContent = testState.testData.ttfbMs || "0";
+      }
+      if (testState.testData.nextHopProtocol) {
+        connProto.textContent = testState.testData.nextHopProtocol;
+      }
+      drawThroughputChart();
+
       // Set user's IP and provider
       if (testState.testData.clientIp) {
         // Clear previous content
@@ -470,4 +505,66 @@ function numberToText(value) {
   if (value < 10) return value.toFixed(2);
   if (value < 100) return value.toFixed(1);
   return value.toFixed(0);
+}
+
+/**
+ * Draw the download/upload throughput-over-time curves (shows the slow-start
+ * ramp-up at the beginning of each test).
+ */
+function drawThroughputChart() {
+  const canvas = document.querySelector("#throughput-chart");
+  if (!canvas || !testState.testData) return;
+  const data = testState.testData;
+
+  const series = [];
+  if (Array.isArray(data.dlCurve) && data.dlCurve.length > 1) {
+    series.push({ color: "#d63bc6", points: data.dlCurve });
+  }
+  if (Array.isArray(data.ulCurve) && data.ulCurve.length > 1) {
+    series.push({ color: "#5cf9fd", points: data.ulCurve });
+  }
+  if (series.length === 0) {
+    canvas.classList.add("hidden");
+    return;
+  }
+  canvas.classList.remove("hidden");
+
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || canvas.width;
+  const h = canvas.clientHeight || canvas.height;
+  if (
+    canvas.width !== Math.round(w * dpr) ||
+    canvas.height !== Math.round(h * dpr)
+  ) {
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  let maxT = 0;
+  let maxSpeed = 1;
+  series.forEach((s) =>
+    s.points.forEach((p) => {
+      if (p.t > maxT) maxT = p.t;
+      if (p.speed > maxSpeed) maxSpeed = p.speed;
+    })
+  );
+
+  const pad = 8;
+  const plotW = w - pad * 2;
+  const plotH = h - pad * 2;
+  series.forEach((s) => {
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    s.points.forEach((p, i) => {
+      const x = pad + (p.t / maxT) * plotW;
+      const y = pad + plotH - (p.speed / maxSpeed) * plotH;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
 }

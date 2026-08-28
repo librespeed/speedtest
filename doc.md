@@ -360,11 +360,11 @@ The `onupdate` event handler will be called periodically by the test with data c
   * `5` = Test aborted
 * __dlStatus__: either
   * Empty string (not started or aborted)
-  * Download speed in Megabit/s as a number with 2 decimals
+  * Estimated download **line rate** in Megabit/s as a number with 2 decimals (payload throughput multiplied by the transport overhead factor, see `overhead_auto`)
   * The string "Fail" (test failed)
 * __ulStatus__: either
   * Empty string (not started or aborted)
-  * Upload speed in Megabit/s as a number with 2 decimals
+  * Estimated upload **line rate** in Megabit/s as a number with 2 decimals (payload throughput multiplied by the transport overhead factor, see `overhead_auto`)
   * The string "Fail" (test failed)
 * __pingStatus__: either
   * Empty string (not started or aborted)
@@ -381,6 +381,13 @@ The `onupdate` event handler will be called periodically by the test with data c
 * __ulProgress__: the progress of the upload test as a number between 0 and 1
 * __pingProgress__: the progress of the ping+jitter test as a number between 0 and 1
 * __testId__: when telemetry is active, this is the ID of the test in the database. This is null until the test is finished, or if telemetry encounters an error. This ID is used for results sharing
+* __dlPayloadStatus__ / __ulPayloadStatus__: application-layer **payload** throughput in Megabit/s with 2 decimals, without any transport overhead compensation. This is the speed a real file download/upload would report.
+* __dlOverheadPct__ / __ulOverheadPct__: estimated transport overhead (TCP/IP/TLS/Ethernet/ACK) as a percentage of the payload, e.g. `7.9`. Empty until the corresponding test runs.
+* __tcpHandshakeMs__: TCP connection setup time in milliseconds (0 when unavailable, e.g. cross-origin without a `Timing-Allow-Origin` header on the server)
+* __tlsHandshakeMs__: TLS handshake time in milliseconds (0 on plain HTTP or when unavailable)
+* __ttfbMs__: time to first byte in milliseconds (0 when unavailable)
+* __nextHopProtocol__: negotiated HTTP protocol (`http/1.1`, `h2`, `h3`) or an empty string when unavailable
+* __dlCurve__ / __ulCurve__: array of `{t, speed}` samples collected every ~200ms during the download/upload test. `t` is milliseconds since the test started and `speed` is the instantaneous payload throughput in Megabit/s. Useful to visualise the TCP slow-start ramp-up.
 
 The `onend` event handler will be called at the end of the test (`onupdate` will be called first), with a boolean telling you if the test was aborted (either manually or because of an error) or if it ended normally.
 
@@ -492,7 +499,7 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
   * Default override: `false` on Firefox because its performance API implementation is inaccurate
 * __useMebibits__: use mebibits/s instead of megabits/s for the speeds
   * Default: `false`
-* __overheadCompensationFactor__: compensation for HTTP and network overhead. Default value assumes typical MTUs used over the Internet. You might want to change this if you're using this in your internal network with different MTUs, or if you're using IPv6 instead of IPv4.
+* __overheadCompensationFactor__: manual compensation for HTTP and network overhead, used only when `overhead_auto` is `false`. Default value assumes typical MTUs used over the Internet. You might want to change this if you're using this in your internal network with different MTUs, or if you're using IPv6 instead of IPv4.
   * Default: `1.06` probably a decent estimate for all overhead. This was measured empirically by comparing the measured speed and the speed reported by my network adapter.
   * `1048576/925000`: old default value. This is probably too high.
   * `1.0513`: HTTP+TCP+IPv6+ETH, over the Internet (empirically tested, not calculated)
@@ -501,6 +508,16 @@ __Advanced parameters:__ (Seriously, don't change these unless you know what you
   * `1514 / 1460`: TCP+IPv4+ETH, ignoring HTTP overhead
   * `1514 / 1440`: TCP+IPv6+ETH, ignoring HTTP overhead
   * `1`: ignore overheads. This measures the speed at which you actually download and upload files rather than the raw connection speed
+* __overhead_auto__: if `true`, the transport overhead is estimated from a model (Ethernet + IP + TCP + TLS + reverse ACK) instead of the fixed `overheadCompensationFactor`. The measured payload speed is multiplied by this factor to produce the reported line rate, and the factor minus 1 is reported as the overhead percentage.
+  * Default: `true`
+* __overhead_mtu__: MTU in bytes used by the overhead model.
+  * Default: `1500` (typical for the Internet)
+* __overhead_ipVersion__: IP version used by the overhead model: `4` or `6`.
+  * Default: `4`
+* __overhead_ackFactor__: extra factor accounting for reverse ACK traffic (~2.3% = one ACK every two segments).
+  * Default: `1.023`
+* __report_connection_info__: if `true`, the worker reads Performance Resource Timing entries to report TCP/TLS handshake, TTFB and the negotiated protocol. Requires a `Timing-Allow-Origin` header on the backend for cross-origin (multiple points of test) deployments; same-origin works out of the box.
+  * Default: `true`
 
 ### Multiple Points of Test
 

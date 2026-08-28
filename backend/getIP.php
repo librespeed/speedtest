@@ -165,6 +165,8 @@ function formatResponse_simple($ip,$ispName=null){
 }
 
 header('Content-Type: application/json; charset=utf-8');
+// Expose detailed timing to the browser's Resource Timing API (cross-origin too).
+header('Timing-Allow-Origin: *');
 if (isset($_GET['cors'])) {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST');

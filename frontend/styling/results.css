@@ -258,3 +258,68 @@ div.gauge {
   grid-area: ping;
   justify-content: end;
 }
+
+/* Transport details: payload vs line rate, connection info, throughput chart */
+
+.transport-details {
+  margin: 2rem auto 0 auto;
+  max-width: 90rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.05rem;
+  color: var(--secondary-text-color);
+
+  &.hidden {
+    display: none;
+  }
+
+  .detail-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+
+    .detail-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--ping-and-jitter-secondary-text-color);
+      min-width: 10rem;
+      text-align: right;
+    }
+
+    .detail-value {
+      color: var(--secondary-text-color);
+
+      b {
+        font-weight: 700;
+        color: var(--ping-and-jitter-primary-text-color);
+      }
+    }
+
+    &.connection .detail-value b {
+      color: var(--theme-green);
+    }
+  }
+
+  canvas#throughput-chart {
+    margin-top: 1rem;
+    width: 100%;
+    max-width: 70rem;
+    height: 16rem;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 500px) {
+    font-size: 1.4rem;
+
+    .detail-row .detail-label {
+      min-width: 8rem;
+    }
+  }
+}

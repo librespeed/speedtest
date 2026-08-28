@@ -32,6 +32,10 @@ function sendHeaders()
 {
     header('HTTP/1.1 200 OK');
 
+    // Expose detailed timing (TCP/TLS handshake, transfer size) to the browser's
+    // Resource Timing API, even for cross-origin (multiple points of test) requests.
+    header('Timing-Allow-Origin: *');
+
     if (isset($_GET['cors'])) {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST');

@@ -212,6 +212,62 @@
 			drawMeter(I("ulMeter"), mbpsToAmount(Number(uiData.ulStatus * (status == 3 ? oscillate() : 1))), meterBk, ulColor, Number(uiData.ulProgress), progColor);
 			I("pingText").textContent = format(uiData.pingStatus);
 			I("jitText").textContent = format(uiData.jitterStatus);
+			updateDetails();
+		}
+		function updateDetails() {
+			if (!uiData) return;
+			var d = uiData, txt = "";
+			if (d.dlPayloadStatus) {
+				txt += "<b>Download</b>: payload " + d.dlPayloadStatus + " Mbps &middot; line " + d.dlStatus + " Mbps &middot; overhead " + (d.dlOverheadPct || "0") + "%<br>";
+			}
+			if (d.ulPayloadStatus) {
+				txt += "<b>Upload</b>: payload " + d.ulPayloadStatus + " Mbps &middot; line " + d.ulStatus + " Mbps &middot; overhead " + (d.ulOverheadPct || "0") + "%<br>";
+			}
+			if (d.tcpHandshakeMs || d.tlsHandshakeMs || d.ttfbMs) {
+				txt += "<b>Connection</b>: TCP " + (d.tcpHandshakeMs || 0) + " ms &middot; TLS " + (d.tlsHandshakeMs || 0) + " ms &middot; TTFB " + (d.ttfbMs || 0) + " ms";
+				if (d.nextHopProtocol) txt += " &middot; " + d.nextHopProtocol;
+			}
+			if (txt) {
+				I("detailsArea").style.display = "";
+				I("detailsText").innerHTML = txt;
+			}
+			drawCurve();
+		}
+		function drawCurve() {
+			var c = I("curveCanvas");
+			if (!c || !uiData) return;
+			var series = [];
+			if (uiData.dlCurve && uiData.dlCurve.length > 1) series.push({ color: dlColor, points: uiData.dlCurve });
+			if (uiData.ulCurve && uiData.ulCurve.length > 1) series.push({ color: ulColor, points: uiData.ulCurve });
+			if (!series.length) { c.style.display = "none"; return; }
+			c.style.display = "";
+			var dp = window.devicePixelRatio || 1;
+			var w = c.clientWidth, h = c.clientHeight;
+			if (c.width != Math.round(w * dp) || c.height != Math.round(h * dp)) { c.width = Math.round(w * dp); c.height = Math.round(h * dp); }
+			var ctx = c.getContext("2d");
+			ctx.setTransform(dp, 0, 0, dp, 0, 0);
+			ctx.clearRect(0, 0, w, h);
+			var maxT = 0, maxS = 1, si, pi, p;
+			for (si = 0; si < series.length; si++) {
+				for (pi = 0; pi < series[si].points.length; pi++) {
+					p = series[si].points[pi];
+					if (p.t > maxT) maxT = p.t;
+					if (p.speed > maxS) maxS = p.speed;
+				}
+			}
+			var pad = 8, plotW = w - pad * 2, plotH = h - pad * 2;
+			for (si = 0; si < series.length; si++) {
+				ctx.strokeStyle = series[si].color;
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				for (pi = 0; pi < series[si].points.length; pi++) {
+					p = series[si].points[pi];
+					var x = pad + (p.t / maxT) * plotW;
+					var y = pad + plotH - (p.speed / maxS) * plotH;
+					if (pi === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+				}
+				ctx.stroke();
+			}
 		}
 		function oscillate() {
 			return 1 + 0.02 * Math.sin(Date.now() / 100);
@@ -452,6 +508,23 @@
 			padding: 1em 3em;
 		}
 
+		#detailsArea {
+			margin: 1em auto;
+			max-width: 40em;
+			text-align: center;
+			font-size: 0.9em;
+			line-height: 1.6em;
+		}
+
+		#detailsText {
+			margin: 0.5em 0;
+		}
+
+		#curveCanvas {
+			max-width: 95%;
+			margin: 0.5em auto;
+		}
+
 		@media all and (max-width:40em) {
 			body {
 				font-size: 0.8em;
@@ -557,6 +630,10 @@
 					<div id="ulText" class="meterText"></div>
 					<div class="unit">Mbit/s</div>
 				</div>
+			</div>
+			<div id="detailsArea" style="display:none">
+				<div id="detailsText"></div>
+				<canvas id="curveCanvas" width="600" height="160"></canvas>
 			</div>
 			<div id="ipArea">
 				<span id="ip"></span>
