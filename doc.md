@@ -905,6 +905,24 @@ s.setParameter("test_order","P_D_U");
 
 This will point to our static files and set the test to only do ping/jitter, download and upload tests.
 
+## UDP test
+
+The browser test measures TCP/HTTP(S) only — page JavaScript cannot open a raw UDP socket. To measure **UDP throughput, packet loss, RTT and jitter**, LibreSpeed ships a self-contained, zero-dependency Node.js UDP test in the `udp/` directory (see `udp/README.md` for full details).
+
+Server (on your host):
+
+```sh
+node udp/udp-server.js -p 5201
+```
+
+Client (anywhere with UDP access to the server):
+
+```sh
+node udp/udp-client.js -h <server> -p 5201 --all 5
+```
+
+`--all 5` runs ping (30 datagrams), upload and download for 5 seconds each, and prints a JSON result line for scripting. A browser-native UDP path would require WebTransport over HTTP/3 (QUIC) and is not included in this repository yet.
+
 ## Troubleshooting
 
 These are the most common issues reported by users, and how to fix them. If you still need help, contact me at [info@fdossena.com](mailto:info@fdossena.com).
