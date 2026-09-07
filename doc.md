@@ -732,7 +732,7 @@ To keep track of the amount of transferred data, the XHR Level 2 `upload.onprogr
 
 This test has a couple of complications:
 
-* Some browsers don't have a working `upload.onprogress` event. For this, we use a small blobs instead of a large one and we keep track of progress using the `onload` event. This is referred to as IE11 Workaround (but the same bug was also found in some versions of Edge and Safari)
+* Some browsers don't have a working `upload.onprogress` event. For this, we use a small blobs instead of a large one and we keep track of progress using the `onload` event. This is referred to as IE11 Workaround (the same bug was also found in some versions of Edge and in the PlayStation 4 browser). Affected browsers are detected by checking whether `xhr.upload` is usable, not by sniffing the user agent. Safari is __not__ affected and uses the regular, more accurate upload test
 * When `mpot` is set to `true`, an empty request must first be sent in order to load the CORS headers before the test can start
 
 See the code for more implementation details.
