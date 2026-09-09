@@ -78,6 +78,19 @@ services:
     ports:
       - "18182:8080"
 
+  frontend-remote:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      - backend-testpoint
+    environment:
+      - MODE=frontend
+      - WEBPORT=8080
+      - SERVER_LIST_URL=http://127.0.0.1:18184/tests/e2e/fixtures/servers-frontend-remote.json
+    ports:
+      - "18188:8080"
+
   dual:
     build:
       context: ..

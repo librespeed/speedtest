@@ -56,7 +56,7 @@ fi
 
 
 # Copy servers.json for stability page (frontend/dual modes)
-if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]] && [ -f /servers.json ]; then
   cp /servers.json /var/www/html/servers.json
 fi
 
@@ -91,6 +91,11 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   if [ -f /servers.json ]; then
     echo "using mounted /servers.json for server-list.json"
     cp /servers.json /var/www/html/server-list.json
+  elif [ -n "$SERVER_LIST_URL" ]; then
+    echo "no /servers.json found, relying on SERVER_LIST_URL"
+  elif [ "$MODE" == "frontend" ]; then
+    echo "ERROR: /servers.json not found and SERVER_LIST_URL is not set" >&2
+    exit 1
   else
     echo "no /servers.json found, create one for local host"
     # generate config for just the local server
