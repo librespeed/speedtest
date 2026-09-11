@@ -11,7 +11,7 @@ test.describe("Mobile result-image sharing", () => {
       image.src =
         "data:image/svg+xml," +
         encodeURIComponent(
-          '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480"><rect width="800" height="480" fill="black"/></svg>'
+          '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1600"><rect width="480" height="1600" fill="black"/></svg>'
         );
     });
     await page.locator("#share").evaluate(dialog => dialog.showModal());
@@ -22,9 +22,12 @@ test.describe("Mobile result-image sharing", () => {
 
     const dimensions = await image.evaluate(element => ({
       width: element.getBoundingClientRect().width,
-      dialogWidth: element.closest("dialog").clientWidth
+      height: element.getBoundingClientRect().height,
+      dialogWidth: element.closest("dialog").clientWidth,
+      dialogHeight: element.closest("dialog").clientHeight
     }));
 
     expect(dimensions.width).toBeLessThanOrEqual(dimensions.dialogWidth);
+    expect(dimensions.height).toBeLessThanOrEqual(dimensions.dialogHeight);
   });
 });
