@@ -22,9 +22,18 @@ http
       return;
     }
 
-    const url = new URL(request.url, "http://127.0.0.1");
-    const pathname = url.pathname === "/" ? "/index.html" : url.pathname;
-    const file = path.resolve(root, `.${decodeURIComponent(pathname)}`);
+    let pathname;
+    try {
+      const url = new URL(request.url, "http://127.0.0.1");
+      pathname = url.pathname === "/" ? "/index.html" : url.pathname;
+      pathname = decodeURIComponent(pathname);
+    } catch {
+      response.writeHead(400);
+      response.end();
+      return;
+    }
+
+    const file = path.resolve(root, `.${pathname}`);
 
     if (!file.startsWith(`${root}${path.sep}`)) {
       response.writeHead(403);

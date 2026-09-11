@@ -32,4 +32,12 @@ test.describe("Unmodified repository static assets", () => {
     const missing = await request.get(`${staticRepositoryUrl}/does-not-exist`);
     expect(missing.status()).toBe(404);
   });
+
+  test("returns 400 for malformed percent-encoded paths without stopping the server", async ({ request }) => {
+    const malformed = await request.get(`${staticRepositoryUrl}/%E0%A4%A`);
+    expect(malformed.status()).toBe(400);
+
+    const followingRequest = await request.get(`${staticRepositoryUrl}/settings.json`);
+    expect(followingRequest.status()).toBe(200);
+  });
 });
