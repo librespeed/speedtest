@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Remote frontend backend",
+    "server": "http://127.0.0.1:18181/",
+    "dlURL": "garbage.php",
+    "ulURL": "empty.php",
+    "pingURL": "empty.php",
+    "getIpURL": "getIP.php",
+    "id": 1
+  }
+]

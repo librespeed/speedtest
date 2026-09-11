@@ -56,7 +56,7 @@ fi
 
 
 # Copy servers.json for stability page (frontend/dual modes)
-if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]]; then
+if [[ "$MODE" == "frontend" || "$MODE" == "dual" ]] && [ -f /servers.json ]; then
   cp /servers.json /var/www/html/servers.json
 fi
 
@@ -91,6 +91,11 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   if [ -f /servers.json ]; then
     echo "using mounted /servers.json for server-list.json"
     cp /servers.json /var/www/html/server-list.json
+  elif [ -n "$SERVER_LIST_URL" ]; then
+    echo "no /servers.json found, relying on SERVER_LIST_URL"
+  elif [ "$MODE" == "frontend" ]; then
+    echo "ERROR: /servers.json not found and SERVER_LIST_URL is not set" >&2
+    exit 1
   else
     echo "no /servers.json found, create one for local host"
     # generate config for just the local server
@@ -100,7 +105,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     echo "using SERVER_LIST_URL for frontend server list"
     SERVER_LIST_URL_ESCAPED=$(printf '%s\n' "$SERVER_LIST_URL" | sed 's/[&/\\]/\\&/g; s/\$/\\$/g')
     sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/index-modern.html
-    sed -i "s/var SPEEDTEST_SERVERS = \\[/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";\\n\\t\\t\\/\\*/" /var/www/html/index-classic.html
+    sed -i "/var SPEEDTEST_SERVERS = \\[/,/^[[:space:]]*];/c\\\t\tvar SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";" /var/www/html/index-classic.html
     sed -i "s/var SPEEDTEST_SERVERS = \"server-list.json\";/var SPEEDTEST_SERVERS = \"$SERVER_LIST_URL_ESCAPED\";/" /var/www/html/stability.html
   fi
 
