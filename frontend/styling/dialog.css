@@ -32,6 +32,13 @@ dialog {
     animation: fade-in 0.3s ease-out;
   }
 
+  & > #results {
+    max-width: 100%;
+    max-height: calc(100% - 8rem);
+    height: auto;
+    object-fit: contain;
+  }
+
   & > .close-dialog {
     display: flex;
     align-items: center;
