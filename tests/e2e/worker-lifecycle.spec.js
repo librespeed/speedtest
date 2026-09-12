@@ -182,6 +182,37 @@ test.describe("Speedtest worker lifecycle", () => {
     expect(await page.evaluate(() => window.__endCalls)).toBe(1);
   });
 
+  test("keeps a responsive worker alive while aborted-run telemetry is pending", async ({ page }) => {
+    await page.evaluate(() => {
+      window.__speedtest = new Speedtest();
+      window.__speedtest.start();
+      window.__speedtest.abort();
+      window.__worker = window.__workers[0];
+      window.__telemetryStatus = setInterval(
+        () => window.__worker.emit({ testState: 3, abortPending: true }),
+        100
+      );
+    });
+
+    await page.waitForTimeout(1100);
+    await page.evaluate(() => clearInterval(window.__telemetryStatus));
+    expect(
+      await page.evaluate(() => ({
+        state: window.__speedtest.getState(),
+        terminated: window.__worker.terminated
+      }))
+    ).toEqual({ state: 3, terminated: false });
+
+    const result = await page.evaluate((data) => {
+      window.__worker.emit(data);
+      return {
+        state: window.__speedtest.getState(),
+        terminated: window.__worker.terminated
+      };
+    }, terminalState(5));
+    expect(result).toEqual({ state: 4, terminated: true });
+  });
+
   test("ignores delayed events and an old abort timeout after a new run starts", async ({ page }) => {
     await page.evaluate((data) => {
       window.__speedtest = new Speedtest();

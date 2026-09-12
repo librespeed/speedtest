@@ -16,6 +16,7 @@ let dlProgress = 0; //progress of download test 0-1
 let ulProgress = 0; //progress of upload test 0-1
 let pingProgress = 0; //progress of ping+jitter test 0-1
 let testId = null; //test ID (sent back by telemetry if used, null otherwise)
+let abortPending = false; // true while aborted-run telemetry is being submitted
 
 let log = ""; //telemetry log
 function tlog(s) {
@@ -102,7 +103,8 @@ this.addEventListener("message", function(e) {
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
 				pingProgress: pingProgress,
-				testId: testId
+				testId: testId,
+				abortPending: abortPending
 			})
 		);
 	}
@@ -246,13 +248,12 @@ this.addEventListener("message", function(e) {
 	}
 	if (params[0] === "abort") {
 		// abort command
-        if (testState >= 4) return;
+		if (testState >= 4 || abortPending) return;
 		tlog("manually aborted");
 		clearRequests(); // stop all xhr activity
 		runNextTest = null;
 		if (interval) clearInterval(interval); // clear timer if present
-		if (settings.telemetry_level > 1) sendTelemetry(function() {});
-		testState = 5; //set test as aborted
+		abortPending = settings.telemetry_level > 1;
 		dlStatus = "";
 		ulStatus = "";
 		pingStatus = "";
@@ -261,6 +262,12 @@ this.addEventListener("message", function(e) {
 		dlProgress = 0;
 		ulProgress = 0;
 		pingProgress = 0;
+		const completeAbort = function() {
+			abortPending = false;
+			testState = 5; //set test as aborted
+		};
+		if (abortPending) sendTelemetry(completeAbort);
+		else completeAbort();
 	}
 });
 // stops all XHR activity, aggressively

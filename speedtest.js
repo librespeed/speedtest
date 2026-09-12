@@ -336,6 +336,13 @@ Speedtest.prototype = {
     const isCurrentRun = function() {
       return this._activeRun === run && this.worker === worker;
     }.bind(this);
+    const armAbortTimeout = function() {
+      if (run.abortTimeout !== null) clearTimeout(run.abortTimeout);
+      run.abortTimeout = setTimeout(function() {
+        if (this._activeRun === run && this.worker === run.worker)
+          run.finish(true);
+      }.bind(this), 1000);
+    }.bind(this);
     const finish = function(aborted) {
       if (run.ended) return;
       run.ended = true;
@@ -362,14 +369,18 @@ Speedtest.prototype = {
       }
     }.bind(this);
 
+    run.armAbortTimeout = armAbortTimeout;
     run.finish = finish;
     this._activeRun = run;
     this.worker = worker;
     worker.onmessage = function(e) {
       if (!isCurrentRun() || run.ended) return;
+      const data = JSON.parse(e.data);
+      // While an aborted run is submitting telemetry, each status response
+      // proves that the worker is still responsive, so keep its watchdog alive.
+      if (data.abortPending && run.abortTimeout !== null) armAbortTimeout();
       if (e.data === run.prevData) return;
       else run.prevData = e.data;
-      const data = JSON.parse(e.data);
       try {
         if (this.onupdate) this.onupdate(data);
       } catch (e) {
@@ -415,10 +426,7 @@ Speedtest.prototype = {
     if (this._state < 4 && run && this.worker === run.worker) {
       run.worker.postMessage("abort");
       if (!run.ended && run.abortTimeout === null) {
-        run.abortTimeout = setTimeout(function() {
-          if (this._activeRun === run && this.worker === run.worker)
-            run.finish(true);
-        }.bind(this), 1000);
+        run.armAbortTimeout();
       }
     }
   }
