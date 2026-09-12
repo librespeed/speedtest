@@ -128,7 +128,7 @@ test.describe("Stability test", () => {
 
   test("clears resource timings after measuring a ping", async ({ page }) => {
     await page.goto(`${baseUrls.standalone}/stability.html`);
-    await page.route(`${baseUrls.backend}/empty.php?cors=true&r=*`, route => route.fulfill({ status: 200, body: "" }));
+    await page.route(`${baseUrls.backend}/empty.php?cors=true&r=*`, route => route.fulfill({ status: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: "" }));
 
     await expect(
       page.evaluate(
