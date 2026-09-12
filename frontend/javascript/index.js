@@ -16,6 +16,8 @@ const testState = {
   state: INITIALIZING,
   speedtest: null,
   servers: [],
+  initialGaugeScrollPending: false,
+  initialGaugeScrollScheduled: false,
   selectedServerDirty: false,
   testData: null,
   testDataDirty: false,
@@ -81,8 +83,8 @@ function startButtonClickHandler() {
     case READY:
     case FINISHED:
       testState.speedtest.start();
+      testState.initialGaugeScrollPending = true;
       testState.state = RUNNING;
-      requestAnimationFrame(scrollInitialDownloadGaugeIntoView);
       return;
     case RUNNING:
       testState.speedtest.abort();
@@ -373,6 +375,21 @@ function startRenderingLoop() {
         testState.state === RUNNING || testState.state === FINISHED
       )
     );
+
+    if (
+      testState.state === RUNNING &&
+      testState.initialGaugeScrollPending &&
+      !testState.initialGaugeScrollScheduled
+    ) {
+      testState.initialGaugeScrollScheduled = true;
+      requestAnimationFrame(() => {
+        if (testState.state === RUNNING) {
+          scrollInitialDownloadGaugeIntoView();
+        }
+        testState.initialGaugeScrollPending = false;
+        testState.initialGaugeScrollScheduled = false;
+      });
+    }
 
     // Show ping and jitter if data is available
     pingAndJitter.forEach((e) =>
