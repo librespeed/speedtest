@@ -82,7 +82,7 @@ function startButtonClickHandler() {
     case FINISHED:
       testState.speedtest.start();
       testState.state = RUNNING;
-      requestAnimationFrame(scrollActiveGaugeIntoView);
+      requestAnimationFrame(scrollInitialDownloadGaugeIntoView);
       return;
     case RUNNING:
       testState.speedtest.abort();
@@ -94,24 +94,24 @@ function startButtonClickHandler() {
 }
 
 /**
- * Scroll the active gauge into view on narrow viewports when starting a test
+ * Scroll the initial download gauge into view on narrow viewports when starting a test
  */
-function scrollActiveGaugeIntoView() {
+function scrollInitialDownloadGaugeIntoView() {
   if (!window.matchMedia("(max-width: 800px)").matches) {
     return;
   }
 
-  const activeGauge = document.querySelector("#download-gauge");
-  if (!activeGauge) {
+  const downloadGauge = document.querySelector("#download-gauge");
+  if (!downloadGauge) {
     return;
   }
 
-  const { top, bottom } = activeGauge.getBoundingClientRect();
+  const { top, bottom } = downloadGauge.getBoundingClientRect();
   if (top >= 0 && bottom <= window.innerHeight) {
     return;
   }
 
-  activeGauge.scrollIntoView({
+  downloadGauge.scrollIntoView({
     block: "center",
     inline: "nearest",
   });
