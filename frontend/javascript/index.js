@@ -82,6 +82,7 @@ function startButtonClickHandler() {
     case FINISHED:
       testState.speedtest.start();
       testState.state = RUNNING;
+      requestAnimationFrame(scrollActiveGaugeIntoView);
       return;
     case RUNNING:
       testState.speedtest.abort();
@@ -90,6 +91,30 @@ function startButtonClickHandler() {
     default:
       return;
   }
+}
+
+/**
+ * Scroll the active gauge into view on narrow viewports when starting a test
+ */
+function scrollActiveGaugeIntoView() {
+  if (!window.matchMedia("(max-width: 800px)").matches) {
+    return;
+  }
+
+  const activeGauge = document.querySelector("#download-gauge");
+  if (!activeGauge) {
+    return;
+  }
+
+  const { top, bottom } = activeGauge.getBoundingClientRect();
+  if (top >= 0 && bottom <= window.innerHeight) {
+    return;
+  }
+
+  activeGauge.scrollIntoView({
+    block: "center",
+    inline: "nearest",
+  });
 }
 
 /**
