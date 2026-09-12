@@ -48,6 +48,9 @@ function Speedtest() {
   this._selectedServer = null; //when using multiple points of test, this is the selected server
   this._settings = {}; //settings for the speed test worker
   this._state = 0; //0=adding settings, 1=adding servers, 2=server selection done, 3=test running, 4=done
+  this.worker = null;
+  this.updater = null;
+  this._activeRun = null;
   console.log(
     "LibreSpeed by Federico Dossena v6.2.1 - https://github.com/librespeed/speedtest"
   );
@@ -319,34 +322,68 @@ Speedtest.prototype = {
    */
   start: function() {
     if (this._state == 3) throw "Test already running";
-    this.worker = new Worker("speedtest_worker.js?r=" + Math.random());
-    this.worker.onmessage = function(e) {
-      if (e.data === this._prevData) return;
-      else this._prevData = e.data;
+    if (this._state == 1)
+      throw "When using multiple points of test, you must call selectServer before starting the test";
+
+    const worker = new Worker("speedtest_worker.js?r=" + Math.random());
+    const run = {
+      worker: worker,
+      updater: null,
+      abortTimeout: null,
+      ended: false,
+      prevData: null
+    };
+    const isCurrentRun = function() {
+      return this._activeRun === run && this.worker === worker;
+    }.bind(this);
+    const finish = function(aborted) {
+      if (run.ended) return;
+      run.ended = true;
+      if (run.updater !== null) {
+        clearInterval(run.updater);
+        run.updater = null;
+      }
+      if (run.abortTimeout !== null) {
+        clearTimeout(run.abortTimeout);
+        run.abortTimeout = null;
+      }
+      worker.terminate();
+
+      // A callback may synchronously start another run, so clean up this run first.
+      if (!isCurrentRun()) return;
+      this._activeRun = null;
+      this.worker = null;
+      this.updater = null;
+      this._state = 4;
+      try {
+        if (this.onend) this.onend(aborted);
+      } catch (e) {
+        console.error("Speedtest onend event threw exception: " + e);
+      }
+    }.bind(this);
+
+    run.finish = finish;
+    this._activeRun = run;
+    this.worker = worker;
+    worker.onmessage = function(e) {
+      if (!isCurrentRun() || run.ended) return;
+      if (e.data === run.prevData) return;
+      else run.prevData = e.data;
       const data = JSON.parse(e.data);
       try {
         if (this.onupdate) this.onupdate(data);
       } catch (e) {
         console.error("Speedtest onupdate event threw exception: " + e);
       }
-      if (data.testState >= 4) {
-        clearInterval(this.updater);
-        this._state = 4;
-        try {
-          if (this.onend) this.onend(data.testState == 5);
-        } catch (e) {
-          console.error("Speedtest onend event threw exception: " + e);
-        }
-      }
+      if (data.testState >= 4) finish(data.testState == 5);
     }.bind(this);
-    this.updater = setInterval(
+    run.updater = setInterval(
       function() {
-        this.worker.postMessage("status");
-      }.bind(this),
+        if (isCurrentRun() && !run.ended) worker.postMessage("status");
+      },
       200
     );
-    if (this._state == 1)
-        throw "When using multiple points of test, you must call selectServer before starting the test";
+    this.updater = run.updater;
     if (this._state == 2) {
       this._settings.url_dl =
         this._selectedServer.server + this._selectedServer.dlURL;
@@ -367,13 +404,22 @@ Speedtest.prototype = {
         });
     }
     this._state = 3;
-    this.worker.postMessage("start " + JSON.stringify(this._settings));
+    worker.postMessage("start " + JSON.stringify(this._settings));
   },
   /**
    * Aborts the test while it's running.
    */
   abort: function() {
     if (this._state < 3) throw "You cannot abort a test that's not started yet";
-    if (this._state < 4) this.worker.postMessage("abort");
+    const run = this._activeRun;
+    if (this._state < 4 && run && this.worker === run.worker) {
+      run.worker.postMessage("abort");
+      if (!run.ended && run.abortTimeout === null) {
+        run.abortTimeout = setTimeout(function() {
+          if (this._activeRun === run && this.worker === run.worker)
+            run.finish(true);
+        }.bind(this), 1000);
+      }
+    }
   }
 };
