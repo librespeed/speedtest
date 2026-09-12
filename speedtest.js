@@ -239,7 +239,11 @@ Speedtest.prototype = {
       const checkServer = function(server, done) {
         let i = 0;
         server.pingT = -1;
-        if (server.server.indexOf(location.protocol) == -1) done();
+        if (
+          location.protocol === "https:" &&
+          server.server.substring(0, 7).toLowerCase() === "http://"
+        )
+          done();
         else {
           const nextPing = function() {
             if (i++ == PINGS) {
