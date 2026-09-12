@@ -1,7 +1,10 @@
 const fs = require("node:fs");
+const path = require("node:path");
 const { test, expect } = require("@playwright/test");
 const { baseUrls } = require("./helpers/env");
 const { stabilityStartButton } = require("./helpers/ui");
+
+const workerSource = fs.readFileSync(path.join(__dirname, "..", "..", "stability_worker.js"), "utf8");
 
 async function setShortDuration(page) {
   await page.evaluate(() => {
@@ -121,5 +124,41 @@ test.describe("Stability test", () => {
 
     await expect(page.locator("#serverArea")).toBeVisible({ timeout: 10_000 });
     await expect(page.locator("#server option")).toContainText("Local dual backend", { timeout: 10_000 });
+  });
+
+  test("clears resource timings after measuring a ping", async ({ page }) => {
+    await page.goto(`${baseUrls.standalone}/stability.html`);
+    await page.route(`${baseUrls.backend}/empty.php?cors=true&r=*`, route => route.fulfill({ status: 200, body: "" }));
+
+    await expect(
+      page.evaluate(
+        async ({ source, url }) => {
+          const instrumentedSource = `
+          const clearResourceTimings = performance.clearResourceTimings.bind(performance);
+          performance.clearResourceTimings = () => {
+            postMessage("resource timings cleared");
+            clearResourceTimings();
+          };
+          ${source}
+        `;
+          const worker = new Worker(URL.createObjectURL(new Blob([instrumentedSource], { type: "text/javascript" })));
+          try {
+            await new Promise((resolve, reject) => {
+              const timeout = setTimeout(() => reject(new Error("Resource timings were not cleared")), 10_000);
+              worker.onmessage = event => {
+                if (event.data === "resource timings cleared") {
+                  clearTimeout(timeout);
+                  resolve();
+                }
+              };
+              worker.postMessage(`start ${JSON.stringify({ url_ping: url, duration: 1, mpot: true })}`);
+            });
+          } finally {
+            worker.terminate();
+          }
+        },
+        { source: workerSource, url: `${baseUrls.backend}/empty.php` }
+      )
+    ).resolves.toBeUndefined();
   });
 });
