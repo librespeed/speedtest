@@ -146,21 +146,21 @@ this.addEventListener("message", function(e) {
 				}
 			}
 			if (/Edge.(\d+\.\d+)/i.test(ua)) {
-				//Edge 15 introduced a bug that causes onprogress events to not get fired, we have to use the "small chunks" workaround that reduces accuracy
-				settings.forceIE11Workaround = true;
+				if (typeof s.forceIE11Workaround === "undefined") {
+					//Edge 15 introduced a bug that causes onprogress events to not get fired, we have to use the "small chunks" workaround that reduces accuracy
+					settings.forceIE11Workaround = true;
+				}
 			}
 			if (/PlayStation 4.(\d+\.\d+)/i.test(ua)) {
-				//PS4 browser has the same bug as IE11/Edge
-				settings.forceIE11Workaround = true;
+				if (typeof s.forceIE11Workaround === "undefined") {
+					//PS4 browser has the same bug as IE11/Edge
+					settings.forceIE11Workaround = true;
+				}
 			}
 			if (/Chrome.(\d+)/i.test(ua) && /Android|iPhone|iPad|iPod|Windows Phone/i.test(ua)) {
 				//cheap af
 				//Chrome mobile introduced a limitation somewhere around version 65, we have to limit XHR upload size to 4 megabytes
 				settings.xhr_ul_blob_megabytes = 4;
-			}
-			if (/^((?!chrome|android|crios|fxios).)*safari/i.test(ua)) {
-				//Safari also needs the IE11 workaround but only for the MPOT version
-				settings.forceIE11Workaround = true;
 			}
 			//telemetry_level has to be parsed and not just copied
 			if (typeof s.telemetry_level !== "undefined") settings.telemetry_level = s.telemetry_level === "basic" ? 1 : s.telemetry_level === "full" ? 2 : s.telemetry_level === "debug" ? 3 : 0; // telemetry level
