@@ -26,4 +26,21 @@ test.describe('Design switch behavior', () => {
     await expect(page).toHaveURL(/index-classic\.html\?design=old/);
     await expect(classicStartButton(page)).toBeVisible();
   });
+
+  test('config fetch bypasses browser cache', async ({ page }) => {
+    let configRequestUrl = '';
+
+    await page.route('**/config.json*', async (route) => {
+      configRequestUrl = route.request().url();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ useNewDesign: true }),
+      });
+    });
+
+    await page.goto(`${baseUrls.standalone}/index.html`);
+    await expect(page).toHaveURL(/index-modern\.html/);
+    expect(configRequestUrl).toMatch(/config\.json\?_=\d+/);
+  });
 });

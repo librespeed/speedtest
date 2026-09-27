@@ -37,7 +37,8 @@
     try {
         const xhr = new XMLHttpRequest();
         // Use a synchronous request to prevent a flash of the old design before redirecting
-        xhr.open('GET', 'config.json', false);
+        // Bypass stale browser caches so Docker env changes are reflected immediately
+        xhr.open('GET', 'config.json?_=' + Date.now(), false);
         xhr.send(null);
 
         // Check for a successful response, but not 304 Not Modified, which can have an empty response body
