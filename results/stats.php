@@ -4,6 +4,8 @@ error_reporting(0);
 
 require 'telemetry_settings.php';
 require_once 'telemetry_db.php';
+require_once 'stats_summary.php';
+require_once 'stats_render.php';
 
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
@@ -13,6 +15,7 @@ header('Pragma: no-cache');
 <!DOCTYPE html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>LibreSpeed - Stats</title>
         <style type="text/css">
             html,body{
@@ -59,6 +62,7 @@ header('Pragma: no-cache');
                 margin: 1em 0;
             }
         </style>
+        <?php echo statsRenderHead(); ?>
     </head>
     <body>
         <h1>LibreSpeed - Stats</h1>
@@ -74,6 +78,31 @@ header('Pragma: no-cache');
             } else {
                 ?>
                 <form action="stats.php" method="GET"><input type="hidden" name="op" value="logout" /><input type="submit" value="Logout" /></form>
+                <?php
+                // The summary is cached, so revisiting this page does not
+                // re-scan the table; only the first view of an open month does.
+                $statsMonth = statsCurrentMonth();
+                if (isset($_GET['month']) && is_string($_GET['month']) && preg_match('/^\d{4}-\d{2}$/', $_GET['month'])) {
+                    $statsMonth = $_GET['month'];
+                }
+                $statsSummary = statsMonthlySummary($statsMonth);
+                ?>
+                <form action="stats.php" method="GET">
+                    <h3>Aggregate statistics</h3>
+                    <input type="month" name="month" value="<?php echo statsEscape($statsMonth); ?>" />
+                    <input type="submit" value="Show" />
+                </form>
+                <?php
+                if (null === $statsSummary) {
+                    echo '<div>There was an error trying to summarise telemetry for '.statsEscape($statsMonth).'.</div>';
+                } else {
+                    echo statsRenderSummary($statsSummary);
+                    if (isset($stats_public_report) && true === $stats_public_report) {
+                        echo '<div>This summary is also published without a login at '
+                            .'<a href="stats_public.php">stats_public.php</a>.</div>';
+                    }
+                }
+                ?>
                 <form action="stats.php" method="GET">
                     <h3>Search test results</h3>
                     <input type="hidden" name="op" value="id" />

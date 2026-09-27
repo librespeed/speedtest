@@ -42,7 +42,8 @@ CREATE TABLE `speedtest_users` (
 -- Indexes for table `speedtest_users`
 --
 ALTER TABLE `speedtest_users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `speedtest_users_timestamp` (`timestamp`);
 
 --
 -- AUTO_INCREMENT for dumped tables
