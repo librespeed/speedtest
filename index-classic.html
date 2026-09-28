@@ -563,7 +563,7 @@
 			</div>
 			<div id="shareArea" style="display:none">
 				<h3 data-i18n="classic.share">Share results</h3>
-				<p>Test ID: <span id="testId"></span></p>
+				<p><span data-i18n="classic.test-id">Test ID:</span> <span id="testId"></span></p>
 				<input type="text" value="" id="resultsURL" readonly="readonly"
 					onclick="this.select();this.focus();this.select();document.execCommand('copy');alert(window.LibreSpeedI18n.t('classic.link-copied', 'Link copied'))" />
 				<img src="" id="resultsImg" />
@@ -577,7 +577,7 @@
 		<p data-i18n="privacy.telemetry">This HTML5 speed test server is configured with telemetry enabled.</p>
 		<h4 data-i18n="privacy.collect-title">What data we collect</h4>
 		<p>
-			At the end of the test, the following data is collected and stored:
+			<span data-i18n="privacy.collect-intro">At the end of the test, the following data is collected and stored:</span>
 		<ul>
 			<li data-i18n="privacy.item.test-id">Test ID</li>
 			<li data-i18n="privacy.item.time">Time of testing</li>
@@ -591,28 +591,26 @@
 		</p>
 		<h4 data-i18n="privacy.use-title">How we use the data</h4>
 		<p>
-			Data collected through this service is used to:
+			<span data-i18n="privacy.use-intro">Data collected through this service is used to:</span>
 		<ul>
-			<li>Allow sharing of test results (sharable image for forums, etc.)</li>
-			<li>To improve the service offered to you (for instance, to detect problems on our side)</li>
+			<li data-i18n="privacy.use.share">Allow sharing of test results (sharable image for forums, etc.)</li>
+			<li data-i18n="privacy.use.improve">To improve the service offered to you (for instance, to detect problems on our side)</li>
 		</ul>
-		No personal information is disclosed to third parties.
+		<span data-i18n="privacy.no-disclosure">No personal information is disclosed to third parties.</span>
 		</p>
 		<h4 data-i18n="privacy.consent-title">Your consent</h4>
 		<p>
-			By starting the test, you consent to the terms of this privacy policy.
+			<span data-i18n="privacy.consent">By starting the test, you consent to the terms of this privacy policy.</span>
 		</p>
 		<h4 data-i18n="privacy.removal-title">Data removal</h4>
 		<p>
-			If you want to have your information deleted, you need to provide either the ID of the test or your IP
-			address. This is the only way to identify your data, without this information we won't be able to comply
-			with your request.<br /><br />
-			Contact this email address for all deletion requests: 
+			<span data-i18n="privacy.removal">If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.</span><br /><br />
+			<span data-i18n="privacy.contact">Contact this email address for all deletion requests:</span>
 			<a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
 		</p>
 		<br /><br />
 		<div class="closePrivacyPolicy">
-			<a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'">Close</a>
+			<a class="privacy" href="#" onclick="I('privacyPolicy').style.display='none'" data-i18n="dialog.close">Close</a>
 		</div>
 		<br />
 	</div>
