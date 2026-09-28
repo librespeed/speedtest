@@ -176,3 +176,9 @@ To do this:
 * Set the `MODE` environment variable to `dual`
 * Follow the `servers.json` instructions for the frontend mode
 * The first server entry should be the local server, using the server endpoint address that a client can access.
+
+## Easypanel
+
+[Easypanel](https://easypanel.io) is a self-hosted Docker deployment platform, and LibreSpeed has a one-click deployment template there:
+
+[![Deploy on Easypanel](https://easypanel.io/img/deploy-on-easypanel-40.svg)](https://easypanel.io/templates/librespeed)
