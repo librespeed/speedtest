@@ -47,7 +47,7 @@
 				initUI();
 			} else { //multiple servers
 				var noServersAvailable = function () {
-					I("message").innerHTML = "No servers available";
+					I("message").textContent = window.LibreSpeedI18n.t("classic.no-servers", "No servers available");
 				}
 				var runServerSelect = function () {
 					s.selectServer(function (server) {
@@ -309,11 +309,11 @@
 		}
 
 		#startStopBtn:before {
-			content: "Start";
+			content: attr(data-label-start);
 		}
 
 		#startStopBtn.running:before {
-			content: "Abort";
+			content: attr(data-label-abort);
 		}
 
 		#serverArea {
@@ -520,39 +520,39 @@
 	<title>LibreSpeed</title>
 </head>
 
-<body onload="initServers()">
+<body onload="window.LibreSpeedI18n.ready.then(initServers)">
 	<h1>LibreSpeed</h1>
 	<div id="loading" class="visible">
-		<p id="message"><span class="loadCircle"></span>Selecting a server...</p>
+		<p id="message"><span class="loadCircle"></span><span data-i18n="classic.selecting">Selecting a server...</span></p>
 	</div>
 	<div id="testWrapper" class="hidden">
-		<button id="startStopBtn" onclick="startStop()" aria-label="Start"></button><br />
-		<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''">Privacy</a>
+		<button id="startStopBtn" onclick="startStop()" aria-label="Start" data-label-start="Start" data-label-abort="Abort" data-i18n-attr="aria-label:classic.start,data-label-start:classic.start,data-label-abort:classic.abort"></button><br />
+		<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''" data-i18n="classic.privacy">Privacy</a>
 		<div id="serverArea">
 			Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
 		</div>
 		<div id="test">
 			<div class="testGroup">
 				<div class="testArea2">
-					<div class="testName">Ping</div>
+					<div class="testName" data-i18n="metric.ping">Ping</div>
 					<div id="pingText" class="meterText" style="color:#AA6060"></div>
 					<div class="unit">ms</div>
 				</div>
 				<div class="testArea2">
-					<div class="testName">Jitter</div>
+					<div class="testName" data-i18n="metric.jitter">Jitter</div>
 					<div id="jitText" class="meterText" style="color:#AA6060"></div>
 					<div class="unit">ms</div>
 				</div>
 			</div>
 			<div class="testGroup">
 				<div class="testArea">
-					<div class="testName">Download</div>
+					<div class="testName" data-i18n="metric.download">Download</div>
 					<canvas id="dlMeter" class="meter"></canvas>
 					<div id="dlText" class="meterText"></div>
 					<div class="unit">Mbit/s</div>
 				</div>
 				<div class="testArea">
-					<div class="testName">Upload</div>
+					<div class="testName" data-i18n="metric.upload">Upload</div>
 					<canvas id="ulMeter" class="meter"></canvas>
 					<div id="ulText" class="meterText"></div>
 					<div class="unit">Mbit/s</div>
@@ -562,34 +562,34 @@
 				<span id="ip"></span>
 			</div>
 			<div id="shareArea" style="display:none">
-				<h3>Share results</h3>
+				<h3 data-i18n="classic.share">Share results</h3>
 				<p>Test ID: <span id="testId"></span></p>
 				<input type="text" value="" id="resultsURL" readonly="readonly"
-					onclick="this.select();this.focus();this.select();document.execCommand('copy');alert('Link copied')" />
+					onclick="this.select();this.focus();this.select();document.execCommand('copy');alert(window.LibreSpeedI18n.t('classic.link-copied', 'Link copied'))" />
 				<img src="" id="resultsImg" />
 			</div>
 		</div>
-		<a href="index.html?design=new">Try the modern design</a><br>
-		<a href="stability.html">Stability Test</a> | <a href="https://github.com/librespeed/speedtest">Source code</a>
+		<a href="index.html?design=new" data-i18n="classic.modern">Try the modern design</a><br>
+		<a href="stability.html" data-i18n="classic.stability">Stability Test</a> | <a href="https://github.com/librespeed/speedtest" data-i18n="classic.source">Source code</a>
 	</div>
 	<div id="privacyPolicy" style="display:none">
-		<h2>Privacy Policy</h2>
-		<p>This HTML5 speed test server is configured with telemetry enabled.</p>
-		<h4>What data we collect</h4>
+		<h2 data-i18n="privacy.title">Privacy Policy</h2>
+		<p data-i18n="privacy.telemetry">This HTML5 speed test server is configured with telemetry enabled.</p>
+		<h4 data-i18n="privacy.collect-title">What data we collect</h4>
 		<p>
 			At the end of the test, the following data is collected and stored:
 		<ul>
-			<li>Test ID</li>
-			<li>Time of testing</li>
-			<li>Test results (download and upload speed, ping and jitter)</li>
-			<li>IP address</li>
-			<li>ISP information</li>
-			<li>Approximate location (inferred from IP address, not GPS)</li>
-			<li>User agent and browser locale</li>
-			<li>Test log (contains no personal information)</li>
+			<li data-i18n="privacy.item.test-id">Test ID</li>
+			<li data-i18n="privacy.item.time">Time of testing</li>
+			<li data-i18n="privacy.item.results">Test results (download and upload speed, ping and jitter)</li>
+			<li data-i18n="privacy.item.ip">IP address</li>
+			<li data-i18n="privacy.item.isp">ISP information</li>
+			<li data-i18n="privacy.item.location">Approximate location (inferred from IP address, not GPS)</li>
+			<li data-i18n="privacy.item.locale">User agent and browser locale</li>
+			<li data-i18n="privacy.item.log">Test log (contains no personal information)</li>
 		</ul>
 		</p>
-		<h4>How we use the data</h4>
+		<h4 data-i18n="privacy.use-title">How we use the data</h4>
 		<p>
 			Data collected through this service is used to:
 		<ul>
@@ -598,11 +598,11 @@
 		</ul>
 		No personal information is disclosed to third parties.
 		</p>
-		<h4>Your consent</h4>
+		<h4 data-i18n="privacy.consent-title">Your consent</h4>
 		<p>
 			By starting the test, you consent to the terms of this privacy policy.
 		</p>
-		<h4>Data removal</h4>
+		<h4 data-i18n="privacy.removal-title">Data removal</h4>
 		<p>
 			If you want to have your information deleted, you need to provide either the ID of the test or your IP
 			address. This is the only way to identify your data, without this information we won't be able to comply
@@ -616,6 +616,7 @@
 		</div>
 		<br />
 	</div>
+<script defer src="frontend/javascript/i18n.js"></script>
 </body>
 
 </html>

@@ -26,6 +26,7 @@ const testState = {
 
 // Bootstrap the application when the DOM is ready
 window.addEventListener("DOMContentLoaded", async () => {
+  await window.LibreSpeedI18n.ready;
   createSpeedtest();
   hookUpButtons();
   startRenderingLoop();
@@ -127,10 +128,10 @@ async function copyLinkButtonClickHandler() {
   await navigator.clipboard.writeText(link);
   const button = document.querySelector("#copy-link");
   button.classList.add("active");
-  button.textContent = "Copied!";
+  button.textContent = window.LibreSpeedI18n.t("share.copied", "Copied!");
   setTimeout(() => {
     button.classList.remove("active");
-    button.textContent = "Copy link";
+    button.textContent = window.LibreSpeedI18n.t("share.copy", "Copy link");
   }, 3000);
 }
 
@@ -212,7 +213,7 @@ async function applyServerListJSON() {
         selectServer(bestServer);
       } else {
         alert(
-          "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network."
+          window.LibreSpeedI18n.t("error.no-servers", "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network.")
         );
       }
     });
@@ -334,10 +335,10 @@ function startRenderingLoop() {
   const resultsImage = document.querySelector("#results");
 
   const buttonTexts = {
-    [INITIALIZING]: "Loading...",
-    [READY]: "Let's start",
-    [RUNNING]: "Abort",
-    [FINISHED]: "Restart",
+    [INITIALIZING]: window.LibreSpeedI18n.t("button.loading", "Loading..."),
+    [READY]: window.LibreSpeedI18n.t("button.start", "Let's start"),
+    [RUNNING]: window.LibreSpeedI18n.t("button.abort", "Abort"),
+    [FINISHED]: window.LibreSpeedI18n.t("button.restart", "Restart"),
   };
 
   // Show copy link button only if navigator.clipboard is available
@@ -358,9 +359,9 @@ function startRenderingLoop() {
       selectedServer.textContent = server.name;
       if (server.sponsorName) {
         if (server.sponsorURL) {
-          sponsor.innerHTML = `Sponsor: <a href="${server.sponsorURL}">${server.sponsorName}</a>`;
+          sponsor.innerHTML = `${window.LibreSpeedI18n.t("server.sponsor", "Sponsor: {name}", { name: "" })}<a href="${server.sponsorURL}">${server.sponsorName}</a>`;
         } else {
-          sponsor.textContent = `Sponsor: ${server.sponsorName}`;
+          sponsor.textContent = window.LibreSpeedI18n.t("server.sponsor", "Sponsor: {name}", { name: server.sponsorName });
         }
       } else {
         sponsor.innerHTML = "&nbsp;";
@@ -442,7 +443,7 @@ function startRenderingLoop() {
         privacyWarning.innerHTML = '';
 
         const connectedThrough = document.createElement('span');
-        connectedThrough.textContent = 'You are connected through:';
+        connectedThrough.textContent = window.LibreSpeedI18n.t("connection.through", "You are connected through:");
   
         const ipAddress = document.createTextNode(testState.testData.clientIp);
 
