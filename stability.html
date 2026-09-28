@@ -4,7 +4,7 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no" />
     <meta charset="UTF-8" />
-    <title>LibreSpeed - Stability Test</title>
+    <title data-i18n="stability.title">LibreSpeed - Stability Test</title>
     <style type="text/css">
       html,
       body {
@@ -75,10 +75,10 @@
           inset 0 0 0 rgba(0, 0, 0, 0.1);
       }
       #startBtn:before {
-        content: "Start";
+        content: attr(data-label-start);
       }
       #startBtn.finding:before {
-        content: "Finding...";
+        content: attr(data-label-finding);
       }
       #startBtn.running {
         background-color: #ff3030;
@@ -88,7 +88,7 @@
         opacity: 1;
       }
       #startBtn.running:before {
-        content: "Abort";
+        content: attr(data-label-abort);
       }
       #resetBtn {
         display: inline-block;
@@ -276,29 +276,29 @@
     </style>
   </head>
   <body>
-    <h1>LibreSpeed - Stability Test</h1>
-    <nav><a href="./">&larr; Speed Test</a></nav>
+    <h1 data-i18n="stability.title">LibreSpeed - Stability Test</h1>
+    <nav><a href="./">&larr; <span data-i18n="stability.back">Speed Test</span></a></nav>
 
     <div id="controls">
       <select id="durationSelect">
-        <option value="60">60 Seconds</option>
-        <option value="90">90 Seconds</option>
-        <option value="120">2 Minutes</option>
-        <option value="180">3 Minutes</option>
-        <option value="300">5 Minutes</option>
+        <option value="60" data-i18n="stability.60-seconds">60 Seconds</option>
+        <option value="90" data-i18n="stability.90-seconds">90 Seconds</option>
+        <option value="120" data-i18n="stability.2-minutes">2 Minutes</option>
+        <option value="180" data-i18n="stability.3-minutes">3 Minutes</option>
+        <option value="300" data-i18n="stability.5-minutes">5 Minutes</option>
       </select>
       <select id="targetSelect" onchange="updateStartButtonState()">
-        <option value="">Local Server</option>
+        <option value="" data-i18n="stability.local">Local Server</option>
         <option value="https://www.google.com/generate_204">Google</option>
         <option value="https://www.cloudflare.com/cdn-cgi/trace">Cloudflare</option>
         <option value="https://www.apple.com/library/test/success.html">Apple</option>
       </select>
-      <div id="startBtn" class="disabled finding" onclick="startStop()" aria-disabled="true" title="Finding best server..."></div>
-      <div id="resetBtn" onclick="resetTest()">Reset</div>
+      <div id="startBtn" class="disabled finding" onclick="startStop()" aria-disabled="true" title="Finding best server..." data-label-start="Start" data-label-finding="Finding..." data-label-abort="Abort" data-i18n-attr="title:stability.finding,data-label-start:classic.start,data-label-finding:stability.finding,data-label-abort:classic.abort"></div>
+      <div id="resetBtn" onclick="resetTest()" data-i18n="stability.reset">Reset</div>
     </div>
 
     <div id="serverArea" style="display: none">
-      Server:
+      <span data-i18n="stability.server">Server:</span>
       <select id="server" onchange="onServerChange(this.value)"></select>
     </div>
 
@@ -307,39 +307,39 @@
     <div id="test">
       <div class="testGroup">
         <div class="testArea2">
-          <div class="testName">Current</div>
+          <div class="testName" data-i18n="stability.current">Current</div>
           <div id="statCurrent" class="meterText" style="color: #aa6060"></div>
           <div class="unit">ms</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Average</div>
+          <div class="testName" data-i18n="stability.average">Average</div>
           <div id="statAvg" class="meterText" style="color: #aa6060"></div>
           <div class="unit">ms</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Jitter</div>
+          <div class="testName" data-i18n="metric.jitter">Jitter</div>
           <div id="statJitter" class="meterText" style="color: #aa6060"></div>
           <div class="unit">ms</div>
         </div>
       </div>
       <div class="testGroup">
         <div class="testArea2">
-          <div class="testName">Min</div>
+          <div class="testName" data-i18n="stability.min">Min</div>
           <div id="statMin" class="meterText"></div>
           <div class="unit">ms</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Max</div>
+          <div class="testName" data-i18n="stability.max">Max</div>
           <div id="statMax" class="meterText"></div>
           <div class="unit">ms</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Failed Requests</div>
+          <div class="testName" data-i18n="stability.failed">Failed Requests</div>
           <div id="statLoss" class="meterText"></div>
           <div class="unit">%</div>
         </div>
         <div class="testArea2">
-          <div class="testName">Elapsed</div>
+          <div class="testName" data-i18n="stability.elapsed">Elapsed</div>
           <div id="statElapsed" class="meterText">00:00</div>
           <div class="unit"></div>
         </div>
@@ -352,7 +352,7 @@
 
     <div id="optionalControls">
       <label>
-        Alert threshold:
+        <span data-i18n="stability.alert">Alert threshold:</span>
         <input
           type="range"
           id="alertThreshold"
@@ -362,13 +362,13 @@
           value="0"
           oninput="updateThreshold(this.value)"
         />
-        <span id="thresholdValue">Off</span>
+        <span id="thresholdValue" data-i18n="stability.off">Off</span>
       </label>
-      <button id="downloadCsvBtn" onclick="downloadCsv()">Download CSV</button>
+      <button id="downloadCsvBtn" onclick="downloadCsv()" data-i18n="stability.download-csv">Download CSV</button>
     </div>
 
     <div class="footer">
-      <a href="https://github.com/librespeed/speedtest">Source code</a>
+      <a href="https://github.com/librespeed/speedtest" data-i18n="stability.source">Source code</a>
     </div>
 
     <script type="text/javascript">
@@ -485,7 +485,7 @@
           I("server").disabled = true;
           var pendingOpt = document.createElement("option");
           pendingOpt.value = "";
-          pendingOpt.textContent = "Finding best server...";
+          pendingOpt.textContent = window.LibreSpeedI18n.t("stability.finding-server", "Finding best server...");
           I("server").appendChild(pendingOpt);
           updateStartButtonState();
           // ping servers to find best one
@@ -556,7 +556,7 @@
         var canStart = canStartTest();
         startBtn.className = canStart ? "" : serverDiscoveryPending ? "disabled finding" : "disabled";
         startBtn.setAttribute("aria-disabled", canStart ? "false" : "true");
-        startBtn.title = canStart ? "" : serverDiscoveryPending ? "Finding best server..." : "No reachable local server found";
+        startBtn.title = canStart ? "" : serverDiscoveryPending ? window.LibreSpeedI18n.t("stability.finding-server", "Finding best server...") : window.LibreSpeedI18n.t("stability.no-server", "No reachable local server found");
         I("server").disabled = !localServerReady || serverDiscoveryPending;
       }
 
@@ -693,10 +693,10 @@
       // Rating calculation
       function getRating(avg, jit, loss) {
         if (avg <= 0) return { text: "--", cls: "none" };
-        if (avg < 30 && jit < 5 && loss < 0.5) return { text: "Great", cls: "great" };
-        if (avg < 60 && jit < 15 && loss < 2) return { text: "Good", cls: "good" };
-        if (avg < 100 && jit < 30 && loss < 5) return { text: "Poor", cls: "poor" };
-        return { text: "Bad", cls: "bad" };
+        if (avg < 30 && jit < 5 && loss < 0.5) return { text: window.LibreSpeedI18n.t("stability.great", "Great"), cls: "great" };
+        if (avg < 60 && jit < 15 && loss < 2) return { text: window.LibreSpeedI18n.t("stability.good", "Good"), cls: "good" };
+        if (avg < 100 && jit < 30 && loss < 5) return { text: window.LibreSpeedI18n.t("stability.poor", "Poor"), cls: "poor" };
+        return { text: window.LibreSpeedI18n.t("stability.bad", "Bad"), cls: "bad" };
       }
 
       // UI update loop
@@ -942,7 +942,7 @@
       // Alert threshold
       function updateThreshold(val) {
         alertThresholdMs = parseInt(val);
-        I("thresholdValue").textContent = alertThresholdMs > 0 ? alertThresholdMs + " ms" : "Off";
+        I("thresholdValue").textContent = alertThresholdMs > 0 ? alertThresholdMs + " ms" : window.LibreSpeedI18n.t("stability.off", "Off");
       }
 
       function playBeep() {
@@ -987,5 +987,6 @@
         drawChart();
       });
     </script>
-  </body>
+  <script defer src="frontend/javascript/i18n.js"></script>
+</body>
 </html>
