@@ -91,10 +91,8 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   if [ -f /servers.json ]; then
     echo "using mounted /servers.json for server-list.json"
     cp /servers.json /var/www/html/server-list.json
-    if [ -z "$SERVER_LIST_URL" ]; then
-      # classic design ships with an empty (standalone) list, point it at the mounted one
-      sed -i "/var SPEEDTEST_SERVERS = \\[/,/^[[:space:]]*];/c\\\t\tvar SPEEDTEST_SERVERS = \"server-list.json\";" /var/www/html/index-classic.html
-    fi
+    # default the frontend list to the mounted file so the classic design uses it too
+    SERVER_LIST_URL="${SERVER_LIST_URL:-server-list.json}"
   elif [ -n "$SERVER_LIST_URL" ]; then
     echo "no /servers.json found, relying on SERVER_LIST_URL"
   elif [ "$MODE" == "frontend" ]; then
