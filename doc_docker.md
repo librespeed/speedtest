@@ -49,6 +49,8 @@ services:
 
 Please adjust the environment variables according to the intended operating mode.
 
+The Docker images include a PHP runtime. Ensure the PHP version in your image includes all security updates; pull and redeploy updated images when available. For custom builds, rebuild with an updated PHP base image or Alpine package; updating LibreSpeed files alone does not update the PHP runtime. See the [PHP security guidance](doc.md#php-security).
+
 ## Standalone mode
 
 If you want to install LibreSpeed on a single server, you need to configure it in standalone mode. To do this, set the `MODE` environment variable to `standalone`.

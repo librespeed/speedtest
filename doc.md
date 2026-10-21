@@ -45,7 +45,7 @@ More videos will be added later.
 Server side, you'll need:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection), a 64-bit version is strongly recommended
+* PHP 5.4 or newer (8.0 required for ISP and distance detection), a 64-bit version is strongly recommended. This is a compatibility minimum, not a security recommendation; use a currently supported PHP release.
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
@@ -55,6 +55,12 @@ Server side, you'll need:
 * If you want to enable results sharing (these are usually installed automatically by most distros when you install PHP):
   * FreeType 2 and its PHP module
   * The PHP gd library
+
+#### PHP security
+
+PHP releases before the security fixes for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) may be vulnerable to remote code execution. Upgrade to a patched release as soon as possible: PHP 8.2.35, 8.3.36, 8.4.27, or 8.5.12, or a later release in the same maintained branch. PHP 8.1 and older are no longer supported upstream; use a supported PHP version, or verify with your OS vendor that its package includes the security fixes.
+
+These vulnerabilities are in PHP itself, not LibreSpeed. No LibreSpeed code or configuration change fully mitigates them; PHP workarounds are not a substitute for applying the security update. Restart PHP and any persistent PHP workers after upgrading.
 
 Let's install the speed test.
 
@@ -187,7 +193,7 @@ This is the server that your users will first connect to. It hosts the UI, the J
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast connection is not mandatory, but is still recommended
-* PHP 5.4 or newer, a 64-bit version is strongly recommended
+* PHP 5.4 or newer, a 64-bit version is strongly recommended. This is a compatibility minimum, not a security recommendation; use a currently supported PHP release and follow the [PHP security guidance](#php-security).
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
   * PostgreSQL and its PHP PDO module
@@ -286,7 +292,7 @@ These are the servers that will actually be used to perform the test.
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection)
+* PHP 5.4 or newer (8.0 required for ISP and distance detection); this is a compatibility minimum, not a security recommendation. Use a currently supported PHP release and follow the [PHP security guidance](#php-security).
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 
 To install a backend, simply copy all the files in the `backend` folder to your backend server.

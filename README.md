@@ -32,9 +32,11 @@ Works with mobile versions too.
 ## Server requirements
 
 * A reasonably fast web server with Apache 2 (nginx, IIS also supported)
-* PHP 5.4 or newer (other backends also available)
+* PHP 5.4 or newer (other backends also available; this is a compatibility minimum, not a security recommendation)
 * MariaDB or MySQL database to store test results (optional, Microsoft SQL Server, PostgreSQL and SQLite also supported)
 * A fast! internet connection
+
+Use a currently supported PHP release and keep it up to date. See the [PHP security guidance](doc.md#php-security) for important information about CVE-2026-109618 and CVE-2026-109619.
 
 ## Installation
 
