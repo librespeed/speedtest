@@ -8,6 +8,9 @@ name: Docker
 on:
   schedule:
     - cron: '30 20 * * Sun'
+  # Lets a maintainer rebuild and publish the images right after a security release of the
+  # php or alpine base image (Actions > Docker > Run workflow), instead of waiting for Sunday.
+  workflow_dispatch:
   push:
     branches: ["*"]
     # Publish semver tags as releases.
