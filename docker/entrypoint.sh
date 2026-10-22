@@ -99,7 +99,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   else
     echo "no /servers.json found, create one for local host"
     # generate config for just the local server
-    echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+    echo '[{"name":"local","server":"backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
   fi
   if [ ! -z "$SERVER_LIST_URL" ]; then
     echo "using SERVER_LIST_URL for frontend server list"
