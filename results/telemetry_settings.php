@@ -8,6 +8,17 @@ $stats_password = 'PASSWORD';
 $enable_id_obfuscation = false;
 // If set to true, IP addresses will be redacted from IP and ISP info fields, as well as the log
 $redact_ip_addresses = false;
+// Name shown on the statistics pages. Leave empty to use the requested hostname.
+// Worth setting: a report is often read as a screenshot, where the address bar is gone.
+$stats_title = '';
+// If set to true, stats_public.php serves a monthly aggregate report without a login.
+// Only totals are published, never individual results: see the privacy threshold in
+// stats_summary.php. Off by default, because publishing anything at all should be a choice.
+$stats_public_report = false;
+// Where computed summaries are cached. A summary is built once per month rather than on
+// each page view, which is what keeps the public report from putting load on the database.
+// Leave empty to use the system temporary directory.
+$stats_cache_dir = '';
 
 // Sqlite3 settings
 $Sqlite_db_file = __DIR__ . '/../../speedtest_telemetry.db';

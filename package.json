@@ -4,7 +4,7 @@
   "description": "LibreSpeed - A Free and Open Source speed test that you can host on your server(s)",
   "main": "speedtest.js",
   "scripts": {
-    "test": "echo \"No automated tests configured yet\" && exit 0",
+    "test": "php tests/telemetry_stats_test.php",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "lint": "eslint speedtest.js speedtest_worker.js stability_worker.js",
