@@ -28,6 +28,10 @@ main {
         font-weight: 700;
         color: var(--theme-green);
       }
+      & > span.agreement {
+        font-weight: inherit;
+        color: inherit;
+      }
       &.hidden {
         opacity: 0;
         pointer-events: none;
