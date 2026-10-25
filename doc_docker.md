@@ -96,6 +96,14 @@ This command starts LibreSpeed in standalone mode, with persisted telemetry, ID 
 docker run -e MODE=standalone -e TELEMETRY=true -e ENABLE_ID_OBFUSCATION=true -e PASSWORD="yourPasswordHere" -e WEBPORT=86 -p 86:86 -v $PWD/db-dir/:/database -it ghcr.io/librespeed/speedtest
 ```
 
+## Branding the modern design
+
+To give your instance its own colors, background and logo, put your own `theme.css` (and `logo.svg`) in
+`/speedtest/frontend/styling/` and `/speedtest/frontend/images/` of the container, either with a bind mount or with a
+`COPY` in your own image. Mount at `/speedtest/frontend`, not at `/var/www/html/frontend`: the entrypoint empties
+`/var/www/html` and copies the frontend into it at every start. `USE_NEW_DESIGN=true` makes the modern design the default; `index-modern.html` and `?design=new` work without it. The
+variables and examples are in [frontend/README.md](frontend/README.md#theming).
+
 ## Multiple Points of Test
 
 For multiple servers, you need to set up 1+ LibreSpeed backends, and 1 LibreSpeed frontend.

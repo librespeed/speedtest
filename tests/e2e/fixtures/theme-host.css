@@ -1,0 +1,8 @@
+:root {
+  --theme-green: rgb(255, 138, 0);
+  --background-backup-color: rgb(16, 24, 32);
+}
+
+html {
+  background-image: none;
+}

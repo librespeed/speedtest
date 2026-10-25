@@ -7,6 +7,7 @@ const expectedAssets = [
   "/settings.json",
   "/server-list.json",
   "/frontend/styling/index.css",
+  "/frontend/styling/theme.css",
   "/frontend/javascript/index.js",
   "/frontend/images/logo.svg",
   "/frontend/images/favicon.svg",
