@@ -33,4 +33,10 @@ GO
 ALTER TABLE [dbo].[speedtest_users] ADD  CONSTRAINT [DF_speedtest_users_timestamp]  DEFAULT (getdate()) FOR [timestamp]
 GO
 
+CREATE NONCLUSTERED INDEX [speedtest_users_timestamp] ON [dbo].[speedtest_users]
+(
+	[timestamp] ASC
+) ON [PRIMARY]
+GO
+
 

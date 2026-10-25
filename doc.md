@@ -155,6 +155,22 @@ A basic front-end for visualizing and searching tests by ID is available in `res
 
 A login is required to access the interface. __Important__: change the default password in `results/telemetry_settings.php`.
 
+##### Aggregate statistics
+
+`results/stats.php` also shows a monthly summary: test counts, download and upload percentiles, a breakdown by client, by address family and by country. It is computed from the telemetry you already store and needs no extra configuration.
+
+Summaries are cached rather than recomputed per page view, in `$stats_cache_dir` (the system temporary directory when left empty). A finished month is computed once; the current month is refreshed at most hourly.
+
+To publish the summary without a login, set `$stats_public_report` to `true`. `results/stats_public.php` then serves the most recent finished month. It only ever reads a cached summary and never queries the database itself, so the number of visitors does not affect the load on your server. Generate the summaries from cron:
+
+```
+0 3 * * * php /path/to/results/stats_build.php
+```
+
+Without that job the public page reports that no summary is available yet, rather than building one on a visitor's request.
+
+Only aggregates are published. Groups of fewer than 100 tests are not reported separately; they are folded into an "Other" row, which is itself omitted unless it reaches the same threshold, so a withheld group cannot be recovered by subtracting the visible ones from the total. Individual results, IP addresses and User-Agent strings are never shown.
+
 #### The end
 
 Now that the test is installed, the default page uses telemetry and results sharing. If you want another UI, you can easily customize `index.html` or one of the examples in the `examples` folder (the best starting point for most people is `example-singleServer-gauges.html`).

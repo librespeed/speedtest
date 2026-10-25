@@ -108,6 +108,13 @@ ALTER TABLE ONLY speedtest_users
 
 
 --
+-- Name: speedtest_users_timestamp; Type: INDEX; Schema: public; Owner: speedtest
+--
+
+CREATE INDEX speedtest_users_timestamp ON speedtest_users USING btree ("timestamp");
+
+
+--
 -- PostgreSQL database dump complete
 --
 
