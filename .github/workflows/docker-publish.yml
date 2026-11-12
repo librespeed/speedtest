@@ -8,6 +8,9 @@ name: Docker
 on:
   schedule:
     - cron: '30 20 * * Sun'
+  # Lets a maintainer rebuild and publish the images right after a security release of the
+  # php or alpine base image (Actions > Docker > Run workflow), instead of waiting for Sunday.
+  workflow_dispatch:
   push:
     branches: ["*"]
     # Publish semver tags as releases.
@@ -129,6 +132,9 @@ jobs:
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
+          # Always fetch the base image again, so a rebuild after a security release of php or alpine
+          # does not reuse a cached older base
+          pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

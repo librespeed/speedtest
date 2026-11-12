@@ -185,6 +185,10 @@ function doPing() {
         if (d > 0 && d < instspd) instspd = d;
       } catch (e) {
         // Performance API not available, use estimate
+      } finally {
+        try {
+          performance.clearResourceTimings();
+        } catch (e) {}
       }
     }
 

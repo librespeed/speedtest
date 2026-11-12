@@ -16,6 +16,8 @@ const testState = {
   state: INITIALIZING,
   speedtest: null,
   servers: [],
+  initialGaugeScrollPending: false,
+  initialGaugeScrollScheduled: false,
   selectedServerDirty: false,
   testData: null,
   testDataDirty: false,
@@ -81,6 +83,7 @@ function startButtonClickHandler() {
     case READY:
     case FINISHED:
       testState.speedtest.start();
+      testState.initialGaugeScrollPending = true;
       testState.state = RUNNING;
       return;
     case RUNNING:
@@ -90,6 +93,30 @@ function startButtonClickHandler() {
     default:
       return;
   }
+}
+
+/**
+ * Scroll the initial download gauge into view on narrow viewports when starting a test
+ */
+function scrollInitialDownloadGaugeIntoView() {
+  if (!window.matchMedia("(max-width: 800px)").matches) {
+    return;
+  }
+
+  const downloadGauge = document.querySelector("#download-gauge");
+  if (!downloadGauge) {
+    return;
+  }
+
+  const { top, bottom } = downloadGauge.getBoundingClientRect();
+  if (top >= 0 && bottom <= window.innerHeight) {
+    return;
+  }
+
+  downloadGauge.scrollIntoView({
+    block: "center",
+    inline: "nearest",
+  });
 }
 
 /**
@@ -348,6 +375,21 @@ function startRenderingLoop() {
         testState.state === RUNNING || testState.state === FINISHED
       )
     );
+
+    if (
+      testState.state === RUNNING &&
+      testState.initialGaugeScrollPending &&
+      !testState.initialGaugeScrollScheduled
+    ) {
+      testState.initialGaugeScrollScheduled = true;
+      requestAnimationFrame(() => {
+        if (testState.state === RUNNING) {
+          scrollInitialDownloadGaugeIntoView();
+        }
+        testState.initialGaugeScrollPending = false;
+        testState.initialGaugeScrollScheduled = false;
+      });
+    }
 
     // Show ping and jitter if data is available
     pingAndJitter.forEach((e) =>
