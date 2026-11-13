@@ -8,13 +8,14 @@
     />
     <meta
       name="description"
-      content="Free and Open Source Speedtest. Run it right now in your browser, or self-host on a PHP, Golang, Rust or Node server. License: LGPL."
+      content="Free and Open Source Speedtest. Run it right now in your browser, or self-host on a PHP, Golang, Rust or Node server. License: LGPL." data-i18n-attr="content:page.description"
     />
     <link rel="shortcut icon" href="images/favicon.svg" />
     <script type="text/javascript" src="speedtest.js"></script>
-    <script type="text/javascript" src="javascript/index.js"></script>
+    <script defer type="text/javascript" src="javascript/i18n.js"></script>
+    <script defer type="text/javascript" src="javascript/index.js"></script>
     <link rel="stylesheet" type="text/css" href="styling/index.css" />
-    <title>LibreSpeed - Free and Open Source Speedtest</title>
+    <title data-i18n="page.title">LibreSpeed - Free and Open Source Speedtest</title>
   </head>
 
   <body>
@@ -22,30 +23,30 @@
       <img src="images/logo.svg" alt="LibreSpeed" />
     </header>
     <main>
-      <h1>Free and Open Source Speedtest.</h1>
-      <p class="tagline">No Flash, No Java, No Websockets, No Bullsh*t</p>
+      <h1 data-i18n="heading">Free and Open Source Speedtest.</h1>
+      <p class="tagline" data-i18n="tagline">No Flash, No Java, No Websockets, No Bullsh*t</p>
 
       <div class="server-selector">
         <div class="chosen">
           <div class="chevron">
             <img src="images/chevron.svg" alt="select..." />
           </div>
-          <p>current server</p>
-          <h2 id="selected-server">searching nearest server...</h2>
+          <p data-i18n="server.current">current server</p>
+          <h2 id="selected-server" data-i18n="server.searching">searching nearest server...</h2>
         </div>
         <ul class="servers"></ul>
         <p class="sponsor" id="sponsor">&nbsp;</p>
       </div>
 
       <p id="privacy-warning" class="hidden">
-        by clicking the start button you agree to our privacy policy<br />
-        <a href="#" id="choose-privacy">or choose your privacy options</a>
+        <span data-i18n="privacy.warning">by clicking the start button you agree to our privacy policy</span><br />
+        <a href="#" id="choose-privacy"><span data-i18n="privacy.choose">or choose your privacy options</span></a>
       </p>
       <button class="disabled" id="start-button"></button>
 
       <div class="gauge-layout">
         <div class="ping hidden">
-          <span class="label">Ping</span>:&nbsp;
+          <span class="label" data-i18n="metric.ping">Ping</span>:&nbsp;
           <span class="value" id="ping">00</span>ms
         </div>
 
@@ -53,100 +54,96 @@
           <div class="progress"></div>
           <div class="speed"></div>
           <h1><span id="download-speed">00</span> Mbps</h1>
-          <h2>Download</h2>
+          <h2 data-i18n="metric.download">Download</h2>
         </div>
 
         <div class="gauge upload" id="upload-gauge">
           <div class="progress"></div>
           <div class="speed"></div>
           <h1><span id="upload-speed">00</span> Mbps</h1>
-          <h2>Upload</h2>
+          <h2 data-i18n="metric.upload">Upload</h2>
         </div>
 
         <div class="jitter hidden">
-          <span class="label">Jitter</span>:&nbsp;
+          <span class="label" data-i18n="metric.jitter">Jitter</span>:&nbsp;
           <span class="value" id="jitter">00</span>ms
         </div>
       </div>
 
       <button class="small inverted hidden" id="share-results">
-        Share results
+        <span data-i18n="share.results">Share results</span>
       </button>
     </main>
     <footer>
       <p class="source">
-        <a href="stability.html">stability test</a> |
-        <a href="https://github.com/librespeed/speedtest">source code</a>
+        <a href="stability.html" data-i18n="footer.stability">stability test</a> |
+        <a href="https://github.com/librespeed/speedtest"> <span data-i18n="footer.source">source code</span></a>
       </p>
     </footer>
 
     <dialog id="share">
       <div class="close-dialog">
-        <img src="images/close-button.svg" alt="Close" />
+        <img src="images/close-button.svg" alt="Close" data-i18n-attr="alt:dialog.close" />
       </div>
-      <img id="results" src="" alt="Test results in graphical form" />
-      <button id="copy-link">Copy link</button>
+      <img id="results" src="" alt="Test results in graphical form" data-i18n-attr="alt:dialog.results-alt" />
+      <button id="copy-link"><span data-i18n="share.copy">Copy link</span></button>
     </dialog>
 
     <dialog id="privacy">
       <div class="close-dialog">
-        <img src="images/close-button.svg" alt="Close" />
+        <img src="images/close-button.svg" alt="Close" data-i18n-attr="alt:dialog.close" />
       </div>
       <section>
-        <h1>Privacy Policy</h1>
+        <h1 data-i18n="privacy.title">Privacy Policy</h1>
         <p>
-          This HTML5 speed test server is configured with telemetry enabled.
+          <span data-i18n="privacy.telemetry">This HTML5 speed test server is configured with telemetry enabled.</span>
         </p>
 
-        <h2>What data we collect</h2>
+        <h2 data-i18n="privacy.collect-title">What data we collect</h2>
         <p>
-          At the end of the test, the following data is collected and stored:
+          <span data-i18n="privacy.collect-intro">At the end of the test, the following data is collected and stored:</span>
         </p>
 
         <ul>
-          <li>Test ID</li>
-          <li>Time of testing</li>
-          <li>Test results (download and upload speed, ping and jitter)</li>
-          <li>IP address</li>
-          <li>ISP information</li>
-          <li>Approximate location (inferred from IP address, not GPS)</li>
-          <li>User agent and browser locale</li>
-          <li>Test log (contains no personal information)</li>
+          <li data-i18n="privacy.item.test-id">Test ID</li>
+          <li data-i18n="privacy.item.time">Time of testing</li>
+          <li data-i18n="privacy.item.results">Test results (download and upload speed, ping and jitter)</li>
+          <li data-i18n="privacy.item.ip">IP address</li>
+          <li data-i18n="privacy.item.isp">ISP information</li>
+          <li data-i18n="privacy.item.location">Approximate location (inferred from IP address, not GPS)</li>
+          <li data-i18n="privacy.item.locale">User agent and browser locale</li>
+          <li data-i18n="privacy.item.log">Test log (contains no personal information)</li>
         </ul>
 
-        <h2>How we use the data</h2>
-        <p>Data collected through this service is used to:</p>
+        <h2 data-i18n="privacy.use-title">How we use the data</h2>
+        <p data-i18n="privacy.use-intro">Data collected through this service is used to:</p>
 
         <ul>
           <li>
-            Allow sharing of test results (sharable image for forums, etc.)
+            <span data-i18n="privacy.use.share">Allow sharing of test results (sharable image for forums, etc.)</span>
           </li>
           <li>
-            To improve the service offered to you (for instance, to detect
-            problems on our side)
+            <span data-i18n="privacy.use.improve">To improve the service offered to you (for instance, to detect problems on our side)</span>
           </li>
         </ul>
 
-        <p>No personal information is disclosed to third parties.</p>
+        <p data-i18n="privacy.no-disclosure">No personal information is disclosed to third parties.</p>
 
-        <h2>Your consent</h2>
+        <h2 data-i18n="privacy.consent-title">Your consent</h2>
         <p>
-          By starting the test, you consent to the terms of this privacy policy.
+          <span data-i18n="privacy.consent">By starting the test, you consent to the terms of this privacy policy.</span>
         </p>
 
-        <h2>Data removal</h2>
+        <h2 data-i18n="privacy.removal-title">Data removal</h2>
         <p>
-          If you want to have your information deleted, you need to provide
-          either the ID of the test or your IP address. This is the only way to
-          identify your data, without this information we won't be able to
-          comply with your request.
+          <span data-i18n="privacy.removal">If you want to have your information deleted, you need to provide either the ID of the test or your IP address. This is the only way to identify your data, without this information we won't be able to comply with your request.</span>
         </p>
         <p>
-          Contact this email address for all deletion requests:
+          <span data-i18n="privacy.contact">Contact this email address for all deletion requests:</span>
           <a href="mailto:PUT@YOUR_EMAIL.HERE">TO BE FILLED BY DEVELOPER</a>.
         </p>
       </section>
-      <button id="close-privacy">Close</button>
+      <button id="close-privacy"><span data-i18n="dialog.close">Close</span></button>
     </dialog>
   </body>
 </html>
