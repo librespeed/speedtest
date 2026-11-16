@@ -79,7 +79,41 @@ footer {
     }
   }
 
+  & > p.source select {
+    margin: 1.2rem 0;
+    padding: 0.6rem 3.2rem 0.6rem 1.2rem;
+    appearance: none;
+    font: inherit;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.1rem;
+    color: var(--theme-green);
+    background: var(--server-selector-background-color) url("../images/chevron.svg") no-repeat right 0.8rem center /
+      1.8rem;
+    border: 1px solid var(--server-selector-border-color);
+    border-radius: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--theme-pink);
+      border-color: var(--server-selector-hover-border-color);
+    }
+
+    & > option {
+      color: var(--primary-text-color);
+      background: var(--server-selector-background-color);
+    }
+  }
+
   @media screen and (max-width: 800px) {
     padding: 4rem;
   }
+}
+
+/* Keep the page hidden while a translation other than English loads, so it does not flash in English */
+
+html[data-i18n-pending] body {
+  visibility: hidden;
 }

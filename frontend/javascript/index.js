@@ -11,6 +11,9 @@ const READY = 1;
 const RUNNING = 2;
 const FINISHED = 3;
 
+// Text of the interface in the language of the page, see i18n.js
+const t = (key, fallback, parameters) => window.LibreSpeedI18n.t(key, fallback, parameters);
+
 // Keep some global state here
 const testState = {
   state: INITIALIZING,
@@ -31,6 +34,17 @@ window.addEventListener("DOMContentLoaded", async () => {
   startRenderingLoop();
   applySettingsJSON();
   applyServerListJSON();
+});
+
+// The texts that renderUI draws are drawn again in the new language
+window.addEventListener("i18nchange", () => {
+  try {
+    testState.speedtest.getSelectedServer();
+    testState.selectedServerDirty = true;
+  } catch (error) {
+    // No server is selected yet
+  }
+  if (testState.testData) testState.testDataDirty = true;
 });
 
 /**
@@ -127,10 +141,10 @@ async function copyLinkButtonClickHandler() {
   await navigator.clipboard.writeText(link);
   const button = document.querySelector("#copy-link");
   button.classList.add("active");
-  button.textContent = "Copied!";
+  button.textContent = t("share.copied", "Copied!");
   setTimeout(() => {
     button.classList.remove("active");
-    button.textContent = "Copy link";
+    button.textContent = t("share.copy", "Copy link");
   }, 3000);
 }
 
@@ -212,7 +226,10 @@ async function applyServerListJSON() {
         selectServer(bestServer);
       } else {
         alert(
-          "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network."
+          t(
+            "error.no-servers",
+            "Can't reach any of the speedtest servers! But you're on this page. Something weird is going on with your network."
+          )
         );
       }
     });
@@ -333,19 +350,19 @@ function startRenderingLoop() {
   const copyLink = document.querySelector("#copy-link");
   const resultsImage = document.querySelector("#results");
 
-  const buttonTexts = {
-    [INITIALIZING]: "Loading...",
-    [READY]: "Let's start",
-    [RUNNING]: "Abort",
-    [FINISHED]: "Restart",
-  };
+  const buttonTexts = () => ({
+    [INITIALIZING]: t("button.loading", "Loading..."),
+    [READY]: t("button.start", "Let's start"),
+    [RUNNING]: t("button.abort", "Abort"),
+    [FINISHED]: t("button.restart", "Restart"),
+  });
 
   // Show copy link button only if navigator.clipboard is available
   copyLink.classList.toggle("hidden", !navigator.clipboard);
 
   function renderUI() {
     // Make the main button reflect the current state
-    startButton.textContent = buttonTexts[testState.state];
+    startButton.textContent = buttonTexts()[testState.state];
     startButton.classList.toggle("disabled", testState.state === INITIALIZING);
     startButton.classList.toggle("active", testState.state === RUNNING);
 
@@ -357,10 +374,14 @@ function startRenderingLoop() {
       const server = testState.speedtest.getSelectedServer();
       selectedServer.textContent = server.name;
       if (server.sponsorName) {
+        sponsor.textContent = `${t("server.sponsor", "Sponsor:")} `;
         if (server.sponsorURL) {
-          sponsor.innerHTML = `Sponsor: <a href="${server.sponsorURL}">${server.sponsorName}</a>`;
+          const link = document.createElement("a");
+          link.href = server.sponsorURL;
+          link.textContent = server.sponsorName;
+          sponsor.appendChild(link);
         } else {
-          sponsor.textContent = `Sponsor: ${server.sponsorName}`;
+          sponsor.append(server.sponsorName);
         }
       } else {
         sponsor.innerHTML = "&nbsp;";
@@ -442,7 +463,7 @@ function startRenderingLoop() {
         privacyWarning.innerHTML = '';
 
         const connectedThrough = document.createElement('span');
-        connectedThrough.textContent = 'You are connected through:';
+        connectedThrough.textContent = t("connection.through", "You are connected through:");
   
         const ipAddress = document.createTextNode(testState.testData.clientIp);
 
