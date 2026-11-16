@@ -51,6 +51,9 @@ services:
       - WEBPORT=8080
       - USE_NEW_DESIGN=true
       - "TAGLINE=It'd rather be fast!"
+    volumes:
+      # A host theme, mounted where the entrypoint copies the frontend from
+      - ./e2e/fixtures/theme-host.css:/speedtest/frontend/styling/theme.css:ro
     ports:
       - "18186:8080"
 

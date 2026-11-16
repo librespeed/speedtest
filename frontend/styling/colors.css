@@ -18,6 +18,7 @@
   --button-shadow-color: #5cf9fd47;
   --button-disabled-background-color: #a2a2a2;
 
+  --server-selector-text-color: var(--primary-text-color);
   --server-selector-border-color: #625b6b;
   --server-selector-hover-border-color: var(--theme-green);
   --server-selector-background-color: #251b32;

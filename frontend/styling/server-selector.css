@@ -142,7 +142,7 @@
         font-size: 2.4rem;
         font-weight: 700;
         letter-spacing: -0.2rem;
-        color: var(--sprint-text-color);
+        color: var(--server-selector-text-color);
         text-transform: uppercase;
         text-decoration: none;
         text-align: left;
