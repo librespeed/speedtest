@@ -8,6 +8,8 @@ const expectedAssets = [
   "/server-list.json",
   "/frontend/styling/index.css",
   "/frontend/javascript/index.js",
+  "/frontend/javascript/i18n.js",
+  "/frontend/locales/sv.json",
   "/frontend/images/logo.svg",
   "/frontend/images/favicon.svg",
   "/frontend/images/close-button.svg",

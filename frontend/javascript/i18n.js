@@ -56,6 +56,16 @@
 
   const language = languageFromRequest();
   preserveLanguageInLinks(language);
+
+  // English is the source language and is already present in the document.
+  // Apart from avoiding an unnecessary request, this preserves administrator
+  // supplied TITLE and TAGLINE values in the container image.
+  if (language === DEFAULT_LANGUAGE) {
+    document.documentElement.lang = DEFAULT_LANGUAGE;
+    window.LibreSpeedI18n = { language, ready: Promise.resolve(), t: translate };
+    return;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CATALOG_TIMEOUT_MS);
   const ready = fetch(new URL(`${language}.json`, localesURL), { signal: controller.signal })
