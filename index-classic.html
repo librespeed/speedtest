@@ -529,7 +529,7 @@
 		<button id="startStopBtn" onclick="startStop()" aria-label="Start" data-label-start="Start" data-label-abort="Abort" data-i18n-attr="aria-label:classic.start,data-label-start:classic.start,data-label-abort:classic.abort"></button><br />
 		<a class="privacy" href="#" onclick="I('privacyPolicy').style.display=''" data-i18n="classic.privacy">Privacy</a>
 		<div id="serverArea">
-			Server: <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
+			<span data-i18n="classic.server">Server:</span> <select id="server" onchange="s.setSelectedServer(SPEEDTEST_SERVERS[this.value])"></select>
 		</div>
 		<div id="test">
 			<div class="testGroup">
