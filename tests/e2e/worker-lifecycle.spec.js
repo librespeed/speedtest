@@ -46,6 +46,54 @@ test.describe("Speedtest worker lifecycle", () => {
     await installSpeedtest(page);
   });
 
+  test("preserves structured IP metadata in worker status updates", async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const speedtest = new Speedtest();
+      speedtest.onupdate = (data) => {
+        window.__capturedIpData = data;
+      };
+      speedtest.start();
+      window.__workers[0].emit({
+        testState: 3,
+        clientIp: "128.94.2.134 - Example Networks, US",
+        rawIspInfo: {
+          org: "AS00001 Example Networks",
+          country: "US"
+        },
+        location: {
+          city: "Indianapolis",
+          region: "Indiana",
+          country: "US",
+          countryCode: "US",
+          latitude: 39.7684,
+          longitude: -86.158,
+          approximate: true,
+          source: "ipinfo_api"
+        }
+      });
+      return window.__capturedIpData;
+    });
+
+    expect(result).toEqual({
+      testState: 3,
+      clientIp: "128.94.2.134 - Example Networks, US",
+      rawIspInfo: {
+        org: "AS00001 Example Networks",
+        country: "US"
+      },
+      location: {
+        city: "Indianapolis",
+        region: "Indiana",
+        country: "US",
+        countryCode: "US",
+        latitude: 39.7684,
+        longitude: -86.158,
+        approximate: true,
+        source: "ipinfo_api"
+      }
+    });
+  });
+
   test("terminates a worker after normal completion", async ({ page }) => {
     const result = await page.evaluate((data) => {
       const speedtest = new Speedtest();

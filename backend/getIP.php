@@ -1,64 +1,451 @@
 <?php
 
 /*
- * This script detects the client's IP address and fetches ISP info from ipinfo.io/
- * Output from this script is a JSON string composed of 2 objects: a string called processedString which contains the combined IP, ISP, Country and distance as it can be presented to the user; and an object called rawIspInfo which contains the raw data from ipinfo.io (or an empty string if isp detection is disabled or if it failed).
- * Client side, the output of this script can be treated as JSON or as regular text. If the output is regular text, it will be shown to the user as is.
+ * Detect the client's IP and optionally add approximate ISP/location metadata.
+ * processedString and rawIspInfo remain backward-compatible; location is
+ * included only when valid approximate metadata is available.
  */
 
 error_reporting(0);
 
-define('API_KEY_FILE', 'getIP_ipInfo_apikey.php');
-define('SERVER_LOCATION_CACHE_FILE', 'getIP_serverLocation.php');
-define('OFFLINE_IPINFO_DB_FILE', 'country_asn.mmdb');
+define('API_KEY_FILE', __DIR__ . '/getIP_ipInfo_apikey.php');
+define('SERVER_LOCATION_CACHE_FILE', __DIR__ . '/getIP_serverLocation.php');
+define('OFFLINE_IPINFO_DB_FILE', __DIR__ . '/country_asn.mmdb');
 
-require_once 'getIP_util.php';
+require_once __DIR__ . '/getIP_util.php';
 
-function getLocalOrPrivateIpInfo($ip){
-    // ::1/128 is the only localhost ipv6 address. there are no others, no need to strpos this
+if (PHP_VERSION_ID >= 80100 && file_exists(__DIR__ . '/geoip2.phar')) {
+    require_once __DIR__ . '/geoip2.phar';
+}
+
+function getLocalOrPrivateIpInfo($ip)
+{
     if ('::1' === $ip) {
         return 'localhost IPv6 access';
     }
-    // simplified IPv6 link-local address (should match fe80::/10)
     if (stripos($ip, 'fe80:') === 0) {
         return 'link-local IPv6 access';
     }
-    // fc00::/7 Unique Local IPv6 Unicast Addresses
     if (preg_match('/^(fc|fd)([0-9a-f]{0,4}:){1,7}[0-9a-f]{1,4}$/i', $ip) === 1) {
         return 'ULA IPv6 access';
     }
-    // anything within the 127/8 range is localhost ipv4, the ip must start with 127.0
     if (strpos($ip, '127.') === 0) {
         return 'localhost IPv4 access';
     }
-    // 10/8 private IPv4
     if (strpos($ip, '10.') === 0) {
         return 'private IPv4 access';
     }
-    // 172.16/12 private IPv4
     if (preg_match('/^172\.(1[6-9]|2\d|3[01])\./', $ip) === 1) {
         return 'private IPv4 access';
     }
-    // 192.168/16 private IPv4
     if (strpos($ip, '192.168.') === 0) {
         return 'private IPv4 access';
     }
-    // IPv4 link-local
     if (strpos($ip, '169.254.') === 0) {
         return 'link-local IPv4 access';
     }
     return null;
 }
 
-function getIspInfo_ipinfoApi($ip){
-    if (!file_exists(API_KEY_FILE) || !is_readable(API_KEY_FILE)){
+function getIpInfoEnvironmentValue($name)
+{
+    $value = getenv($name);
+    if (is_string($value) && $value !== '') {
+        return $value;
+    }
+    if (isset($_ENV[$name]) && is_string($_ENV[$name]) && $_ENV[$name] !== '') {
+        return $_ENV[$name];
+    }
+    if (isset($_SERVER[$name]) && is_string($_SERVER[$name]) && $_SERVER[$name] !== '') {
+        return $_SERVER[$name];
+    }
+    return null;
+}
+
+function isIpInfoDisabled()
+{
+    $value = getIpInfoEnvironmentValue('DISABLE_IPINFO');
+    if ($value === null && defined('DISABLE_IPINFO')) {
+        $value = constant('DISABLE_IPINFO');
+    }
+    if (!is_string($value) && !is_numeric($value) && !is_bool($value)) {
+        return false;
+    }
+    return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
+}
+
+function resolveIpInfoDbPath($path)
+{
+    if (!is_string($path) || trim($path) === '') {
         return null;
     }
-    require API_KEY_FILE;
-    if(empty($IPINFO_APIKEY)){
+    $path = trim($path);
+    if (file_exists($path) || preg_match('/^(?:\/|[A-Za-z]:[\\\\\/])/', $path) === 1) {
+        return $path;
+    }
+    return __DIR__ . DIRECTORY_SEPARATOR . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
+}
+
+function getConfiguredIpInfoDbPath($environmentName, $defaultPath)
+{
+    $configured = getIpInfoEnvironmentValue($environmentName);
+    return resolveIpInfoDbPath(is_string($configured) && $configured !== '' ? $configured : $defaultPath);
+}
+
+function normalizeIpInfoText($value)
+{
+    if (is_string($value) || is_numeric($value)) {
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+    return null;
+}
+
+function normalizeIpInfoLocalizedName($value)
+{
+    if (is_string($value) || is_numeric($value)) {
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+    if (!is_array($value)) {
         return null;
     }
-    $json = file_get_contents('https://ipinfo.io/' . $ip . '/json?token=' . $IPINFO_APIKEY);
+    if (isset($value['en'])) {
+        $name = normalizeIpInfoText($value['en']);
+        if ($name !== null) {
+            return $name;
+        }
+    }
+    if (isset($value['names']) && is_array($value['names'])) {
+        if (isset($value['names']['en'])) {
+            $name = normalizeIpInfoText($value['names']['en']);
+            if ($name !== null) {
+                return $name;
+            }
+        }
+        foreach ($value['names'] as $name) {
+            $name = normalizeIpInfoText($name);
+            if ($name !== null) {
+                return $name;
+            }
+        }
+    }
+    if (isset($value['name'])) {
+        $name = normalizeIpInfoText($value['name']);
+        if ($name !== null) {
+            return $name;
+        }
+    }
+    foreach ($value as $name) {
+        $name = normalizeIpInfoText($name);
+        if ($name !== null) {
+            return $name;
+        }
+    }
+    return null;
+}
+
+function normalizeIpInfoCountryCode($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    foreach (['country_code', 'country_iso_code', 'countryCode', 'iso_code'] as $key) {
+        $value = normalizeIpInfoText($data[$key] ?? null);
+        if ($value !== null && preg_match('/^[A-Za-z]{2}$/', $value) === 1) {
+            return strtoupper($value);
+        }
+    }
+    if (isset($data['country']) && is_array($data['country']) && isset($data['country']['iso_code'])) {
+        $value = normalizeIpInfoText($data['country']['iso_code']);
+        if ($value !== null && preg_match('/^[A-Za-z]{2}$/', $value) === 1) {
+            return strtoupper($value);
+        }
+    }
+    foreach (['registered_country', 'represented_country'] as $key) {
+        if (isset($data[$key]) && is_array($data[$key]) && isset($data[$key]['iso_code'])) {
+            $value = normalizeIpInfoText($data[$key]['iso_code']);
+            if ($value !== null && preg_match('/^[A-Za-z]{2}$/', $value) === 1) {
+                return strtoupper($value);
+            }
+        }
+    }
+    $value = normalizeIpInfoText($data['country'] ?? null);
+    if ($value !== null && preg_match('/^[A-Za-z]{2}$/', $value) === 1) {
+        return strtoupper($value);
+    }
+    return null;
+}
+
+function normalizeIpInfoCountryName($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    foreach (['country_name', 'countryName'] as $key) {
+        $value = normalizeIpInfoText($data[$key] ?? null);
+        if ($value !== null) {
+            return $value;
+        }
+    }
+    foreach (['country', 'registered_country', 'represented_country'] as $key) {
+        if (!isset($data[$key])) {
+            continue;
+        }
+        $name = normalizeIpInfoLocalizedName($data[$key]);
+        if ($name !== null) {
+            if ($key === 'country' && preg_match('/^[A-Za-z]{2}$/', $name) === 1) {
+                continue;
+            }
+            return $name;
+        }
+    }
+    return null;
+}
+
+function normalizeIpInfoCityName($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    foreach (['city_name', 'cityName'] as $key) {
+        $value = normalizeIpInfoText($data[$key] ?? null);
+        if ($value !== null) {
+            return $value;
+        }
+    }
+    if (isset($data['city'])) {
+        return normalizeIpInfoLocalizedName($data['city']);
+    }
+    return null;
+}
+
+function normalizeIpInfoRegionName($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    foreach (['region_name', 'regionName', 'subdivision_name', 'subdivisionName'] as $key) {
+        $value = normalizeIpInfoText($data[$key] ?? null);
+        if ($value !== null) {
+            return $value;
+        }
+    }
+    foreach (['region', 'subdivision'] as $key) {
+        if (isset($data[$key])) {
+            $name = normalizeIpInfoLocalizedName($data[$key]);
+            if ($name !== null) {
+                return $name;
+            }
+        }
+    }
+    if (isset($data['subdivisions']) && is_array($data['subdivisions']) && isset($data['subdivisions'][0])) {
+        return normalizeIpInfoLocalizedName($data['subdivisions'][0]);
+    }
+    return null;
+}
+
+function parseIpInfoLocationString($loc)
+{
+    if (!is_string($loc) || substr_count($loc, ',') !== 1) {
+        return null;
+    }
+    $parts = explode(',', $loc, 2);
+    $latitude = trim($parts[0]);
+    $longitude = trim($parts[1]);
+    if (!is_numeric($latitude) || !is_numeric($longitude)) {
+        return null;
+    }
+    $latitude = (float) $latitude;
+    $longitude = (float) $longitude;
+    if ($latitude < -90.0 || $latitude > 90.0 || $longitude < -180.0 || $longitude > 180.0) {
+        return null;
+    }
+    return [$latitude, $longitude];
+}
+
+function normalizeIpInfoCoordinates($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    $coordinates = parseIpInfoLocationString($data['loc'] ?? null);
+    if (is_array($coordinates)) {
+        return $coordinates;
+    }
+    if (isset($data['location']) && is_array($data['location'])) {
+        $latitude = $data['location']['latitude'] ?? $data['location']['lat'] ?? null;
+        $longitude = $data['location']['longitude'] ?? $data['location']['lon'] ?? null;
+        if (is_numeric($latitude) && is_numeric($longitude)) {
+            $latitude = (float) $latitude;
+            $longitude = (float) $longitude;
+            if ($latitude >= -90.0 && $latitude <= 90.0 && $longitude >= -180.0 && $longitude <= 180.0) {
+                return [$latitude, $longitude];
+            }
+        }
+    }
+    $latitude = $data['latitude'] ?? $data['lat'] ?? null;
+    $longitude = $data['longitude'] ?? $data['lon'] ?? null;
+    if (is_numeric($latitude) && is_numeric($longitude)) {
+        $latitude = (float) $latitude;
+        $longitude = (float) $longitude;
+        if ($latitude >= -90.0 && $latitude <= 90.0 && $longitude >= -180.0 && $longitude <= 180.0) {
+            return [$latitude, $longitude];
+        }
+    }
+    return null;
+}
+
+function normalizeApproximateLocation($data, $source)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    $countryCode = normalizeIpInfoCountryCode($data);
+    $countryName = normalizeIpInfoCountryName($data);
+    if ($countryName === null && $countryCode !== null) {
+        $countryName = $countryCode;
+    }
+    $city = normalizeIpInfoCityName($data);
+    $region = normalizeIpInfoRegionName($data);
+    $coordinates = normalizeIpInfoCoordinates($data);
+
+    $location = [];
+    if ($city !== null) {
+        $location['city'] = $city;
+    }
+    if ($region !== null) {
+        $location['region'] = $region;
+    }
+    if ($countryName !== null) {
+        $location['country'] = $countryName;
+    }
+    if ($countryCode !== null) {
+        $location['countryCode'] = $countryCode;
+    }
+    if (is_array($coordinates)) {
+        $location['latitude'] = $coordinates[0];
+        $location['longitude'] = $coordinates[1];
+        $location['lat'] = $coordinates[0];
+        $location['lon'] = $coordinates[1];
+    }
+    if (count($location) === 0) {
+        return null;
+    }
+    $location['approximate'] = true;
+    $location['source'] = $source;
+    return $location;
+}
+
+function normalizeIspName($data)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+    if (isset($data['org']) && is_string($data['org']) && trim($data['org']) !== '') {
+        $isp = trim(preg_replace('/^AS\d+\s*/i', '', $data['org']));
+        if ($isp !== '') {
+            return $isp;
+        }
+    }
+    if (isset($data['asn'])) {
+        if (is_array($data['asn']) && isset($data['asn']['name'])) {
+            $isp = normalizeIpInfoText($data['asn']['name']);
+            if ($isp !== null) {
+                return $isp;
+            }
+        } elseif (is_string($data['asn'])) {
+            $isp = trim(preg_replace('/^AS\d+\s*/i', '', $data['asn']));
+            if ($isp !== '' && preg_match('/^AS\d+$/i', $isp) !== 1) {
+                return $isp;
+            }
+        }
+    }
+    foreach (['as_name', 'autonomous_system_organization', 'organization', 'isp', 'network_name', 'organization_name'] as $key) {
+        $isp = normalizeIpInfoText($data[$key] ?? null);
+        if ($isp !== null) {
+            return trim(preg_replace('/^AS\d+\s*/i', '', $isp));
+        }
+    }
+    return null;
+}
+
+function ipInfoHttpGet($url)
+{
+    if (isset($GLOBALS['getIP_http_get']) && is_callable($GLOBALS['getIP_http_get'])) {
+        $result = call_user_func($GLOBALS['getIP_http_get'], $url);
+        return is_string($result) ? $result : null;
+    }
+    $context = stream_context_create([
+        'http' => ['timeout' => 5, 'ignore_errors' => true],
+        'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+    ]);
+    $json = @file_get_contents($url, false, $context);
+    return is_string($json) ? $json : null;
+}
+
+function buildIpInfoApiUrl($ip, $apiKey = '')
+{
+    $url = 'https://ipinfo.io/' . rawurlencode($ip) . '/json';
+    if (is_string($apiKey) && $apiKey !== '') {
+        $url .= '?token=' . rawurlencode($apiKey);
+    }
+    return $url;
+}
+
+function buildIpInfoServerUrl($apiKey = '')
+{
+    $url = 'https://ipinfo.io/json';
+    if (is_string($apiKey) && $apiKey !== '') {
+        $url .= '?token=' . rawurlencode($apiKey);
+    }
+    return $url;
+}
+
+function calculateIpInfoDistance($clientLoc, $serverLoc, $unit)
+{
+    $client = parseIpInfoLocationString($clientLoc);
+    $server = parseIpInfoLocationString($serverLoc);
+    if (!is_array($client) || !is_array($server) || !in_array($unit, ['mi', 'km'], true)) {
+        return null;
+    }
+    $rad = M_PI / 180.0;
+    $latitudeDelta = ($server[0] - $client[0]) * $rad;
+    $longitudeDelta = ($server[1] - $client[1]) * $rad;
+    $a = sin($latitudeDelta / 2.0) * sin($latitudeDelta / 2.0)
+        + cos($client[0] * $rad) * cos($server[0] * $rad)
+        * sin($longitudeDelta / 2.0) * sin($longitudeDelta / 2.0);
+    $c = 2.0 * atan2(sqrt(max(0.0, $a)), sqrt(max(0.0, 1.0 - $a)));
+    $distanceKm = 6371.0088 * $c;
+    if ($unit === 'mi') {
+        $distance = $distanceKm / 1.609344;
+        $distance = round($distance, -1);
+        if ($distance < 15) {
+            $distance = '<15';
+        }
+        return $distance . ' mi';
+    }
+    $distance = round($distanceKm, -1);
+    if ($distance < 20) {
+        $distance = '<20';
+    }
+    return $distance . ' km';
+}
+
+function getIpInfoServerLoc($apiKey)
+{
+    $serverLoc = null;
+    if (file_exists(SERVER_LOCATION_CACHE_FILE) && is_readable(SERVER_LOCATION_CACHE_FILE)) {
+        try {
+            require SERVER_LOCATION_CACHE_FILE;
+        } catch (Throwable $e) {
+            $serverLoc = null;
+        }
+    }
+    if (is_string($serverLoc) && parseIpInfoLocationString($serverLoc) !== null) {
+        return $serverLoc;
+    }
+    $json = ipInfoHttpGet(buildIpInfoServerUrl($apiKey));
     if (!is_string($json)) {
         return null;
     }
@@ -66,97 +453,184 @@ function getIspInfo_ipinfoApi($ip){
     if (!is_array($data)) {
         return null;
     }
-    $isp=null;
-    //ISP name, if present, is either in org or asn.name
-    if (array_key_exists('org', $data) && is_string($data['org']) && !empty($data['org'])) {
-        // Remove AS##### from ISP name, if present
-        $isp = preg_replace('/AS\\d+\\s/', '', $data['org']);
-    } elseif (array_key_exists('asn', $data) && is_array($data['asn']) && !empty($data['asn']) && array_key_exists('name', $data['asn']) && is_string($data['asn']['name'])) {
-        $isp = $data['asn']['name'];
-    } else{
+    $serverLoc = $data['loc'] ?? null;
+    if (!is_string($serverLoc) || parseIpInfoLocationString($serverLoc) === null) {
         return null;
     }
-    $country=null;
-    if(array_key_exists('country',$data) && is_string($data['country'])){
-        $country = $data['country'];
-    }
-    //If requested by the client (and we have the required information), calculate the distance
-    $distance=null;
-    if(isset($_GET['distance']) && ($_GET['distance']==='mi' || $_GET['distance']==='km') && array_key_exists('loc', $data) && is_string($data['loc'])){
-        $unit = $_GET['distance'];
-        $clientLoc = $data['loc'];
-        $serverLoc = null;
-        if (file_exists(SERVER_LOCATION_CACHE_FILE) && is_readable(SERVER_LOCATION_CACHE_FILE)) {
-            require SERVER_LOCATION_CACHE_FILE;
-        }
-        if (!is_string($serverLoc) || empty($serverLoc)) {
-            $json = file_get_contents('https://ipinfo.io/json?token=' . $IPINFO_APIKEY);
-            if (!is_string($json)) {
-                return null;
-            }
-            $sdata = json_decode($json, true);
-            if (!is_array($sdata) || !array_key_exists('loc', $sdata) || !is_string($sdata['loc']) || empty($sdata['loc'])) {
-                return null;
-            }
-            $serverLoc = $sdata['loc'];
-            file_put_contents(SERVER_LOCATION_CACHE_FILE, "<?php\n\n\$serverLoc = '" . addslashes($serverLoc) . "';\n");
-        }
-        list($clientLatitude, $clientLongitude) = explode(',', $clientLoc);
-        list($serverLatitude, $serverLongitude) = explode(',', $serverLoc);
-        //distance calculation adapted from http://www.codexworld.com
-        $rad = M_PI / 180;
-        $dist = acos(sin($clientLatitude * $rad) * sin($serverLatitude * $rad) + cos($clientLatitude * $rad) * cos($serverLatitude * $rad) * cos(($clientLongitude - $serverLongitude) * $rad)) / $rad * 60 * 1.853;
-        if ($unit === 'mi') {
-            $dist /= 1.609344;
-            $dist = round($dist, -1);
-            if ($dist < 15) {
-                $dist = '<15';
-            }
-            $distance = $dist . ' mi';
-        }elseif ($unit === 'km') {
-            $dist = round($dist, -1);
-            if ($dist < 20) {
-                $dist = '<20';
-            }
-            $distance =  $dist . ' km';
-        }
-    }
-    $processedString=$ip.' - '.$isp;
-    if(is_string($country)){
-        $processedString.=', '.$country;
-    }
-    if(is_string($distance)){
-        $processedString.=' ('.$distance.')';
-    }
-    return json_encode([
-        'processedString' => $processedString,
-        'rawIspInfo' => $data ?: '',
-    ]);
+    @file_put_contents(SERVER_LOCATION_CACHE_FILE, "<?php\n\n\$serverLoc = '" . addslashes($serverLoc) . "';\n");
+    return $serverLoc;
 }
 
-if (PHP_VERSION_ID >= 80100){
-    require_once("geoip2.phar");
-}
-function getIspInfo_ipinfoOfflineDb($ip){
-    if (PHP_VERSION_ID < 80100 || !file_exists(OFFLINE_IPINFO_DB_FILE) || !is_readable(OFFLINE_IPINFO_DB_FILE)){
+function getIspInfo_ipinfoApi($ip)
+{
+    if (isIpInfoDisabled()) {
         return null;
     }
-    $reader = new MaxMind\Db\Reader(OFFLINE_IPINFO_DB_FILE);
-    $data = $reader->get($ip);
-    if(!is_array($data)){
+    $apiKey = '';
+    if (file_exists(API_KEY_FILE) && is_readable(API_KEY_FILE)) {
+        require API_KEY_FILE;
+        if (isset($IPINFO_APIKEY) && is_string($IPINFO_APIKEY)) {
+            $apiKey = trim($IPINFO_APIKEY);
+        }
+    }
+    $json = ipInfoHttpGet(buildIpInfoApiUrl($ip, $apiKey));
+    if (!is_string($json)) {
         return null;
     }
-    $processedString = $ip.' - ' . $data['as_name'] . ', ' . $data['country_name'];
-    return json_encode([
+    $data = json_decode($json, true);
+    if (!is_array($data) || isset($data['error']) || ($data['bogon'] ?? false) === true) {
+        return null;
+    }
+    $isp = normalizeIspName($data);
+    $countryCode = normalizeIpInfoCountryCode($data);
+    $countryName = normalizeIpInfoCountryName($data);
+    $location = normalizeApproximateLocation($data, 'ipinfo_api');
+    if ($isp === null && $location === null) {
+        return null;
+    }
+
+    $distance = null;
+    if (isset($_GET['distance']) && in_array($_GET['distance'], ['mi', 'km'], true)) {
+        $clientLoc = $data['loc'] ?? null;
+        if (is_string($clientLoc) && parseIpInfoLocationString($clientLoc) !== null) {
+            $serverLoc = getIpInfoServerLoc($apiKey);
+            if (is_string($serverLoc)) {
+                $distance = calculateIpInfoDistance($clientLoc, $serverLoc, $_GET['distance']);
+            }
+        }
+    }
+
+    $processedString = $ip;
+    $processedCountry = $countryCode ?: $countryName;
+    if ($isp !== null) {
+        $processedString .= ' - ' . $isp;
+        if ($processedCountry !== null) {
+            $processedString .= ', ' . $processedCountry;
+        }
+    } elseif ($processedCountry !== null) {
+        $processedString .= ' - ' . $processedCountry;
+    }
+    if (is_string($distance)) {
+        $processedString .= ' (' . $distance . ')';
+    }
+
+    $response = [
         'processedString' => $processedString,
         'rawIspInfo' => $data ?: '',
-    ]);
+    ];
+    if ($location !== null) {
+        $response['location'] = $location;
+    }
+    return json_encode($response);
 }
 
-function formatResponse_simple($ip,$ispName=null){
-    $processedString=$ip;
-    if(is_string($ispName)){
-        $processedString.=' - '.$ispName;
+function readIpInfoMmdb($ip, $path)
+{
+    if (!is_string($path) || $path === '' || !file_exists($path) || !is_readable($path)) {
+        return null;
+    }
+    if (!class_exists('MaxMind\\Db\\Reader')) {
+        return null;
+    }
+    try {
+        $reader = new MaxMind\Db\Reader($path);
+        $data = $reader->get($ip);
+        return is_array($data) ? $data : null;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+function getIspInfo_ipinfoOfflineDb($ip)
+{
+    if (isIpInfoDisabled()) {
+        return null;
+    }
+
+    $asnPath = getConfiguredIpInfoDbPath('IPINFO_ASN_DB', OFFLINE_IPINFO_DB_FILE);
+    $countryPath = getConfiguredIpInfoDbPath('IPINFO_COUNTRY_DB', $asnPath);
+    $cityPath = getIpInfoEnvironmentValue('IPINFO_CITY_DB');
+    if (!is_string($cityPath) || trim($cityPath) === '') {
+        $cityPath = getIpInfoEnvironmentValue('IPINFO_CITY_MMDB');
+    }
+    if (!is_string($cityPath) || trim($cityPath) === '') {
+        $cityPath = getIpInfoEnvironmentValue('MAXMIND_CITY_DB');
+    }
+    $cityPath = is_string($cityPath) && trim($cityPath) !== '' ? resolveIpInfoDbPath($cityPath) : null;
+
+    $rawData = [];
+    $source = 'ipinfo_mmdb';
+
+    $asnData = readIpInfoMmdb($ip, $asnPath);
+    if (is_array($asnData)) {
+        $rawData = array_replace_recursive($rawData, $asnData);
+    }
+    if (is_string($countryPath) && $countryPath !== '' && $countryPath !== $asnPath) {
+        $countryData = readIpInfoMmdb($ip, $countryPath);
+        if (is_array($countryData)) {
+            $rawData = array_replace_recursive($rawData, $countryData);
+        }
+    }
+    if (is_string($cityPath) && $cityPath !== '') {
+        $cityData = readIpInfoMmdb($ip, $cityPath);
+        if (is_array($cityData)) {
+            $rawData = array_replace_recursive($rawData, $cityData);
+            $source = (isset($cityData['location']) || isset($cityData['subdivisions']) || isset($cityData['city']['names']))
+                ? 'maxmind_mmdb'
+                : 'ipinfo_mmdb';
+        }
+    }
+    if (count($rawData) === 0) {
+        return null;
+    }
+
+    $isp = normalizeIspName($rawData);
+    $countryCode = normalizeIpInfoCountryCode($rawData);
+    $countryName = normalizeIpInfoCountryName($rawData);
+    $location = normalizeApproximateLocation($rawData, $source);
+    if ($isp === null && $location === null) {
+        return null;
+    }
+
+    $processedString = $ip;
+    $processedCountry = $countryName ?: $countryCode;
+    if ($isp !== null) {
+        $processedString .= ' - ' . $isp;
+        if ($processedCountry !== null) {
+            $processedString .= ', ' . $processedCountry;
+        }
+    } elseif ($processedCountry !== null) {
+        $processedString .= ' - ' . $processedCountry;
+    } else {
+        $city = normalizeIpInfoCityName($rawData);
+        $region = normalizeIpInfoRegionName($rawData);
+        $place = [];
+        if ($city !== null) {
+            $place[] = $city;
+        }
+        if ($region !== null) {
+            $place[] = $region;
+        }
+        if (count($place) > 0) {
+            $processedString .= ' - ' . implode(', ', $place);
+        }
+    }
+
+    $response = [
+        'processedString' => $processedString,
+        'rawIspInfo' => $rawData,
+    ];
+    if ($location !== null) {
+        $response['location'] = $location;
+    }
+    return json_encode($response);
+}
+
+function formatResponse_simple($ip, $ispName = null)
+{
+    $processedString = $ip;
+    if (is_string($ispName)) {
+        $processedString .= ' - ' . $ispName;
     }
     return json_encode([
         'processedString' => $processedString,
@@ -164,35 +638,39 @@ function formatResponse_simple($ip,$ispName=null){
     ]);
 }
 
-header('Content-Type: application/json; charset=utf-8');
-if (isset($_GET['cors'])) {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST');
-}
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    header('Content-Type: application/json; charset=utf-8');
+    if (isset($_GET['cors'])) {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST');
+    }
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
 
-$ip = getClientIp();
-//if the user requested the ISP info, we first try to fetch it using ipinfo.io (if there is no api key set it fails without sending data, it can also fail because of rate limiting or invalid responses), then we try with the offline db, if that also fails (or if ISP info was not requested) we just respond with the IP address
-if(isset($_GET['isp'])){
-    $localIpInfo = getLocalOrPrivateIpInfo($ip);
-    //local ip, no need to fetch further information
-    if (is_string($localIpInfo)) {
-        echo formatResponse_simple($ip,$localIpInfo);
-    }else{
-        $r=getIspInfo_ipinfoApi($ip);
-        if(!is_null($r)){
-            echo $r;
-        }else{
-            $r=getIspInfo_ipinfoOfflineDb($ip);
-            if(!is_null($r)){
-                echo $r;
-            }else{
-                echo formatResponse_simple($ip);
+    $ip = getClientIp();
+    if (isset($_GET['isp'])) {
+        if (isIpInfoDisabled()) {
+            echo formatResponse_simple($ip);
+        } else {
+            $localIpInfo = getLocalOrPrivateIpInfo($ip);
+            if (is_string($localIpInfo)) {
+                echo formatResponse_simple($ip, $localIpInfo);
+            } else {
+                $r = getIspInfo_ipinfoApi($ip);
+                if (!is_null($r)) {
+                    echo $r;
+                } else {
+                    $r = getIspInfo_ipinfoOfflineDb($ip);
+                    if (!is_null($r)) {
+                        echo $r;
+                    } else {
+                        echo formatResponse_simple($ip);
+                    }
+                }
             }
         }
+    } else {
+        echo formatResponse_simple($ip);
     }
-}else{
-    echo formatResponse_simple($ip);
 }

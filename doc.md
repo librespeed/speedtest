@@ -87,8 +87,9 @@ __Important:__ The speed test needs write permissions in the installation folder
 
 #### ipinfo.io
 
-The speed test uses the [ipinfo.io](https://ipinfo.io) offline database to detect ISP and country (CC-BY-SA 4.0 license), enabled by default.
-It's possible to use the full [ipinfo.io](https://ipinfo.io) API to detect distance from server as well. This is completely optional and can be enabled by obtaining an [access token](https://ipinfo.io) and putting it in `backend/getIP_ipInfo_apikey.php`. When this feature is enabled, the offline database will only be used as fallback.
+The speed test can use [ipinfo.io](https://ipinfo.io) to detect ISP and approximate IP-derived location. An API key is optional: when no key is configured, the unauthenticated IPinfo endpoint is used as a fallback. An API key remains supported through `backend/getIP_ipInfo_apikey.php` and is also used for distance calculation.
+
+The bundled `country_asn.mmdb` offline database provides ASN/country fallback (CC-BY-SA 4.0 license). City and coordinate data can be loaded from a compatible IPinfo or MaxMind city MMDB with `IPINFO_CITY_DB`; ASN and country database paths can be configured with `IPINFO_ASN_DB` and `IPINFO_COUNTRY_DB`. Set `DISABLE_IPINFO=true` to skip both API and offline IP metadata.
 
 #### Telemetry and results sharing
 

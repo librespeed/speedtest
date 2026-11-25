@@ -1,0 +1,191 @@
+<?php
+
+require_once dirname(__DIR__, 2) . '/backend/getIP.php';
+
+$failures = [];
+
+function testGetIpInfo($name, $condition)
+{
+    global $failures;
+    if (!$condition) {
+        $failures[] = $name;
+    }
+}
+
+$keyFile = dirname(__DIR__, 2) . '/backend/getIP_ipInfo_apikey.php';
+$originalKeyFile = file_exists($keyFile) ? file_get_contents($keyFile) : null;
+
+testGetIpInfo(
+    'unauthenticated IPinfo URL omits token',
+    buildIpInfoApiUrl('128.94.2.134') === 'https://ipinfo.io/128.94.2.134/json'
+);
+testGetIpInfo(
+    'authenticated IPinfo URL includes token',
+    buildIpInfoApiUrl('128.94.2.134', 'test-secret') === 'https://ipinfo.io/128.94.2.134/json?token=test-secret'
+);
+
+testGetIpInfo(
+    'malformed loc has no coordinates',
+    normalizeIpInfoCoordinates(['loc' => 'not-a-location']) === null
+);
+
+$apiShapeLocation = normalizeApproximateLocation([
+    'city' => 'Indianapolis',
+    'region' => 'Indiana',
+    'country' => 'US',
+    'loc' => '39.7684,-86.1580',
+], 'ipinfo_api');
+testGetIpInfo(
+    'IPinfo API shape normalizes city region country coordinates',
+    $apiShapeLocation !== null
+    && $apiShapeLocation['city'] === 'Indianapolis'
+    && $apiShapeLocation['region'] === 'Indiana'
+    && $apiShapeLocation['country'] === 'US'
+    && $apiShapeLocation['countryCode'] === 'US'
+    && $apiShapeLocation['latitude'] === 39.7684
+    && $apiShapeLocation['longitude'] === -86.1580
+);
+
+$ipInfoMmdbLocation = normalizeApproximateLocation([
+    'city' => 'Indianapolis',
+    'region' => 'Indiana',
+    'country_code' => 'us',
+    'loc' => '39.7684,-86.1580',
+], 'ipinfo_mmdb');
+testGetIpInfo(
+    'flat IPinfo MMDB city fields normalize',
+    $ipInfoMmdbLocation !== null
+    && $ipInfoMmdbLocation['city'] === 'Indianapolis'
+    && $ipInfoMmdbLocation['region'] === 'Indiana'
+    && $ipInfoMmdbLocation['countryCode'] === 'US'
+);
+
+$maxMindLocation = normalizeApproximateLocation([
+    'city' => ['names' => ['en' => 'Indianapolis']],
+    'subdivisions' => [['iso_code' => 'IN', 'names' => ['en' => 'Indiana']]],
+    'country' => ['iso_code' => 'US', 'names' => ['en' => 'United States']],
+    'location' => ['latitude' => 39.7684, 'longitude' => -86.1580],
+], 'maxmind_mmdb');
+testGetIpInfo(
+    'nested MaxMind MMDB city fields normalize',
+    $maxMindLocation !== null
+    && $maxMindLocation['city'] === 'Indianapolis'
+    && $maxMindLocation['region'] === 'Indiana'
+    && $maxMindLocation['country'] === 'United States'
+    && $maxMindLocation['countryCode'] === 'US'
+);
+
+$countryFallback = [
+    'as_name' => 'Example Networks',
+    'country_name' => 'United States',
+    'country_code' => 'US',
+];
+testGetIpInfo(
+    'offline country ASN fallback retains ISP and country',
+    normalizeIspName($countryFallback) === 'Example Networks'
+    && normalizeApproximateLocation($countryFallback, 'ipinfo_mmdb')['country'] === 'United States'
+);
+
+if (class_exists('MaxMind\\Db\\Reader') && is_readable(dirname(__DIR__, 2) . '/backend/country_asn.mmdb')) {
+    $offlineFallback = json_decode(
+        getIspInfo_ipinfoOfflineDb('128.94.2.134'),
+        true
+    );
+    testGetIpInfo(
+        'actual offline country ASN database fallback returns structured metadata',
+        is_array($offlineFallback)
+        && isset($offlineFallback['processedString'])
+        && isset($offlineFallback['rawIspInfo'])
+        && isset($offlineFallback['location'])
+    );
+}
+
+testGetIpInfo(
+    'out-of-range loc is rejected',
+    normalizeIpInfoCoordinates(['loc' => '91.0,-86.1580']) === null
+);
+
+putenv('DISABLE_IPINFO=true');
+testGetIpInfo('DISABLE_IPINFO disables metadata', isIpInfoDisabled());
+$GLOBALS['getIP_http_get'] = function ($url) {
+    throw new Exception('IPinfo API should be disabled');
+};
+testGetIpInfo(
+    'DISABLE_IPINFO prevents direct API calls',
+    getIspInfo_ipinfoApi('128.94.2.134') === null
+);
+unset($GLOBALS['getIP_http_get']);
+putenv('DISABLE_IPINFO=');
+
+$GLOBALS['getIP_http_get'] = function ($url) {
+    $GLOBALS['getIP_last_url'] = $url;
+    return json_encode([
+        'ip' => '128.94.2.134',
+        'hostname' => '128-94-2-134.example',
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
+        'loc' => '39.7684,-86.1580',
+        'org' => 'AS00001 Example Networks',
+    ]);
+};
+
+file_put_contents($keyFile, "<?php\n\n\$IPINFO_APIKEY = '';\n");
+$noKeyResponse = json_decode(getIspInfo_ipinfoApi('128.94.2.134'), true);
+testGetIpInfo(
+    'API-key absent response is backward-compatible and structured',
+    is_array($noKeyResponse)
+    && isset($noKeyResponse['processedString'])
+    && isset($noKeyResponse['rawIspInfo'])
+    && isset($noKeyResponse['location'])
+);
+testGetIpInfo(
+    'API-key absent call uses unauthenticated endpoint',
+    strpos($GLOBALS['getIP_last_url'], '?token=') === false
+);
+
+file_put_contents($keyFile, "<?php\n\n\$IPINFO_APIKEY = 'test-secret';\n");
+$keyResponse = json_decode(getIspInfo_ipinfoApi('128.94.2.134'), true);
+testGetIpInfo(
+    'API-key present response retains processed and raw fields',
+    is_array($keyResponse)
+    && isset($keyResponse['processedString'])
+    && isset($keyResponse['rawIspInfo'])
+    && isset($keyResponse['location'])
+);
+testGetIpInfo(
+    'API-key present call includes token',
+    strpos($GLOBALS['getIP_last_url'], '?token=test-secret') !== false
+);
+
+$GLOBALS['getIP_http_get'] = function ($url) {
+    return json_encode([
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
+        'loc' => 'not-a-location',
+        'org' => 'AS00001 Example Networks',
+    ]);
+};
+$malformedLocationResponse = json_decode(getIspInfo_ipinfoApi('128.94.2.134'), true);
+testGetIpInfo(
+    'malformed loc is omitted without discarding valid city metadata',
+    is_array($malformedLocationResponse)
+    && isset($malformedLocationResponse['location'])
+    && !isset($malformedLocationResponse['location']['latitude'])
+    && $malformedLocationResponse['location']['city'] === 'Indianapolis'
+);
+
+if ($originalKeyFile !== null) {
+    file_put_contents($keyFile, $originalKeyFile);
+} else {
+    @unlink($keyFile);
+}
+unset($GLOBALS['getIP_http_get']);
+
+if (count($failures) > 0) {
+    fwrite(STDERR, "getIP PHP tests failed:\n- " . implode("\n- ", $failures) . "\n");
+    exit(1);
+}
+
+echo "getIP PHP tests passed\n";
