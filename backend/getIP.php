@@ -423,22 +423,35 @@ function supplementLocationCountry($location, $fallbackLocation)
 
     $fallbackCountry = $fallbackLocation['country'] ?? null;
     $fallbackCode = $fallbackLocation['countryCode'] ?? null;
-    if (!array_key_exists('country', $location) && is_string($fallbackCountry)) {
+    $validFallbackPair = is_string($fallbackCountry) &&
+        $fallbackCountry !== '' &&
+        is_string($fallbackCode) &&
+        $fallbackCode !== '';
+    if (!$validFallbackPair) {
+        return $location;
+    }
+
+    $locationCountry = $location['country'] ?? null;
+    $locationCode = $location['countryCode'] ?? null;
+
+    if (!is_string($locationCountry) && !is_string($locationCode)) {
         $location['country'] = $fallbackCountry;
-    }
-    if (!array_key_exists('countryCode', $location) && is_string($fallbackCode)) {
         $location['countryCode'] = $fallbackCode;
+        return $location;
     }
-    if (array_key_exists('countryCode', $location) &&
-        !array_key_exists('country', $location) &&
-        is_string($fallbackCountry)) {
+
+    if (is_string($locationCountry) && !is_string($locationCode) &&
+        ($locationCountry === $fallbackCountry || $locationCountry === $fallbackCode)) {
+        $location['countryCode'] = $fallbackCode;
+        return $location;
+    }
+
+    if (is_string($locationCode) && !is_string($locationCountry) &&
+        ($locationCode === $fallbackCode || $locationCode === $fallbackCountry)) {
         $location['country'] = $fallbackCountry;
+        return $location;
     }
-    if (array_key_exists('country', $location) &&
-        !array_key_exists('countryCode', $location) &&
-        is_string($fallbackCode)) {
-        $location['countryCode'] = $fallbackCode;
-    }
+
     return $location;
 }
 

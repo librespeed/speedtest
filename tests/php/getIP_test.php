@@ -190,6 +190,37 @@ testGetIpInfo(
     && $partialCityWithAsnCountry['countryCode'] === 'GB'
 );
 
+$existingUkLocation = supplementLocationCountry(
+    [
+        'city' => 'London',
+        'country' => 'United Kingdom',
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ],
+    [
+        'country' => 'United States',
+        'countryCode' => 'US',
+    ]
+);
+testGetIpInfo(
+    'partial country name is not paired with unrelated US fallback code',
+    $existingUkLocation['country'] === 'United Kingdom'
+    && !isset($existingUkLocation['countryCode'])
+);
+
+$existingUkLocation = supplementLocationCountry(
+    $existingUkLocation,
+    [
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+    ]
+);
+testGetIpInfo(
+    'matching partial country name receives matching fallback code',
+    $existingUkLocation['country'] === 'United Kingdom'
+    && $existingUkLocation['countryCode'] === 'GB'
+);
+
 $countryFallback = [
     'as_name' => 'Example Networks',
     'country_name' => 'United States',
