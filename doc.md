@@ -87,7 +87,7 @@ __Important:__ The speed test needs write permissions in the installation folder
 
 #### ipinfo.io
 
-The speed test can use [ipinfo.io](https://ipinfo.io) to detect ISP and approximate IP-derived location. An API key is optional: when no key is configured, the unauthenticated IPinfo endpoint is used as a fallback. An API key remains supported through `backend/getIP_ipInfo_apikey.php` and is also used for distance calculation.
+The speed test can use [ipinfo.io](https://ipinfo.io) to detect ISP and approximate IP-derived location. IPinfo is attempted first, and an API key is optional: when no key is configured, the unauthenticated IPinfo endpoint is attempted before the offline databases. An API key remains supported through `backend/getIP_ipInfo_apikey.php` and is also used for distance calculation.
 
 Operators should disclose this lookup in their privacy policy. Set `DISABLE_IPINFO=true` when the public IP must not be sent to ipinfo.io or read from an offline MMDB.
 

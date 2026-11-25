@@ -101,6 +101,26 @@ testGetIpInfo(
     && $mergedLocation['countryCode'] === 'GB'
 );
 
+$mergedCountryLocation = mergeApproximateLocations(
+    [
+        'country' => 'US',
+        'countryCode' => 'US',
+        'approximate' => true,
+        'source' => 'ipinfo_api',
+    ],
+    [
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+        'approximate' => true,
+        'source' => 'ipinfo_country_mmdb',
+    ]
+);
+testGetIpInfo(
+    'configured country MMDB replaces conflicting API country',
+    $mergedCountryLocation['country'] === 'United Kingdom'
+    && $mergedCountryLocation['countryCode'] === 'GB'
+);
+
 $countryFallback = [
     'as_name' => 'Example Networks',
     'country_name' => 'United States',
@@ -199,6 +219,23 @@ testGetIpInfo(
     && isset($partialApiResponse['processedString'])
     && strpos($partialApiResponse['processedString'], ' - ') !== false
     && isset($partialApiResponse['location']['city'])
+);
+
+$GLOBALS['getIP_http_get'] = function ($url) {
+    return json_encode([
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
+        'loc' => '39.7684,-86.1580',
+        'org' => 'AS8075',
+    ]);
+};
+$asnOnlyApiResponse = json_decode(getIspInfo_ipinfoApi('128.94.2.134'), true);
+testGetIpInfo(
+    'ASN-only API org is replaced by offline ISP name',
+    is_array($asnOnlyApiResponse)
+    && isset($asnOnlyApiResponse['rawIspInfo']['as_name'])
+    && $asnOnlyApiResponse['rawIspInfo']['org'] !== 'AS8075'
 );
 
 $GLOBALS['getIP_http_get'] = function ($url) {
