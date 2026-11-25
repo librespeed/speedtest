@@ -631,7 +631,7 @@
 			<li>Test results (download and upload speed, ping and jitter)</li>
 			<li>IP address</li>
 			<li>ISP information</li>
-			<li>Approximate location (inferred from IP address, not GPS)</li>
+			<li>Approximate location (inferred from IP address, not GPS). By default, the server may send the public IP to ipinfo.io for this lookup unless DISABLE_IPINFO is enabled.</li>
 			<li>User agent and browser locale</li>
 			<li>Test log (contains no personal information)</li>
 		</ul>
@@ -643,7 +643,7 @@
 			<li>Allow sharing of test results (sharable image for forums, etc.)</li>
 			<li>To improve the service offered to you (for instance, to detect problems on our side)</li>
 		</ul>
-		No personal information is disclosed to third parties.
+		When IPinfo lookup is enabled, the public IP is sent to ipinfo.io for ISP and approximate location metadata. Set DISABLE_IPINFO=true to disable this external lookup.
 		</p>
 		<h4>Your consent</h4>
 		<p>

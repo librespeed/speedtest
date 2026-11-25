@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__DIR__, 2) . '/backend/getIP.php';
+require_once dirname(__DIR__, 2) . '/results/telemetry_redaction.php';
 
 $failures = [];
 
@@ -73,6 +74,31 @@ testGetIpInfo(
     && $maxMindLocation['region'] === 'Indiana'
     && $maxMindLocation['country'] === 'United States'
     && $maxMindLocation['countryCode'] === 'US'
+);
+
+$mergedLocation = mergeApproximateLocations(
+    [
+        'country' => 'US',
+        'countryCode' => 'US',
+        'approximate' => true,
+        'source' => 'ipinfo_api',
+    ],
+    [
+        'city' => 'London',
+        'region' => 'England',
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+        'latitude' => 51.5074,
+        'longitude' => -0.1278,
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ]
+);
+testGetIpInfo(
+    'city MMDB country wins over conflicting ASN/API country',
+    $mergedLocation['city'] === 'London'
+    && $mergedLocation['country'] === 'United Kingdom'
+    && $mergedLocation['countryCode'] === 'GB'
 );
 
 $countryFallback = [
@@ -163,6 +189,23 @@ $GLOBALS['getIP_http_get'] = function ($url) {
         'city' => 'Indianapolis',
         'region' => 'Indiana',
         'country' => 'US',
+        'loc' => '39.7684,-86.1580',
+    ]);
+};
+$partialApiResponse = json_decode(getIspInfo_ipinfoApi('128.94.2.134'), true);
+testGetIpInfo(
+    'location-only API response is supplemented with offline ISP metadata',
+    is_array($partialApiResponse)
+    && isset($partialApiResponse['processedString'])
+    && strpos($partialApiResponse['processedString'], ' - ') !== false
+    && isset($partialApiResponse['location']['city'])
+);
+
+$GLOBALS['getIP_http_get'] = function ($url) {
+    return json_encode([
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
         'loc' => 'not-a-location',
         'org' => 'AS00001 Example Networks',
     ]);
@@ -174,6 +217,61 @@ testGetIpInfo(
     && isset($malformedLocationResponse['location'])
     && !isset($malformedLocationResponse['location']['latitude'])
     && $malformedLocationResponse['location']['city'] === 'Indianapolis'
+);
+
+$redactedIspInfo = redactTelemetryIspInfo(json_encode([
+    'processedString' => '128.94.2.134 - Example Networks, US',
+    'rawIspInfo' => [
+        'ip' => '128.94.2.134',
+        'hostname' => 'example.test',
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
+        'loc' => '39.7684,-86.1580',
+        'postal' => '46204',
+        'org' => 'AS00001 Example Networks',
+    ],
+    'location' => [
+        'city' => 'Indianapolis',
+        'region' => 'Indiana',
+        'country' => 'US',
+        'latitude' => 39.7684,
+        'longitude' => -86.1580,
+    ],
+]));
+$redactedIspInfoData = json_decode($redactedIspInfo, true);
+testGetIpInfo(
+    'telemetry redaction removes location and sensitive raw fields',
+    is_array($redactedIspInfoData)
+    && !isset($redactedIspInfoData['location'])
+    && isset($redactedIspInfoData['rawIspInfo']['org'])
+    && !isset($redactedIspInfoData['rawIspInfo']['ip'])
+    && !isset($redactedIspInfoData['rawIspInfo']['city'])
+    && !isset($redactedIspInfoData['rawIspInfo']['loc'])
+    && $redactedIspInfoData['processedString'] === '0.0.0.0 - Example Networks'
+);
+
+$nestedRedactedIspInfo = redactTelemetryIspInfo(json_encode([
+    'processedString' => '128.94.2.134 - Example Networks, US',
+    'rawIspInfo' => [
+        'asn' => [
+            'name' => 'Example Networks',
+            'country' => 'US',
+            'city' => 'Indianapolis',
+            'loc' => '39.7684,-86.1580',
+        ],
+        'city' => 'Indianapolis',
+        'loc' => '39.7684,-86.1580',
+    ],
+]));
+$nestedRedactedIspInfoData = json_decode($nestedRedactedIspInfo, true);
+testGetIpInfo(
+    'nested ASN redaction retains only ASN name',
+    is_array($nestedRedactedIspInfoData)
+    && isset($nestedRedactedIspInfoData['rawIspInfo']['asn']['name'])
+    && !isset($nestedRedactedIspInfoData['rawIspInfo']['asn']['country'])
+    && !isset($nestedRedactedIspInfoData['rawIspInfo']['city'])
+    && !isset($nestedRedactedIspInfoData['rawIspInfo']['loc'])
 );
 
 if ($originalKeyFile !== null) {

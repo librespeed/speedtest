@@ -109,7 +109,11 @@
           <li>Test results (download and upload speed, ping and jitter)</li>
           <li>IP address</li>
           <li>ISP information</li>
-          <li>Approximate location (inferred from IP address, not GPS)</li>
+          <li>
+            Approximate location (inferred from IP address, not GPS). By
+            default, the server may send the public IP to ipinfo.io for this
+            lookup unless DISABLE_IPINFO is enabled.
+          </li>
           <li>User agent and browser locale</li>
           <li>Test log (contains no personal information)</li>
         </ul>
@@ -127,7 +131,11 @@
           </li>
         </ul>
 
-        <p>No personal information is disclosed to third parties.</p>
+        <p>
+          When IPinfo lookup is enabled, the public IP is sent to ipinfo.io for
+          ISP and approximate location metadata. Set DISABLE_IPINFO=true to
+          disable this external lookup.
+        </p>
 
         <h2>Your consent</h2>
         <p>

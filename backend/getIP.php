@@ -337,6 +337,55 @@ function normalizeApproximateLocation($data, $source)
     return $location;
 }
 
+function mergeApproximateLocations($apiLocation, $offlineLocation)
+{
+    if (!is_array($apiLocation)) {
+        return $offlineLocation;
+    }
+    if (!is_array($offlineLocation)) {
+        return $apiLocation;
+    }
+
+    $offlineSource = $offlineLocation['source'] ?? '';
+    $preferOfflinePlace = in_array(
+        $offlineSource,
+        [
+            'ipinfo_city_mmdb',
+            'ipinfo_country_mmdb',
+            'maxmind_mmdb',
+            'maxmind_country_mmdb',
+        ],
+        true
+    );
+
+    $merged = $apiLocation;
+    foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon'] as $key) {
+        if ($preferOfflinePlace && array_key_exists($key, $offlineLocation)) {
+            $merged[$key] = $offlineLocation[$key];
+        } elseif (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
+            $merged[$key] = $offlineLocation[$key];
+        }
+    }
+
+    if ($preferOfflinePlace) {
+        foreach (['country', 'countryCode'] as $key) {
+            if (array_key_exists($key, $offlineLocation)) {
+                $merged[$key] = $offlineLocation[$key];
+            }
+        }
+    } else {
+        foreach (['country', 'countryCode'] as $key) {
+            if (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
+                $merged[$key] = $offlineLocation[$key];
+            }
+        }
+    }
+
+    $merged['approximate'] = true;
+    $merged['source'] = $preferOfflinePlace ? $offlineSource : ($apiLocation['source'] ?? $offlineSource);
+    return $merged;
+}
+
 function normalizeIspName($data)
 {
     if (!is_array($data)) {
@@ -485,13 +534,51 @@ function getIspInfo_ipinfoApi($ip)
     $countryCode = normalizeIpInfoCountryCode($data);
     $countryName = normalizeIpInfoCountryName($data);
     $location = normalizeApproximateLocation($data, 'ipinfo_api');
+
+    if ($isp === null || $location === null ||
+        !array_key_exists('city', $location) ||
+        !array_key_exists('region', $location) ||
+        !is_array(normalizeIpInfoCoordinates($location))) {
+        $offlineJson = getIspInfo_ipinfoOfflineDb($ip);
+        if (is_string($offlineJson)) {
+            $offline = json_decode($offlineJson, true);
+            if (is_array($offline)) {
+                $offlineRaw = is_array($offline['rawIspInfo'] ?? null)
+                    ? $offline['rawIspInfo']
+                    : null;
+                if ($isp === null && is_array($offlineRaw)) {
+                    $isp = normalizeIspName($offlineRaw);
+                }
+                if (is_array($offlineLocation = $offline['location'] ?? null)) {
+                    $location = mergeApproximateLocations($location, $offlineLocation);
+                }
+                if ($isp !== null) {
+                    $orgIsAsnOnly = isset($data['org']) &&
+                        is_string($data['org']) &&
+                        preg_match('/^AS\d+\s*$/i', trim($data['org'])) === 1;
+                    if (!isset($data['org']) || $orgIsAsnOnly) {
+                        $data['org'] = $isp;
+                    }
+                    $data['as_name'] = $isp;
+                }
+            }
+        }
+        $countryCode = normalizeIpInfoCountryCode($location);
+        $countryName = normalizeIpInfoCountryName($location);
+    }
+
     if ($isp === null && $location === null) {
         return null;
     }
 
     $distance = null;
     if (isset($_GET['distance']) && in_array($_GET['distance'], ['mi', 'km'], true)) {
-        $clientLoc = $data['loc'] ?? null;
+        $clientCoordinates = is_array($location)
+            ? normalizeIpInfoCoordinates($location)
+            : null;
+        $clientLoc = is_array($clientCoordinates)
+            ? $clientCoordinates[0] . ',' . $clientCoordinates[1]
+            : ($data['loc'] ?? null);
         if (is_string($clientLoc) && parseIpInfoLocationString($clientLoc) !== null) {
             $serverLoc = getIpInfoServerLoc($apiKey);
             if (is_string($serverLoc)) {
@@ -559,37 +646,62 @@ function getIspInfo_ipinfoOfflineDb($ip)
     $cityPath = is_string($cityPath) && trim($cityPath) !== '' ? resolveIpInfoDbPath($cityPath) : null;
 
     $rawData = [];
-    $source = 'ipinfo_mmdb';
-
     $asnData = readIpInfoMmdb($ip, $asnPath);
     if (is_array($asnData)) {
         $rawData = array_replace_recursive($rawData, $asnData);
     }
+    $countryData = null;
     if (is_string($countryPath) && $countryPath !== '' && $countryPath !== $asnPath) {
         $countryData = readIpInfoMmdb($ip, $countryPath);
         if (is_array($countryData)) {
             $rawData = array_replace_recursive($rawData, $countryData);
         }
     }
+    $cityData = null;
     if (is_string($cityPath) && $cityPath !== '') {
         $cityData = readIpInfoMmdb($ip, $cityPath);
         if (is_array($cityData)) {
             $rawData = array_replace_recursive($rawData, $cityData);
-            $source = (isset($cityData['location']) || isset($cityData['subdivisions']) || isset($cityData['city']['names']))
-                ? 'maxmind_mmdb'
-                : 'ipinfo_mmdb';
         }
     }
     if (count($rawData) === 0) {
         return null;
     }
 
-    $isp = normalizeIspName($rawData);
-    $countryCode = normalizeIpInfoCountryCode($rawData);
-    $countryName = normalizeIpInfoCountryName($rawData);
-    $location = normalizeApproximateLocation($rawData, $source);
+    $isp = normalizeIspName(is_array($asnData) ? $asnData : $rawData);
+    if ($isp === null) {
+        $isp = normalizeIspName($rawData);
+    }
+
+    $location = null;
+    if (is_array($cityData)) {
+        $citySource = (isset($cityData['location']) || isset($cityData['subdivisions']) || isset($cityData['city']['names']))
+            ? 'maxmind_mmdb'
+            : 'ipinfo_city_mmdb';
+        $location = normalizeApproximateLocation($cityData, $citySource);
+    }
+    if (!is_array($location) && is_array($countryData)) {
+        $countrySource = (isset($countryData['location']) || isset($countryData['subdivisions']) || isset($countryData['country']['names']))
+            ? 'maxmind_country_mmdb'
+            : 'ipinfo_country_mmdb';
+        $location = normalizeApproximateLocation($countryData, $countrySource);
+    }
+    if (!is_array($location) && is_array($asnData)) {
+        $location = normalizeApproximateLocation($asnData, 'ipinfo_mmdb');
+    }
+
+    $countryCode = is_array($location)
+        ? normalizeIpInfoCountryCode($location)
+        : null;
+    $countryName = is_array($location)
+        ? normalizeIpInfoCountryName($location)
+        : null;
     if ($isp === null && $location === null) {
         return null;
+    }
+
+    if ($isp !== null) {
+        $rawData['as_name'] = $isp;
     }
 
     $processedString = $ip;
