@@ -347,6 +347,32 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
     }
 
     $offlineSource = $offlineLocation['source'] ?? '';
+    $apiHasPlace = array_key_exists('city', $apiLocation) ||
+        array_key_exists('region', $apiLocation) ||
+        array_key_exists('latitude', $apiLocation) ||
+        array_key_exists('longitude', $apiLocation);
+    $offlineHasPlace = array_key_exists('city', $offlineLocation) ||
+        array_key_exists('region', $offlineLocation) ||
+        array_key_exists('latitude', $offlineLocation) ||
+        array_key_exists('longitude', $offlineLocation);
+    $countryOnlyFallback = !$offlineHasPlace && in_array(
+        $offlineSource,
+        ['ipinfo_country_mmdb', 'maxmind_country_mmdb', 'ipinfo_mmdb'],
+        true
+    );
+    if ($apiHasPlace && $countryOnlyFallback) {
+        foreach (['country', 'countryCode'] as $key) {
+            if (!array_key_exists($key, $apiLocation) && array_key_exists($key, $offlineLocation)) {
+                $apiLocation[$key] = $offlineLocation[$key];
+            }
+        }
+        $apiLocation['approximate'] = true;
+        if (!isset($apiLocation['source'])) {
+            $apiLocation['source'] = $apiLocation['source'] ?? 'ipinfo_api';
+        }
+        return $apiLocation;
+    }
+
     $preferOfflinePlace = in_array(
         $offlineSource,
         [
@@ -384,6 +410,36 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
     $merged['approximate'] = true;
     $merged['source'] = $preferOfflinePlace ? $offlineSource : ($apiLocation['source'] ?? $offlineSource);
     return $merged;
+}
+
+function supplementLocationCountry($location, $fallbackLocation)
+{
+    if (!is_array($location)) {
+        return $fallbackLocation;
+    }
+    if (!is_array($fallbackLocation)) {
+        return $location;
+    }
+
+    $fallbackCountry = $fallbackLocation['country'] ?? null;
+    $fallbackCode = $fallbackLocation['countryCode'] ?? null;
+    if (!array_key_exists('country', $location) && is_string($fallbackCountry)) {
+        $location['country'] = $fallbackCountry;
+    }
+    if (!array_key_exists('countryCode', $location) && is_string($fallbackCode)) {
+        $location['countryCode'] = $fallbackCode;
+    }
+    if (array_key_exists('countryCode', $location) &&
+        !array_key_exists('country', $location) &&
+        is_string($fallbackCountry)) {
+        $location['country'] = $fallbackCountry;
+    }
+    if (array_key_exists('country', $location) &&
+        !array_key_exists('countryCode', $location) &&
+        is_string($fallbackCode)) {
+        $location['countryCode'] = $fallbackCode;
+    }
+    return $location;
 }
 
 function normalizeIspName($data)
@@ -679,6 +735,21 @@ function getIspInfo_ipinfoOfflineDb($ip)
             ? 'maxmind_mmdb'
             : 'ipinfo_city_mmdb';
         $location = normalizeApproximateLocation($cityData, $citySource);
+    }
+    if (is_array($location) &&
+        (!array_key_exists('country', $location) || !array_key_exists('countryCode', $location))) {
+        if (is_array($countryData)) {
+            $countrySource = (isset($countryData['location']) || isset($countryData['subdivisions']) || isset($countryData['country']['names']))
+                ? 'maxmind_country_mmdb'
+                : 'ipinfo_country_mmdb';
+            $countryLocation = normalizeApproximateLocation($countryData, $countrySource);
+            $location = supplementLocationCountry($location, $countryLocation);
+        }
+        if (is_array($asnData) &&
+            (!array_key_exists('country', $location) || !array_key_exists('countryCode', $location))) {
+            $asnLocation = normalizeApproximateLocation($asnData, 'ipinfo_mmdb');
+            $location = supplementLocationCountry($location, $asnLocation);
+        }
     }
     if (!is_array($location) && is_array($countryData)) {
         $countrySource = (isset($countryData['location']) || isset($countryData['subdivisions']) || isset($countryData['country']['names']))

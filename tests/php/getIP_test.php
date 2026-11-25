@@ -121,6 +121,75 @@ testGetIpInfo(
     && $mergedCountryLocation['countryCode'] === 'GB'
 );
 
+$detailedApiLocation = mergeApproximateLocations(
+    [
+        'city' => 'London',
+        'region' => 'England',
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+        'latitude' => 51.5074,
+        'longitude' => -0.1278,
+        'approximate' => true,
+        'source' => 'ipinfo_api',
+    ],
+    [
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'approximate' => true,
+        'source' => 'ipinfo_country_mmdb',
+    ]
+);
+testGetIpInfo(
+    'country-only MMDB does not replace detailed API location country',
+    $detailedApiLocation['city'] === 'London'
+    && $detailedApiLocation['country'] === 'United Kingdom'
+    && $detailedApiLocation['countryCode'] === 'GB'
+);
+
+$partialCityLocation = supplementLocationCountry(
+    [
+        'city' => 'London',
+        'latitude' => 51.5074,
+        'longitude' => -0.1278,
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ],
+    [
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+    ]
+);
+testGetIpInfo(
+    'city MMDB keeps coordinates and receives country database name/code',
+    $partialCityLocation['city'] === 'London'
+    && $partialCityLocation['latitude'] === 51.5074
+    && $partialCityLocation['country'] === 'United Kingdom'
+    && $partialCityLocation['countryCode'] === 'GB'
+);
+
+$partialCityWithAsnCountry = supplementLocationCountry(
+    [
+        'city' => 'London',
+        'latitude' => 51.5074,
+        'longitude' => -0.1278,
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ],
+    null
+);
+$partialCityWithAsnCountry = supplementLocationCountry(
+    $partialCityWithAsnCountry,
+    [
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+    ]
+);
+testGetIpInfo(
+    'city MMDB can receive paired ASN country fallback',
+    $partialCityWithAsnCountry['country'] === 'United Kingdom'
+    && $partialCityWithAsnCountry['countryCode'] === 'GB'
+);
+
 $countryFallback = [
     'as_name' => 'Example Networks',
     'country_name' => 'United States',
