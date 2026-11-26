@@ -296,6 +296,35 @@ testGetIpInfo(
     && $earlierPreservedLocation['latitude'] === 51.5074
 );
 
+$sameCodeProviderLocation = mergeEarlierProviderLocation(
+    [
+        'city' => 'Washington',
+        'region' => 'District of Columbia',
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'latitude' => 38.9072,
+        'longitude' => -77.0369,
+        'approximate' => true,
+        'source' => 'provider-two',
+    ],
+    [
+        'city' => 'Boydton',
+        'region' => 'Virginia',
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'latitude' => 36.6676,
+        'longitude' => -78.3875,
+        'approximate' => true,
+        'source' => 'provider-one',
+    ]
+);
+testGetIpInfo(
+    'same-country provider place conflict keeps later coherent place',
+    $sameCodeProviderLocation['city'] === 'Washington'
+    && $sameCodeProviderLocation['region'] === 'District of Columbia'
+    && $sameCodeProviderLocation['countryCode'] === 'US'
+);
+
 $existingUkLocation = supplementLocationCountry(
     [
         'city' => 'London',

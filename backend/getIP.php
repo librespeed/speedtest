@@ -1384,14 +1384,30 @@ function mergeEarlierProviderLocation($providerLocation, $earlierLocation)
     $earlierCode = $earlierLocation['countryCode'] ?? null;
     if (is_string($providerCode) && is_string($earlierCode) &&
         strtoupper($providerCode) !== strtoupper($earlierCode)) {
-        $providerHasPlace = array_key_exists('city', $providerLocation) ||
-            array_key_exists('region', $providerLocation) ||
-            array_key_exists('latitude', $providerLocation) ||
-            array_key_exists('longitude', $providerLocation);
         if ($providerHasPlace) {
             return $providerLocation;
         }
         return $earlierLocation;
+    }
+
+    if ($providerHasPlace && $earlierHasPlace) {
+        $providerCity = normalizeIpInfoText($providerLocation['city'] ?? null);
+        $earlierCity = normalizeIpInfoText($earlierLocation['city'] ?? null);
+        $providerRegion = normalizeIpInfoText($providerLocation['region'] ?? null);
+        $earlierRegion = normalizeIpInfoText($earlierLocation['region'] ?? null);
+        $providerCoordinates = normalizeIpInfoCoordinates($providerLocation);
+        $earlierCoordinates = normalizeIpInfoCoordinates($earlierLocation);
+        $placeConflict =
+            (is_string($providerCity) && is_string($earlierCity) &&
+             strcasecmp($providerCity, $earlierCity) !== 0) ||
+            (is_string($providerRegion) && is_string($earlierRegion) &&
+             strcasecmp($providerRegion, $earlierRegion) !== 0) ||
+            (is_array($providerCoordinates) && is_array($earlierCoordinates) &&
+             (abs($providerCoordinates[0] - $earlierCoordinates[0]) > 0.01 ||
+              abs($providerCoordinates[1] - $earlierCoordinates[1]) > 0.01));
+        if ($placeConflict) {
+            return $providerLocation;
+        }
     }
 
     if (!$providerHasPlace && $earlierHasPlace) {
