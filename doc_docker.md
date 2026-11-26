@@ -2,6 +2,14 @@
 
 A docker version of LibreSpeed is available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest)
 
+## PHP security updates
+
+LibreSpeed's PHP endpoints run with the PHP runtime supplied by the host or container. The PHP security announcement of [November 18, 2026](https://www.php.net/archive/2026.php#2026-11-18-1) covers vulnerabilities that can lead to remote code execution in certain configurations; this is a runtime exposure, not a vulnerability specific to LibreSpeed's PHP code.
+
+Use a PHP build containing the fixes: PHP 8.2.36, 8.3.37, 8.4.28, or 8.5.13, or a vendor build with equivalent backported fixes. Older unsupported PHP branches should be upgraded to a supported branch. The PHP advisory describes, among other issues, session upload-progress paths that require the feature to be enabled and session data to be handled using mismatched serializers. If an affected path is exploitable, an unauthenticated remote request may lead to code execution.
+
+LibreSpeed does not use PHP's session upload-progress feature. Both supplied Dockerfiles disable it in `docker/librespeed-php.ini`, which mitigates that path but does not replace upgrading PHP. For manual installations, disable `session.upload_progress.enabled` in the PHP configuration used by the web server (for example, `php.ini` or the FPM pool configuration); changing it in application code is too late. For Docker deployments, pull and recreate containers from an image built with a patched PHP runtime. Updating the image tag alone does not update already-running containers.
+
 # Alpine Linux variant
 
 An Alpine Linux based docker version of LibreSpeed is also available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest) under all the tags that have the `-alpine` suffix. This variant is significantly smaller but can have slightly different behaviour due to its toolchain being based in [musl](https://en.wikipedia.org/wiki/Musl) libc as mentioned in [here](https://alpinelinux.org/about/).
