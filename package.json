@@ -5,6 +5,7 @@
   "main": "speedtest.js",
   "scripts": {
     "test": "echo \"No automated tests configured yet\" && exit 0",
+    "test:php": "php tests/php/getIP_test.php",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "lint": "eslint speedtest.js speedtest_worker.js stability_worker.js",
@@ -49,6 +50,8 @@
     "stability_worker.js",
     "stability.html",
     "index.html",
+    "ip-providers.json",
+    "ip-providers.schema.json",
     "favicon.ico",
     "manifest.webmanifest",
     "images/",

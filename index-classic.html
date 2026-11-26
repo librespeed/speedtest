@@ -206,6 +206,50 @@
 			if (uiData == null) return;
 			var status = uiData.testState;
 			I("ip").textContent = uiData.clientIp;
+			var rawIspInfo = uiData.rawIspInfo;
+			var ispName = null;
+			if (rawIspInfo && typeof rawIspInfo === "object") {
+				if (typeof rawIspInfo.org === "string" && rawIspInfo.org.trim()) {
+					ispName = rawIspInfo.org.trim().replace(/^AS\d+\s*/i, "");
+				} else if (rawIspInfo.asn && typeof rawIspInfo.asn === "object" && typeof rawIspInfo.asn.name === "string") {
+					ispName = rawIspInfo.asn.name.trim();
+				} else {
+					var ispKeys = ["as_name", "autonomous_system_organization", "organization", "isp", "network_name", "organization_name"];
+					for (var i = 0; i < ispKeys.length; i++) {
+						var ispValue = rawIspInfo[ispKeys[i]];
+						if (typeof ispValue === "string" && ispValue.trim()) {
+							ispName = ispValue.trim().replace(/^AS\d+\s*/i, "");
+							break;
+						}
+					}
+				}
+			}
+			I("ipIsp").textContent = ispName ? "ISP: " + ispName : "";
+
+			var location = uiData.location;
+			var locationParts = [];
+			if (location && typeof location === "object") {
+				if (typeof location.city === "string" && location.city.trim()) locationParts.push(location.city.trim());
+				if (typeof location.region === "string" && location.region.trim()) locationParts.push(location.region.trim());
+				if (typeof location.country === "string" && location.country.trim()) locationParts.push(location.country.trim());
+			}
+			I("ipLocation").textContent = locationParts.length
+				? "Approximate IP-derived location: " + locationParts.join(", ")
+				: "";
+
+			var latitude = location && typeof location.latitude === "number"
+				? location.latitude
+				: location && typeof location.lat === "number"
+					? location.lat
+					: null;
+			var longitude = location && typeof location.longitude === "number"
+				? location.longitude
+				: location && typeof location.lon === "number"
+					? location.lon
+					: null;
+			I("ipCoordinates").textContent = latitude !== null && longitude !== null
+				? "Lat/Long: " + latitude + ", " + longitude
+				: "";
 			I("dlText").textContent = (status == 1 && uiData.dlStatus == 0) ? "..." : format(uiData.dlStatus);
 			drawMeter(I("dlMeter"), mbpsToAmount(Number(uiData.dlStatus * (status == 1 ? oscillate() : 1))), meterBk, dlColor, Number(uiData.dlProgress), progColor);
 			I("ulText").textContent = (status == 3 && uiData.ulStatus == 0) ? "..." : format(uiData.ulStatus);
@@ -560,6 +604,9 @@
 			</div>
 			<div id="ipArea">
 				<span id="ip"></span>
+				<br /><span id="ipIsp"></span>
+				<br /><span id="ipLocation"></span>
+				<br /><span id="ipCoordinates"></span>
 			</div>
 			<div id="shareArea" style="display:none">
 				<h3>Share results</h3>
@@ -584,7 +631,7 @@
 			<li>Test results (download and upload speed, ping and jitter)</li>
 			<li>IP address</li>
 			<li>ISP information</li>
-			<li>Approximate location (inferred from IP address, not GPS)</li>
+			<li>Approximate location (inferred from IP address, not GPS). By default, the server may send the public IP to ipinfo.io for this lookup unless DISABLE_IPINFO is enabled.</li>
 			<li>User agent and browser locale</li>
 			<li>Test log (contains no personal information)</li>
 		</ul>
@@ -596,7 +643,7 @@
 			<li>Allow sharing of test results (sharable image for forums, etc.)</li>
 			<li>To improve the service offered to you (for instance, to detect problems on our side)</li>
 		</ul>
-		No personal information is disclosed to third parties.
+		When external lookup is enabled, the public IP may be sent to IPinfo, ipwho.is, FreeIPAPI, IPLocate, IP2Location, ipapi.is, DB-IP, or GeoJS for ISP and approximate location metadata. Set DISABLE_IPINFO=true to disable these external lookups.
 		</p>
 		<h4>Your consent</h4>
 		<p>

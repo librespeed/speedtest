@@ -45,7 +45,7 @@ More videos will be added later.
 Server side, you'll need:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection), a 64-bit version is strongly recommended
+* PHP 8.0 or newer (required for provider fallback, ISP/distance detection, and JSON location handling), a 64-bit version is strongly recommended
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
@@ -87,8 +87,25 @@ __Important:__ The speed test needs write permissions in the installation folder
 
 #### ipinfo.io
 
-The speed test uses the [ipinfo.io](https://ipinfo.io) offline database to detect ISP and country (CC-BY-SA 4.0 license), enabled by default.
-It's possible to use the full [ipinfo.io](https://ipinfo.io) API to detect distance from server as well. This is completely optional and can be enabled by obtaining an [access token](https://ipinfo.io) and putting it in `backend/getIP_ipInfo_apikey.php`. When this feature is enabled, the offline database will only be used as fallback.
+The speed test can use [ipinfo.io](https://ipinfo.io) to detect ISP and approximate IP-derived location. IPinfo is attempted first, and an API key is optional: when no key is configured, the unauthenticated IPinfo endpoint is attempted before the offline databases. An API key remains supported through `backend/getIP_ipInfo_apikey.php` and is also used for distance calculation.
+
+Operators should disclose this lookup in their privacy policy. Set `DISABLE_IPINFO=true` when the public IP must not be sent to ipinfo.io or read from an offline MMDB.
+
+The bundled `country_asn.mmdb` offline database provides ASN/country fallback (CC-BY-SA 4.0 license). City and coordinate data can be loaded from a compatible IPinfo or MaxMind city MMDB with `IPINFO_CITY_DB`; ASN and country database paths can be configured with `IPINFO_ASN_DB` and `IPINFO_COUNTRY_DB`. Set `DISABLE_IPINFO=true` to skip both API and offline IP metadata.
+
+Unauthenticated public-IP lookup uses an ordered registry in `ip-providers.json`:
+IPinfo Legacy, ipwho.is, FreeIPAPI, IPLocate, IP2Location, ipapi.is, DB-IP,
+and GeoJS. Geolocation DB and IPLocation.net remain documented registry entries
+but are not enabled in the default first-eight order. Providers are attempted
+without round robin, with a 1.5-second timeout and at most eight attempts.
+Successful IP metadata is cached for six hours, negative lookups for five
+minutes, and failed providers enter a 15-minute cooldown. The runtime does not
+forward provider secrets or complete provider response objects; only normalized
+ISP/location fields are returned.
+
+Set `TRUSTED_PROXIES` to a comma-separated list of trusted proxy IP/CIDR
+networks. When unset or unmatched, forwarding headers are ignored and
+`REMOTE_ADDR` is used as the client IP.
 
 #### Telemetry and results sharing
 
@@ -286,10 +303,10 @@ These are the servers that will actually be used to perform the test.
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection)
+* PHP 8.0 or newer (required for provider fallback, ISP, and distance detection)
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 
-To install a backend, simply copy all the files in the `backend` folder to your backend server.
+To install a backend, copy all of the files in the `backend` folder to your backend server. The folder includes `ip-providers.json`, so backend-only installs retain the provider registry. If you copy files individually, also copy `backend/ip-providers.json` beside `getIP.php`, or set `IP_PROVIDER_REGISTRY_FILE` to its absolute path.
 
 __Important:__ The speed test needs write permissions in the installation folder!
 

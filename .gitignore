@@ -1,5 +1,8 @@
 results/idObfuscation_salt.php
 backend/getIP_serverLocation.php
+backend/getIP_provider_cache.json
+backend/getIP_provider_cache.json.tmp-*
+*.librespeed-ip-provider-cache-*.lock
 db-dir/
 .vscode/
 node_modules/

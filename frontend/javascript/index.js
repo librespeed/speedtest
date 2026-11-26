@@ -24,6 +24,48 @@ const testState = {
   telemetryEnabled: false,
 };
 
+function getIspName(rawIspInfo) {
+  if (!rawIspInfo || typeof rawIspInfo !== "object") return null;
+  if (typeof rawIspInfo.org === "string" && rawIspInfo.org.trim()) {
+    return rawIspInfo.org.trim().replace(/^AS\d+\s*/i, "");
+  }
+  if (
+    rawIspInfo.asn &&
+    typeof rawIspInfo.asn === "object" &&
+    typeof rawIspInfo.asn.name === "string"
+  ) {
+    return rawIspInfo.asn.name.trim();
+  }
+  for (const key of [
+    "as_name",
+    "autonomous_system_organization",
+    "organization",
+    "isp",
+    "network_name",
+    "organization_name"
+  ]) {
+    if (typeof rawIspInfo[key] === "string" && rawIspInfo[key].trim()) {
+      return rawIspInfo[key].trim().replace(/^AS\d+\s*/i, "");
+    }
+  }
+  return null;
+}
+
+function getApproximateLocationText(location) {
+  if (!location || typeof location !== "object") return null;
+  const place = [];
+  if (typeof location.city === "string" && location.city.trim()) {
+    place.push(location.city.trim());
+  }
+  if (typeof location.region === "string" && location.region.trim()) {
+    place.push(location.region.trim());
+  }
+  if (typeof location.country === "string" && location.country.trim()) {
+    place.push(location.country.trim());
+  }
+  return place.length ? place.join(", ") : null;
+}
+
 // Bootstrap the application when the DOM is ready
 window.addEventListener("DOMContentLoaded", async () => {
   createSpeedtest();
@@ -449,6 +491,46 @@ function startRenderingLoop() {
         privacyWarning.appendChild(connectedThrough);
         privacyWarning.appendChild(document.createElement('br'));
         privacyWarning.appendChild(ipAddress);
+
+        const ispName = getIspName(testState.testData.rawIspInfo);
+        if (ispName) {
+          privacyWarning.appendChild(document.createElement('br'));
+          privacyWarning.appendChild(document.createTextNode('ISP: ' + ispName));
+        }
+
+        const locationText = getApproximateLocationText(
+          testState.testData.location
+        );
+        if (locationText) {
+          privacyWarning.appendChild(document.createElement('br'));
+          privacyWarning.appendChild(
+            document.createTextNode(
+              'Approximate IP-derived location: ' + locationText
+            )
+          );
+        }
+
+        const location = testState.testData.location;
+        const latitude =
+          location && typeof location.latitude === 'number'
+            ? location.latitude
+            : location && typeof location.lat === 'number'
+              ? location.lat
+              : null;
+        const longitude =
+          location && typeof location.longitude === 'number'
+            ? location.longitude
+            : location && typeof location.lon === 'number'
+              ? location.lon
+              : null;
+        if (latitude !== null && longitude !== null) {
+          privacyWarning.appendChild(document.createElement('br'));
+          privacyWarning.appendChild(
+            document.createTextNode(
+              'Lat/Long: ' + latitude + ', ' + longitude
+            )
+          );
+        }
   
         privacyWarning.classList.remove("hidden");
       }

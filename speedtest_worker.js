@@ -12,6 +12,7 @@ let ulStatus = ""; // upload speed in megabit/s with 2 decimal digits
 let pingStatus = ""; // ping in milliseconds with 2 decimal digits
 let jitterStatus = ""; // jitter in milliseconds with 2 decimal digits
 let clientIp = ""; // client's IP address as reported by getIP.php
+let ipLocation = null; // approximate IP-derived location metadata
 let dlProgress = 0; //progress of download test 0-1
 let ulProgress = 0; //progress of upload test 0-1
 let pingProgress = 0; //progress of ping+jitter test 0-1
@@ -99,6 +100,8 @@ this.addEventListener("message", function(e) {
 				ulStatus: ulStatus,
 				pingStatus: pingStatus,
 				clientIp: clientIp,
+				rawIspInfo: ispInfo,
+				location: ipLocation,
 				jitterStatus: jitterStatus,
 				dlProgress: dlProgress,
 				ulProgress: ulProgress,
@@ -259,6 +262,8 @@ this.addEventListener("message", function(e) {
 		pingStatus = "";
 		jitterStatus = "";
         clientIp = "";
+		ispInfo = "";
+		ipLocation = null;
 		dlProgress = 0;
 		ulProgress = 0;
 		pingProgress = 0;
@@ -310,9 +315,14 @@ function getIp(done) {
 			const data = JSON.parse(xhr.responseText);
 			clientIp = data.processedString;
 			ispInfo = data.rawIspInfo;
+			ipLocation =
+				data.location && typeof data.location === "object"
+					? data.location
+					: null;
 		} catch (e) {
 			clientIp = xhr.responseText;
 			ispInfo = "";
+			ipLocation = null;
 		}
 		done();
 	};
@@ -721,7 +731,8 @@ function sendTelemetry(done) {
 	xhr.open("POST", settings.url_telemetry + url_sep(settings.url_telemetry) + (settings.mpot ? "cors=true&" : "") + "r=" + Math.random(), true);
 	const telemetryIspInfo = {
 		processedString: clientIp,
-		rawIspInfo: typeof ispInfo === "object" ? ispInfo : ""
+		rawIspInfo: typeof ispInfo === "object" ? ispInfo : "",
+		location: ipLocation && typeof ipLocation === "object" ? ipLocation : null
 	};
 	try {
 		const fd = new FormData();
