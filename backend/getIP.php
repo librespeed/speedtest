@@ -121,6 +121,27 @@ function normalizeIpInfoText($value)
     return null;
 }
 
+function normalizeProviderIspName($value)
+{
+    $isp = normalizeIpInfoText($value);
+    if ($isp === null) {
+        return null;
+    }
+    $isp = preg_replace('/^(?:AS|ASN)\s*\d+\s*(?:[-:]\s*)?/i', '', $isp);
+    $isp = preg_replace('/^AUTONOMOUS\s+SYSTEM\s*\d+\s*(?:[-:]\s*)?/i', '', $isp);
+    $isp = trim($isp);
+    if ($isp === '') {
+        return null;
+    }
+    if (preg_match(
+        '/^(?:(?:as(?:n)?|autonomous\s+system)\s*(?:number|identifier)?\s*[:=#-]?\s*)?\d+(?:\.\d+)?$/i',
+        $isp
+    ) === 1) {
+        return null;
+    }
+    return $isp;
+}
+
 function normalizeIpInfoLocalizedName($value)
 {
     if (is_string($value) || is_numeric($value)) {
@@ -481,29 +502,29 @@ function normalizeIspName($data)
     if (!is_array($data)) {
         return null;
     }
-    if (isset($data['org']) && is_string($data['org']) && trim($data['org']) !== '') {
-        $isp = trim(preg_replace('/^AS\d+\s*/i', '', $data['org']));
-        if ($isp !== '') {
+    if (isset($data['org'])) {
+        $isp = normalizeProviderIspName($data['org']);
+        if ($isp !== null) {
             return $isp;
         }
     }
     if (isset($data['asn'])) {
         if (is_array($data['asn']) && isset($data['asn']['name'])) {
-            $isp = normalizeIpInfoText($data['asn']['name']);
+            $isp = normalizeProviderIspName($data['asn']['name']);
             if ($isp !== null) {
                 return $isp;
             }
-        } elseif (is_string($data['asn'])) {
-            $isp = trim(preg_replace('/^AS\d+\s*/i', '', $data['asn']));
-            if ($isp !== '' && preg_match('/^AS\d+$/i', $isp) !== 1) {
+        } else {
+            $isp = normalizeProviderIspName($data['asn']);
+            if ($isp !== null) {
                 return $isp;
             }
         }
     }
     foreach (['as_name', 'autonomous_system_organization', 'organization', 'isp', 'network_name', 'organization_name'] as $key) {
-        $isp = normalizeIpInfoText($data[$key] ?? null);
+        $isp = normalizeProviderIspName($data[$key] ?? null);
         if ($isp !== null) {
-            return trim(preg_replace('/^AS\d+\s*/i', '', $isp));
+            return $isp;
         }
     }
     return null;
@@ -623,6 +644,40 @@ function calculateIpInfoDistance($clientLoc, $serverLoc, $unit)
         $distance = '<20';
     }
     return $distance . ' km';
+}
+
+function finalizeIpInfoDistance($response)
+{
+    if (!is_array($response) ||
+        !isset($_GET['distance']) ||
+        !in_array($_GET['distance'], ['mi', 'km'], true) ||
+        !is_array($response['location'] ?? null)) {
+        return $response;
+    }
+    $coordinates = normalizeIpInfoCoordinates($response['location']);
+    if (!is_array($coordinates)) {
+        return $response;
+    }
+    $serverLoc = getIpInfoServerLoc(getIpInfoApiKey());
+    if (!is_string($serverLoc)) {
+        return $response;
+    }
+    $distance = calculateIpInfoDistance(
+        $coordinates[0] . ',' . $coordinates[1],
+        $serverLoc,
+        $_GET['distance']
+    );
+    if (!is_string($distance)) {
+        return $response;
+    }
+    $processed = is_string($response['processedString'] ?? null)
+        ? $response['processedString']
+        : '';
+    $distanceSuffix = ' (' . $distance . ')';
+    if ($processed !== '' && substr($processed, -strlen($distanceSuffix)) !== $distanceSuffix) {
+        $response['processedString'] = $processed . $distanceSuffix;
+    }
+    return $response;
 }
 
 function getIpInfoServerLoc($apiKey)
@@ -1000,6 +1055,90 @@ function setProviderCooldown($providerId)
     });
 }
 
+function getBuiltInIpProviderRegistry()
+{
+    return [
+        'provider_timeout_seconds' => 1.5,
+        'max_attempts' => 8,
+        'positive_cache_ttl_seconds' => 21600,
+        'negative_cache_ttl_seconds' => 300,
+        'cooldown_seconds' => 900,
+        'providers' => [
+            [
+                'id' => 'ipinfo',
+                'name' => 'IPinfo Legacy',
+                'url_template' => 'https://ipinfo.io/{ip}/json',
+                'normalizer' => 'ipinfo',
+                'api_key_env' => 'IPINFO_APIKEY',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'ipwhois',
+                'name' => 'ipwho.is',
+                'url_template' => 'https://ipwho.is/{ip}',
+                'normalizer' => 'ipwhois',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'freeipapi',
+                'name' => 'FreeIPAPI',
+                'url_template' => 'https://freeipapi.com/api/json/{ip}',
+                'normalizer' => 'freeipapi',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'iplocate',
+                'name' => 'IPLocate',
+                'url_template' => 'https://www.iplocate.io/api/lookup/{ip}',
+                'normalizer' => 'iplocate',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'ip2location',
+                'name' => 'IP2Location',
+                'url_template' => 'https://api.ip2location.io/?ip={ip}',
+                'normalizer' => 'ip2location',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'ipapiis',
+                'name' => 'ipapi.is',
+                'url_template' => 'https://api.ipapi.is/?q={ip}',
+                'normalizer' => 'ipapiis',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'dbip',
+                'name' => 'DB-IP',
+                'url_template' => 'https://api.db-ip.com/v2/free/{ip}',
+                'normalizer' => 'dbip',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'geojs',
+                'name' => 'GeoJS',
+                'url_template' => 'https://get.geojs.io/v1/ip/geo/{ip}.json',
+                'normalizer' => 'geojs',
+                'enabled' => true,
+            ],
+            [
+                'id' => 'geolocationdb',
+                'name' => 'Geolocation DB',
+                'url_template' => 'https://geolocation-db.com/json/{ip}',
+                'normalizer' => 'geolocationdb',
+                'enabled' => false,
+            ],
+            [
+                'id' => 'iplocation',
+                'name' => 'IPLocation.net',
+                'url_template' => 'https://api.iplocation.net/?ip={ip}',
+                'normalizer' => 'iplocation',
+                'enabled' => false,
+            ],
+        ],
+    ];
+}
+
 function loadIpProviderRegistry()
 {
     $registry = null;
@@ -1020,14 +1159,7 @@ function loadIpProviderRegistry()
     }
     if (!is_array($registry) || !isset($registry['providers']) ||
         !is_array($registry['providers'])) {
-        return [
-            'provider_timeout_seconds' => 1.5,
-            'max_attempts' => 8,
-            'positive_cache_ttl_seconds' => 21600,
-            'negative_cache_ttl_seconds' => 300,
-            'cooldown_seconds' => 900,
-            'providers' => [],
-        ];
+        return getBuiltInIpProviderRegistry();
     }
     return $registry;
 }
@@ -1148,7 +1280,8 @@ function normalizeProviderResult($providerId, $data, $ip)
             break;
 
         case 'iplocate':
-            $isp = providerString(providerNestedValue($data, 'network.autonomous_system_name')) ??
+            $isp = providerString(providerNestedValue($data, 'asn.name')) ??
+                providerString(providerNestedValue($data, 'network.autonomous_system_name')) ??
                 providerString(providerNestedValue($data, 'network.autonomous_system_organization')) ??
                 providerString($data['organization'] ?? null);
             $city = providerString($data['city'] ?? null);
@@ -1246,6 +1379,7 @@ function normalizeProviderResult($providerId, $data, $ip)
             return null;
     }
 
+    $isp = normalizeProviderIspName($isp);
     if (isset($coordinates) && is_array($coordinates)) {
         $latitude = roundProviderCoordinate($coordinates[0]);
         $longitude = roundProviderCoordinate($coordinates[1]);
@@ -1521,8 +1655,9 @@ function getIspInfoProviderFallback($ip)
         is_array(normalizeIpInfoCoordinates($local['location'])) &&
         normalizeIspName(is_array($local['rawIspInfo'] ?? null) ? $local['rawIspInfo'] : null) !== null;
     if ($localComplete) {
+        $local = finalizeIpInfoDistance($local);
         setPositiveProviderCache($ip, $local);
-        return $localJson;
+        return json_encode($local);
     }
 
     $registry = loadIpProviderRegistry();
@@ -1606,23 +1741,7 @@ function getIspInfoProviderFallback($ip)
     $selectedProviderResponse = $providerResponse ?: $locationOnlyProviderResponse;
     $response = mergeProviderResponseWithLocal($localJson, $selectedProviderResponse);
     if (is_array($response)) {
-        if (isset($_GET['distance']) && in_array($_GET['distance'], ['mi', 'km'], true) &&
-            is_array($response['location'] ?? null)) {
-            $coordinates = normalizeIpInfoCoordinates($response['location']);
-            if (is_array($coordinates)) {
-                $serverLoc = getIpInfoServerLoc(getIpInfoApiKey());
-                if (is_string($serverLoc)) {
-                    $distance = calculateIpInfoDistance(
-                        $coordinates[0] . ',' . $coordinates[1],
-                        $serverLoc,
-                        $_GET['distance']
-                    );
-                    if (is_string($distance)) {
-                        $response['processedString'] .= ' (' . $distance . ')';
-                    }
-                }
-            }
-        }
+        $response = finalizeIpInfoDistance($response);
         setPositiveProviderCache($ip, $response);
         return json_encode($response);
     }
@@ -1769,7 +1888,7 @@ function getIspInfo_ipinfoOfflineDb($ip)
     if ($location !== null) {
         $response['location'] = $location;
     }
-    return json_encode($response);
+    return json_encode(finalizeIpInfoDistance($response));
 }
 
 function formatResponse_simple($ip, $ispName = null)

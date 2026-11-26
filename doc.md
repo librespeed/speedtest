@@ -303,10 +303,10 @@ These are the servers that will actually be used to perform the test.
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection)
+* PHP 8.0 or newer (required for provider fallback, ISP, and distance detection)
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 
-To install a backend, simply copy all the files in the `backend` folder to your backend server.
+To install a backend, copy all of the files in the `backend` folder to your backend server. The folder includes `ip-providers.json`, so backend-only installs retain the provider registry. If you copy files individually, also copy `backend/ip-providers.json` beside `getIP.php`, or set `IP_PROVIDER_REGISTRY_FILE` to its absolute path.
 
 __Important:__ The speed test needs write permissions in the installation folder!
 

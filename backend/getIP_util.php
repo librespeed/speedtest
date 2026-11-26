@@ -22,7 +22,20 @@ function normalizeCandidateIp($raw, $extraFlags = 0)
     if ($ip === '') {
         return false;
     }
-    return filter_var($ip, FILTER_VALIDATE_IP, $extraFlags);
+    $validated = filter_var($ip, FILTER_VALIDATE_IP, $extraFlags);
+    if ($validated === false) {
+        return false;
+    }
+    $packed = @inet_pton($validated);
+    if ($packed === false) {
+        return false;
+    }
+    if (strlen($packed) === 16 &&
+        substr($packed, 0, 12) === str_repeat("\0", 10) . "\xff\xff") {
+        return @inet_ntop(substr($packed, 12));
+    }
+    $canonical = @inet_ntop($packed);
+    return $canonical === false ? $validated : $canonical;
 }
 
 /**
@@ -39,7 +52,16 @@ function isIpInCidr($ip, $network)
         return false;
     }
     if (strpos($network, '/') === false) {
-        return hash_equals((string) normalizeCandidateIp($network), (string) $ip);
+        $normalizedIp = normalizeCandidateIp($ip);
+        $normalizedNetwork = normalizeCandidateIp($network);
+        if ($normalizedIp === false || $normalizedNetwork === false) {
+            return false;
+        }
+        $ipPacked = @inet_pton($normalizedIp);
+        $networkPacked = @inet_pton($normalizedNetwork);
+        return $ipPacked !== false && $networkPacked !== false &&
+            strlen($ipPacked) === strlen($networkPacked) &&
+            hash_equals($ipPacked, $networkPacked);
     }
     list($networkAddress, $prefixText) = explode('/', $network, 2);
     $networkAddress = normalizeCandidateIp($networkAddress);

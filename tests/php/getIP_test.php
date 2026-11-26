@@ -397,6 +397,16 @@ testGetIpInfo(
     isPublicIpAddress('128.94.2.134')
 );
 
+$ipv6Candidate = normalizeCandidateIp('2001:4860:4860::ABCD');
+testGetIpInfo(
+    'IPv6 candidates are canonicalized',
+    $ipv6Candidate === '2001:4860:4860::abcd'
+);
+testGetIpInfo(
+    'exact IPv6 trusted addresses compare by packed value',
+    isIpInCidr('2001:4860:4860::abcd', '2001:4860:4860::ABCD')
+);
+
 $trustedProxyBackup = [
     'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
     'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
@@ -407,6 +417,13 @@ $_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.10';
 testGetIpInfo(
     'trusted proxy forwarding is honored',
     getClientIp() === '203.0.113.10'
+);
+putenv('TRUSTED_PROXIES=2001:4860:4860::ABCD');
+$_SERVER['REMOTE_ADDR'] = '2001:4860:4860::abcd';
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '2001:db8::1234';
+testGetIpInfo(
+    'canonical IPv6 exact trusted proxy forwarding is honored',
+    getClientIp() === '2001:db8::1234'
 );
 putenv('TRUSTED_PROXIES=');
 $_SERVER['REMOTE_ADDR'] = '10.1.2.3';
@@ -447,6 +464,107 @@ testGetIpInfo(
     && !isset($providerResult['rawIspInfo']['success'])
     && isset($providerResult['rawIspInfo']['source'])
 );
+
+$iplocateProviderResult = normalizeProviderResult('iplocate', [
+    'asn' => ['name' => 'Microsoft Corporation'],
+    'city' => 'Boydton',
+    'subdivision' => 'Virginia',
+    'country_name' => 'United States',
+    'country_code' => 'US',
+    'latitude' => 36.66764,
+    'longitude' => -78.38754,
+], '128.94.2.134');
+testGetIpInfo(
+    'IPLocate asn.name is retained as ISP',
+    is_array($iplocateProviderResult)
+    && $iplocateProviderResult['rawIspInfo']['org'] === 'Microsoft Corporation'
+    && $iplocateProviderResult['rawIspInfo']['as_name'] === 'Microsoft Corporation'
+);
+
+testGetIpInfo(
+    'bare ASN values are rejected as ISP names',
+    normalizeIspName(['asn' => '8075']) === null
+    && normalizeIspName(['asn' => 'AS8075']) === null
+    && normalizeIspName(['organization' => 'ASN 8075']) === null
+);
+$bareAsnProviderResult = normalizeProviderResult('freeipapi', [
+    'asn' => 8075,
+    'cityName' => 'Redmond',
+    'regionName' => 'Washington',
+    'countryName' => 'United States',
+    'countryCode' => 'US',
+    'latitude' => 47.6740,
+    'longitude' => -122.1215,
+], '128.94.2.134');
+testGetIpInfo(
+    'bare ASN provider identifier preserves location without ISP',
+    is_array($bareAsnProviderResult)
+    && $bareAsnProviderResult['location']['city'] === 'Redmond'
+    && $bareAsnProviderResult['location']['countryCode'] === 'US'
+    && !isset($bareAsnProviderResult['rawIspInfo']['org'])
+    && !isset($bareAsnProviderResult['rawIspInfo']['as_name'])
+);
+
+$builtInRegistry = getBuiltInIpProviderRegistry();
+$builtInIpinfo = array_values(array_filter(
+    $builtInRegistry['providers'],
+    function ($provider) {
+        return ($provider['id'] ?? '') === 'ipinfo' &&
+            ($provider['enabled'] ?? false) === true;
+    }
+));
+testGetIpInfo(
+    'missing provider registry has built-in IPinfo fallback',
+    is_array($builtInIpinfo)
+    && count($builtInIpinfo) === 1
+);
+putenv('IP_PROVIDER_REGISTRY_FILE=/definitely/missing/librespeed-ip-providers.json');
+$installedRegistry = loadIpProviderRegistry();
+testGetIpInfo(
+    'backend install provider registry is distributable',
+    is_array($installedRegistry)
+    && is_readable(dirname(__DIR__, 2) . '/backend/ip-providers.json')
+    && count(array_filter(
+        $installedRegistry['providers'],
+        function ($provider) {
+            return ($provider['enabled'] ?? false) === true;
+        }
+    )) >= 1
+);
+putenv('IP_PROVIDER_REGISTRY_FILE=');
+
+$serverLocationBackup = file_exists(SERVER_LOCATION_CACHE_FILE)
+    ? file_get_contents(SERVER_LOCATION_CACHE_FILE)
+    : null;
+@file_put_contents(
+    SERVER_LOCATION_CACHE_FILE,
+    "<?php\n\n\$serverLoc = '39.7684,-86.1580';\n"
+);
+$_GET['distance'] = 'km';
+$distanceResponse = finalizeIpInfoDistance([
+    'processedString' => '128.94.2.134 - Example Networks, GB',
+    'rawIspInfo' => ['source' => 'offline_mmdb'],
+    'location' => [
+        'city' => 'London',
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+        'latitude' => 51.5074,
+        'longitude' => -0.1278,
+        'approximate' => true,
+        'source' => 'offline_mmdb',
+    ],
+]);
+testGetIpInfo(
+    'complete MMDB-style response receives distance finalization',
+    is_string($distanceResponse['processedString'])
+    && preg_match('/\([^)]+ km\)$/', $distanceResponse['processedString']) === 1
+);
+unset($_GET['distance']);
+if ($serverLocationBackup !== null) {
+    file_put_contents(SERVER_LOCATION_CACHE_FILE, $serverLocationBackup);
+} else {
+    @unlink(SERVER_LOCATION_CACHE_FILE);
+}
 
 @unlink(IP_PROVIDER_CACHE_FILE);
 
