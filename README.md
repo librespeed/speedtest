@@ -64,6 +64,14 @@ A command line client is available [here](https://github.com/librespeed/speedtes
 
 A .NET client library is available in the [`LibreSpeed.NET`](https://github.com/Memphizzz/LibreSpeed.NET) repo ([NuGet](https://www.nuget.org/packages/LibreSpeed.NET)), maintained by [MemphiZ](https://github.com/Memphizzz).
 
+## Localization
+
+The user interfaces load translations from `frontend/locales/`. English is the
+fallback; a supported browser language is selected automatically, or pass
+`?lang=sv` to select Swedish explicitly. Add a complete JSON catalog using the
+keys in `frontend/locales/en.json`; keep dynamic UI strings behind
+`LibreSpeedI18n.t()`.
+
 ## Development
 
 If you want to contribute or develop with LibreSpeed, see [DEVELOPMENT.md](DEVELOPMENT.md) for information about using npm for development tasks, linting, and formatting.
