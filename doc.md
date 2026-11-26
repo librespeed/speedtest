@@ -45,7 +45,7 @@ More videos will be added later.
 Server side, you'll need:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection), a 64-bit version is strongly recommended
+* PHP 8.2 or newer on a currently supported, security-patched branch; a 64-bit version is strongly recommended
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
@@ -187,7 +187,7 @@ This is the server that your users will first connect to. It hosts the UI, the J
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast connection is not mandatory, but is still recommended
-* PHP 5.4 or newer, a 64-bit version is strongly recommended
+* PHP 8.2 or newer on a currently supported, security-patched branch; a 64-bit version is strongly recommended
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
   * PostgreSQL and its PHP PDO module
@@ -286,7 +286,7 @@ These are the servers that will actually be used to perform the test.
 Requirements:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection)
+* PHP 8.2 or newer on a currently supported, security-patched branch
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 
 To install a backend, simply copy all the files in the `backend` folder to your backend server.
