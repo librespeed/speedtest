@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://librespeed.org/schemas/ip-providers.schema.json",
+  "title": "LibreSpeed IP provider registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provider_timeout_seconds",
+    "max_attempts",
+    "positive_cache_ttl_seconds",
+    "negative_cache_ttl_seconds",
+    "cooldown_seconds",
+    "providers"
+  ],
+  "properties": {
+    "provider_timeout_seconds": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 10
+    },
+    "max_attempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "positive_cache_ttl_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "negative_cache_ttl_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cooldown_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "url_template", "normalizer", "enabled"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "url_template": {"type": "string", "pattern": "^https://[^\\s]+\\{ip\\}[^\\s]*$"},
+          "normalizer": {"type": "string", "minLength": 1},
+          "api_key_env": {"type": "string", "minLength": 1},
+          "enabled": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

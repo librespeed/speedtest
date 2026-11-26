@@ -50,6 +50,8 @@
     "stability_worker.js",
     "stability.html",
     "index.html",
+    "ip-providers.json",
+    "ip-providers.schema.json",
     "favicon.ico",
     "manifest.webmanifest",
     "images/",

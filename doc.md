@@ -93,6 +93,20 @@ Operators should disclose this lookup in their privacy policy. Set `DISABLE_IPIN
 
 The bundled `country_asn.mmdb` offline database provides ASN/country fallback (CC-BY-SA 4.0 license). City and coordinate data can be loaded from a compatible IPinfo or MaxMind city MMDB with `IPINFO_CITY_DB`; ASN and country database paths can be configured with `IPINFO_ASN_DB` and `IPINFO_COUNTRY_DB`. Set `DISABLE_IPINFO=true` to skip both API and offline IP metadata.
 
+Unauthenticated public-IP lookup uses an ordered registry in `ip-providers.json`:
+IPinfo Legacy, ipwho.is, FreeIPAPI, IPLocate, IP2Location, ipapi.is, DB-IP,
+and GeoJS. Geolocation DB and IPLocation.net remain documented registry entries
+but are not enabled in the default first-eight order. Providers are attempted
+without round robin, with a 1.5-second timeout and at most eight attempts.
+Successful IP metadata is cached for six hours, negative lookups for five
+minutes, and failed providers enter a 15-minute cooldown. The runtime does not
+forward provider secrets or complete provider response objects; only normalized
+ISP/location fields are returned.
+
+Set `TRUSTED_PROXIES` to a comma-separated list of trusted proxy IP/CIDR
+networks. When unset or unmatched, forwarding headers are ignored and
+`REMOTE_ADDR` is used as the client IP.
+
 #### Telemetry and results sharing
 
 The test supports storing test results and can generate shareable images that users can embed in forum signatures and such.

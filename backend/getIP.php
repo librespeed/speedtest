@@ -11,6 +11,17 @@ error_reporting(0);
 define('API_KEY_FILE', __DIR__ . '/getIP_ipInfo_apikey.php');
 define('SERVER_LOCATION_CACHE_FILE', __DIR__ . '/getIP_serverLocation.php');
 define('OFFLINE_IPINFO_DB_FILE', __DIR__ . '/country_asn.mmdb');
+define('IP_PROVIDER_REGISTRY_FILE', __DIR__ . '/../ip-providers.json');
+define(
+    'IP_PROVIDER_CACHE_FILE',
+    rtrim(sys_get_temp_dir(), '/\\') . '/librespeed-ip-provider-cache-' .
+        hash('sha256', __DIR__) . '.json'
+);
+define(
+    'IP_PROVIDER_CACHE_LOCK_FILE',
+    rtrim(sys_get_temp_dir(), '/\\') . '/librespeed-ip-provider-cache-' .
+        hash('sha256', __DIR__) . '.lock'
+);
 
 require_once __DIR__ . '/getIP_util.php';
 
@@ -20,11 +31,17 @@ if (PHP_VERSION_ID >= 80100 && file_exists(__DIR__ . '/geoip2.phar')) {
 
 function getLocalOrPrivateIpInfo($ip)
 {
+    if (isPublicIpAddress($ip)) {
+        return null;
+    }
     if ('::1' === $ip) {
         return 'localhost IPv6 access';
     }
     if (stripos($ip, 'fe80:') === 0) {
         return 'link-local IPv6 access';
+    }
+    if (stripos($ip, 'fec0:') === 0) {
+        return 'site-local IPv6 access';
     }
     if (preg_match('/^(fc|fd)([0-9a-f]{0,4}:){1,7}[0-9a-f]{1,4}$/i', $ip) === 1) {
         return 'ULA IPv6 access';
@@ -34,6 +51,9 @@ function getLocalOrPrivateIpInfo($ip)
     }
     if (strpos($ip, '10.') === 0) {
         return 'private IPv4 access';
+    }
+    if (preg_match('/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./', $ip) === 1) {
+        return 'shared CGNAT IPv4 access';
     }
     if (preg_match('/^172\.(1[6-9]|2\d|3[01])\./', $ip) === 1) {
         return 'private IPv4 access';
@@ -132,12 +152,6 @@ function normalizeIpInfoLocalizedName($value)
     }
     if (isset($value['name'])) {
         $name = normalizeIpInfoText($value['name']);
-        if ($name !== null) {
-            return $name;
-        }
-    }
-    foreach ($value as $name) {
-        $name = normalizeIpInfoText($name);
         if ($name !== null) {
             return $name;
         }
@@ -324,10 +338,12 @@ function normalizeApproximateLocation($data, $source)
         $location['countryCode'] = $countryCode;
     }
     if (is_array($coordinates)) {
-        $location['latitude'] = $coordinates[0];
-        $location['longitude'] = $coordinates[1];
-        $location['lat'] = $coordinates[0];
-        $location['lon'] = $coordinates[1];
+        $latitude = round((float) $coordinates[0], 3);
+        $longitude = round((float) $coordinates[1], 3);
+        $location['latitude'] = $latitude;
+        $location['longitude'] = $longitude;
+        $location['lat'] = $latitude;
+        $location['lon'] = $longitude;
     }
     if (count($location) === 0) {
         return null;
@@ -408,7 +424,13 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
     }
 
     $merged['approximate'] = true;
-    $merged['source'] = $preferOfflinePlace ? $offlineSource : ($apiLocation['source'] ?? $offlineSource);
+    if (!$apiHasPlace && $offlineHasPlace) {
+        $merged['source'] = $offlineSource;
+    } else {
+        $merged['source'] = $preferOfflinePlace
+            ? $offlineSource
+            : ($apiLocation['source'] ?? $offlineSource);
+    }
     return $merged;
 }
 
@@ -486,6 +508,60 @@ function normalizeIspName($data)
         }
     }
     return null;
+}
+
+function sanitizeIpInfoRawIspInfo($data, $source)
+{
+    if (!is_array($data)) {
+        return '';
+    }
+    $raw = [];
+    foreach (
+        [
+            'ip',
+            'hostname',
+            'city',
+            'region',
+            'country',
+            'country_name',
+            'country_code',
+            'loc',
+            'org',
+            'as_name',
+            'organization',
+            'isp',
+            'network_name',
+            'organization_name',
+            'autonomous_system_organization',
+            'as_number',
+            'asn_name',
+            'postal',
+            'timezone',
+        ] as $key
+    ) {
+        if (array_key_exists($key, $data) &&
+            (is_string($data[$key]) || is_numeric($data[$key]))) {
+            $raw[$key] = $data[$key];
+        }
+    }
+    if (isset($raw['loc']) && is_string($raw['loc'])) {
+        $coordinates = parseIpInfoLocationString($raw['loc']);
+        if (is_array($coordinates)) {
+            $raw['loc'] = round($coordinates[0], 3) . ',' . round($coordinates[1], 3);
+        } else {
+            unset($raw['loc']);
+        }
+    }
+    if (isset($data['asn']) && is_array($data['asn']) &&
+        isset($data['asn']['name']) && is_string($data['asn']['name'])) {
+        $raw['asn'] = ['name' => $data['asn']['name']];
+    } elseif (isset($data['asn']) && is_string($data['asn'])) {
+        $raw['asn'] = $data['asn'];
+    }
+    if (is_string($source) && $source !== '') {
+        $raw['source'] = $source;
+    }
+    return count($raw) > 0 ? $raw : '';
 }
 
 function ipInfoHttpGet($url)
@@ -584,6 +660,9 @@ function getIspInfo_ipinfoApi($ip)
     if (isIpInfoDisabled()) {
         return null;
     }
+    if (!isPublicIpAddress($ip)) {
+        return null;
+    }
     $apiKey = '';
     if (file_exists(API_KEY_FILE) && is_readable(API_KEY_FILE)) {
         require API_KEY_FILE;
@@ -672,12 +751,699 @@ function getIspInfo_ipinfoApi($ip)
 
     $response = [
         'processedString' => $processedString,
-        'rawIspInfo' => $data ?: '',
+        'rawIspInfo' => sanitizeIpInfoRawIspInfo($data, 'ipinfo_api'),
     ];
     if ($location !== null) {
         $response['location'] = $location;
     }
     return json_encode($response);
+}
+
+function getIpInfoApiKey()
+{
+    $apiKey = '';
+    if (file_exists(API_KEY_FILE) && is_readable(API_KEY_FILE)) {
+        require API_KEY_FILE;
+        if (isset($IPINFO_APIKEY) && is_string($IPINFO_APIKEY)) {
+            $apiKey = trim($IPINFO_APIKEY);
+        }
+    }
+    return $apiKey;
+}
+
+function readIpProviderJson($path)
+{
+    if (!is_string($path) || $path === '' || !file_exists($path) || !is_readable($path)) {
+        return null;
+    }
+    $json = @file_get_contents($path);
+    $data = is_string($json) ? json_decode($json, true) : null;
+    return is_array($data) ? $data : null;
+}
+
+function writeIpProviderJson($path, $data)
+{
+    $json = json_encode($data, JSON_UNESCAPED_SLASHES);
+    if (!is_string($json)) {
+        return false;
+    }
+    $temp = $path . '.tmp-' . getmypid();
+    if (@file_put_contents($temp, $json, LOCK_EX) === false) {
+        return false;
+    }
+    if (!@rename($temp, $path)) {
+        @unlink($temp);
+        return false;
+    }
+    return true;
+}
+
+function readIpProviderCache()
+{
+    $cache = readIpProviderJson(IP_PROVIDER_CACHE_FILE);
+    if (!is_array($cache)) {
+        $cache = [];
+    }
+    foreach (['positive', 'negative', 'cooldowns'] as $key) {
+        if (!isset($cache[$key]) || !is_array($cache[$key])) {
+            $cache[$key] = [];
+        }
+    }
+    $now = time();
+    foreach (['positive', 'negative', 'cooldowns'] as $section) {
+        foreach ($cache[$section] as $key => $entry) {
+            if (!is_array($entry) || !isset($entry['expires']) ||
+                (int) $entry['expires'] <= $now) {
+                unset($cache[$section][$key]);
+            }
+        }
+    }
+    if (count($cache['positive']) > 5000) {
+        uasort($cache['positive'], function ($a, $b) {
+            return (int) ($a['expires'] ?? 0) <=> (int) ($b['expires'] ?? 0);
+        });
+        $cache['positive'] = array_slice($cache['positive'], -5000, null, true);
+    }
+    if (count($cache['negative']) > 5000) {
+        uasort($cache['negative'], function ($a, $b) {
+            return (int) ($a['expires'] ?? 0) <=> (int) ($b['expires'] ?? 0);
+        });
+        $cache['negative'] = array_slice($cache['negative'], -5000, null, true);
+    }
+    if (count($cache['cooldowns']) > 100) {
+        uasort($cache['cooldowns'], function ($a, $b) {
+            return (int) ($a['expires'] ?? 0) <=> (int) ($b['expires'] ?? 0);
+        });
+        $cache['cooldowns'] = array_slice($cache['cooldowns'], -100, null, true);
+    }
+    return $cache;
+}
+
+function providerCacheKey($ip)
+{
+    return hash('sha256', $ip);
+}
+
+function getPositiveProviderCache($ip)
+{
+    $cache = readIpProviderCache();
+    $key = providerCacheKey($ip);
+    $entry = $cache['positive'][$key] ?? null;
+    if (!is_array($entry) || !isset($entry['expires'], $entry['response']) ||
+        (int) $entry['expires'] <= time()) {
+        return null;
+    }
+    $response = is_array($entry['response']) ? $entry['response'] : null;
+    if (!is_array($response)) {
+        return null;
+    }
+    $response['processedString'] = $ip;
+    $raw = is_array($response['rawIspInfo'] ?? null)
+        ? $response['rawIspInfo']
+        : [];
+    $isp = normalizeIspName($raw);
+    $location = is_array($response['location'] ?? null)
+        ? $response['location']
+        : null;
+    $countryCode = is_array($location)
+        ? normalizeIpInfoCountryCode($location)
+        : null;
+    $countryName = is_array($location)
+        ? normalizeIpInfoCountryName($location)
+        : null;
+    $processedCountry = $countryCode ?: $countryName;
+    if ($isp !== null) {
+        $response['processedString'] .= ' - ' . $isp;
+        if ($processedCountry !== null) {
+            $response['processedString'] .= ', ' . $processedCountry;
+        }
+    } elseif ($processedCountry !== null) {
+        $response['processedString'] .= ' - ' . $processedCountry;
+    }
+    return $response;
+}
+
+function sanitizeProviderCacheResponse($response)
+{
+    if (!is_array($response)) {
+        return null;
+    }
+    unset($response['processedString']);
+    if (isset($response['rawIspInfo']) && is_array($response['rawIspInfo'])) {
+        foreach (['ip', 'hostname', 'loc', 'postal', 'timezone'] as $key) {
+            unset($response['rawIspInfo'][$key]);
+        }
+    }
+    return $response;
+}
+
+function modifyIpProviderCache($callback)
+{
+    $lock = @fopen(IP_PROVIDER_CACHE_LOCK_FILE, 'c');
+    if (!is_resource($lock)) {
+        $cache = readIpProviderCache();
+        $callback($cache);
+        return writeIpProviderJson(IP_PROVIDER_CACHE_FILE, $cache);
+    }
+    if (!flock($lock, LOCK_EX)) {
+        fclose($lock);
+        return false;
+    }
+    $cache = readIpProviderCache();
+    $callback($cache);
+    $written = writeIpProviderJson(IP_PROVIDER_CACHE_FILE, $cache);
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return $written;
+}
+
+function setPositiveProviderCache($ip, $response)
+{
+    $ttl = 21600;
+    $registry = readIpProviderJson(IP_PROVIDER_REGISTRY_FILE);
+    if (is_array($registry) && isset($registry['positive_cache_ttl_seconds'])) {
+        $ttl = max(1, (int) $registry['positive_cache_ttl_seconds']);
+    }
+    $cachedResponse = sanitizeProviderCacheResponse($response);
+    if (!is_array($cachedResponse)) {
+        return;
+    }
+    modifyIpProviderCache(function (&$cache) use ($ttl, $ip, $cachedResponse) {
+        $cache['positive'][providerCacheKey($ip)] = [
+            'expires' => time() + $ttl,
+            'response' => $cachedResponse,
+        ];
+    });
+}
+
+function getNegativeProviderCache($ip)
+{
+    $cache = readIpProviderCache();
+    $key = providerCacheKey($ip);
+    $entry = $cache['negative'][$key] ?? null;
+    return is_array($entry) && isset($entry['expires']) &&
+        (int) $entry['expires'] > time();
+}
+
+function setNegativeProviderCache($ip)
+{
+    $ttl = 300;
+    $registry = readIpProviderJson(IP_PROVIDER_REGISTRY_FILE);
+    if (is_array($registry) && isset($registry['negative_cache_ttl_seconds'])) {
+        $ttl = max(1, (int) $registry['negative_cache_ttl_seconds']);
+    }
+    modifyIpProviderCache(function (&$cache) use ($ttl, $ip) {
+        $cache['negative'][providerCacheKey($ip)] = [
+            'expires' => time() + $ttl,
+        ];
+    });
+}
+
+function isProviderCoolingDown($providerId)
+{
+    $cache = readIpProviderCache();
+    $entry = $cache['cooldowns'][$providerId] ?? null;
+    return is_array($entry) && isset($entry['expires']) &&
+        (int) $entry['expires'] > time();
+}
+
+function setProviderCooldown($providerId)
+{
+    $ttl = 900;
+    $registry = readIpProviderJson(IP_PROVIDER_REGISTRY_FILE);
+    if (is_array($registry) && isset($registry['cooldown_seconds'])) {
+        $ttl = max(1, (int) $registry['cooldown_seconds']);
+    }
+    modifyIpProviderCache(function (&$cache) use ($ttl, $providerId) {
+        $cache['cooldowns'][$providerId] = [
+            'expires' => time() + $ttl,
+        ];
+    });
+}
+
+function loadIpProviderRegistry()
+{
+    $registry = readIpProviderJson(IP_PROVIDER_REGISTRY_FILE);
+    if (!is_array($registry) || !isset($registry['providers']) ||
+        !is_array($registry['providers'])) {
+        return [
+            'provider_timeout_seconds' => 1.5,
+            'max_attempts' => 8,
+            'positive_cache_ttl_seconds' => 21600,
+            'negative_cache_ttl_seconds' => 300,
+            'cooldown_seconds' => 900,
+            'providers' => [],
+        ];
+    }
+    return $registry;
+}
+
+function providerHttpGet($url, $timeoutSeconds)
+{
+    if (isset($GLOBALS['getIP_provider_http_get']) &&
+        is_callable($GLOBALS['getIP_provider_http_get'])) {
+        $result = call_user_func(
+            $GLOBALS['getIP_provider_http_get'],
+            $url,
+            $timeoutSeconds
+        );
+        return is_string($result) ? $result : null;
+    }
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => max(0.1, (float) $timeoutSeconds),
+            'ignore_errors' => true,
+        ],
+        'ssl' => ['verify_peer' => true, 'verify_peer_name' => true],
+    ]);
+    $json = @file_get_contents($url, false, $context);
+    return is_string($json) ? $json : null;
+}
+
+function providerString($value)
+{
+    if (is_string($value) || is_numeric($value)) {
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
+    }
+    return null;
+}
+
+function providerNestedValue($data, $path)
+{
+    $value = $data;
+    foreach (explode('.', $path) as $key) {
+        if (!is_array($value) || !array_key_exists($key, $value)) {
+            return null;
+        }
+        $value = $value[$key];
+    }
+    return $value;
+}
+
+function roundProviderCoordinate($value)
+{
+    if (!is_numeric($value)) {
+        return null;
+    }
+    $value = round((float) $value, 3);
+    if ($value == 0.0) {
+        $value = 0.0;
+    }
+    return $value;
+}
+
+function normalizeProviderResult($providerId, $data, $ip)
+{
+    if (!is_array($data)) {
+        return null;
+    }
+
+    $isp = null;
+    $city = null;
+    $region = null;
+    $countryName = null;
+    $countryCode = null;
+    $latitude = null;
+    $longitude = null;
+    $postal = null;
+    $timezone = null;
+
+    switch ($providerId) {
+        case 'ipinfo':
+            $mapped = [
+                'org' => $data['org'] ?? null,
+                'asn' => $data['asn'] ?? null,
+                'as_name' => $data['as_name'] ?? null,
+            ];
+            $isp = normalizeIspName($mapped);
+            $city = normalizeIpInfoCityName($data);
+            $region = normalizeIpInfoRegionName($data);
+            $countryName = normalizeIpInfoCountryName($data);
+            $countryCode = normalizeIpInfoCountryCode($data);
+            $coordinates = normalizeIpInfoCoordinates($data);
+            $postal = providerString($data['postal'] ?? null);
+            $timezone = providerString($data['timezone'] ?? null);
+            break;
+
+        case 'ipwhois':
+            if (($data['success'] ?? true) === false) {
+                return null;
+            }
+            $isp = providerString(providerNestedValue($data, 'connection.org')) ??
+                providerString($data['isp'] ?? null) ??
+                providerString($data['org'] ?? null);
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['region'] ?? null);
+            $countryName = providerString($data['country'] ?? null);
+            $countryCode = providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'freeipapi':
+            $isp = providerString($data['asnOrganization'] ?? null) ??
+                providerString($data['asn'] ?? null);
+            $city = providerString($data['cityName'] ?? null);
+            $region = providerString($data['regionName'] ?? null);
+            $countryName = providerString($data['countryName'] ?? null);
+            $countryCode = providerString($data['countryCode'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'iplocate':
+            $isp = providerString(providerNestedValue($data, 'network.autonomous_system_organization'));
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['subdivision'] ?? null);
+            $countryName = providerString($data['country_name'] ?? null);
+            $countryCode = providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'ip2location':
+            $isp = providerString($data['asn'] ?? null) ??
+                providerString(providerNestedValue($data, 'asn.name'));
+            $city = providerString($data['city_name'] ?? null) ??
+                providerString($data['city'] ?? null);
+            $region = providerString($data['region_name'] ?? null) ??
+                providerString($data['region'] ?? null);
+            $countryName = providerString($data['country_name'] ?? null);
+            $countryCode = providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'ipapiis':
+            $isp = providerString(providerNestedValue($data, 'company.name')) ??
+                providerString(providerNestedValue($data, 'network.asn_name')) ??
+                providerString(providerNestedValue($data, 'asn.name'));
+            $city = providerString(providerNestedValue($data, 'location.city'));
+            $region = providerString(providerNestedValue($data, 'location.region'));
+            $countryName = providerString(providerNestedValue($data, 'location.country'));
+            $countryCode = providerString(providerNestedValue($data, 'location.country_code'));
+            $latitude = roundProviderCoordinate(providerNestedValue($data, 'location.latitude'));
+            $longitude = roundProviderCoordinate(providerNestedValue($data, 'location.longitude'));
+            break;
+
+        case 'dbip':
+            $isp = providerString($data['asn'] ?? null) ??
+                providerString($data['organization'] ?? null);
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['stateProv'] ?? null) ??
+                providerString($data['region'] ?? null);
+            $countryName = providerString($data['countryName'] ?? null);
+            $countryCode = providerString($data['countryCode'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'geojs':
+            $isp = providerString($data['organization'] ?? null) ??
+                providerString($data['asn'] ?? null);
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['region'] ?? null);
+            $countryName = providerString($data['country'] ?? null);
+            $countryCode = providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'geolocationdb':
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['state'] ?? null);
+            $countryName = providerString($data['country_name'] ?? null);
+            $countryCode = providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        case 'iplocation':
+            $isp = providerString($data['isp'] ?? null) ??
+                providerString($data['asn'] ?? null);
+            $city = providerString($data['city'] ?? null);
+            $region = providerString($data['region_name'] ?? null);
+            $countryName = providerString($data['country_name'] ?? null);
+            $countryCode = providerString($data['country_code2'] ?? null) ??
+                providerString($data['country_code'] ?? null);
+            $latitude = roundProviderCoordinate($data['latitude'] ?? null);
+            $longitude = roundProviderCoordinate($data['longitude'] ?? null);
+            break;
+
+        default:
+            return null;
+    }
+
+    if (isset($coordinates) && is_array($coordinates)) {
+        $latitude = roundProviderCoordinate($coordinates[0]);
+        $longitude = roundProviderCoordinate($coordinates[1]);
+    }
+    if (is_string($countryCode)) {
+        $countryCode = strtoupper($countryCode);
+        if (!preg_match('/^[A-Z]{2}$/', $countryCode)) {
+            $countryCode = null;
+        }
+    }
+    if ($countryName === null && $countryCode !== null) {
+        $countryName = $countryCode;
+    }
+    $latitude = is_numeric($latitude) ? roundProviderCoordinate($latitude) : null;
+    $longitude = is_numeric($longitude) ? roundProviderCoordinate($longitude) : null;
+    if ($latitude !== null && ($latitude < -90.0 || $latitude > 90.0)) {
+        $latitude = null;
+    }
+    if ($longitude !== null && ($longitude < -180.0 || $longitude > 180.0)) {
+        $longitude = null;
+    }
+
+    $location = null;
+    $locationData = [
+        'city' => $city,
+        'region' => $region,
+        'country' => $countryName,
+        'country_code' => $countryCode,
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+    ];
+    $location = normalizeApproximateLocation([
+        'city' => $city,
+        'region' => $region,
+        'country' => $countryName,
+        'countryCode' => $countryCode,
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+    ], $providerId);
+    if ($isp === null && $location === null) {
+        return null;
+    }
+
+    $processedCountry = $countryCode ?: $countryName;
+    $processed = $ip;
+    if ($isp !== null) {
+        $processed .= ' - ' . $isp;
+        if ($processedCountry !== null) {
+            $processed .= ', ' . $processedCountry;
+        }
+    } elseif ($processedCountry !== null) {
+        $processed .= ' - ' . $processedCountry;
+    }
+
+    $rawIspInfo = ['ip' => $ip];
+    if ($hostname = providerString($data['hostname'] ?? null)) {
+        $rawIspInfo['hostname'] = $hostname;
+    }
+    if ($city !== null) {
+        $rawIspInfo['city'] = $city;
+    }
+    if ($region !== null) {
+        $rawIspInfo['region'] = $region;
+    }
+    if ($countryName !== null) {
+        $rawIspInfo['country_name'] = $countryName;
+    }
+    if ($countryCode !== null) {
+        $rawIspInfo['country'] = $countryCode;
+        $rawIspInfo['country_code'] = $countryCode;
+    }
+    if ($latitude !== null && $longitude !== null) {
+        $rawIspInfo['loc'] = $latitude . ',' . $longitude;
+    }
+    if ($isp !== null) {
+        $rawIspInfo['org'] = $isp;
+        $rawIspInfo['as_name'] = $isp;
+    }
+    if ($postal !== null) {
+        $rawIspInfo['postal'] = $postal;
+    }
+    if ($timezone !== null) {
+        $rawIspInfo['timezone'] = $timezone;
+    }
+    $rawIspInfo['source'] = $providerId;
+
+    return [
+        'processedString' => $processed,
+        'rawIspInfo' => $rawIspInfo,
+        'location' => $location,
+    ];
+}
+
+function providerUrlFor($provider, $ip)
+{
+    $urlTemplate = $provider['url_template'] ?? '';
+    if (!is_string($urlTemplate) || strpos($urlTemplate, '{ip}') === false) {
+        return null;
+    }
+    $url = str_replace('{ip}', rawurlencode($ip), $urlTemplate);
+    if (($provider['id'] ?? '') === 'ipinfo') {
+        $apiKey = getIpInfoApiKey();
+        if ($apiKey !== '') {
+            $url .= (strpos($url, '?') === false ? '?' : '&') .
+                'token=' . rawurlencode($apiKey);
+        }
+    }
+    return $url;
+}
+
+function mergeProviderResponseWithLocal($localJson, $providerResponse)
+{
+    if (!is_array($providerResponse)) {
+        return is_string($localJson) ? json_decode($localJson, true) : null;
+    }
+    $local = is_string($localJson) ? json_decode($localJson, true) : null;
+    if (!is_array($local)) {
+        return $providerResponse;
+    }
+
+    $localRaw = is_array($local['rawIspInfo'] ?? null)
+        ? $local['rawIspInfo']
+        : [];
+    $providerRaw = is_array($providerResponse['rawIspInfo'] ?? null)
+        ? $providerResponse['rawIspInfo']
+        : [];
+    $raw = array_replace_recursive($localRaw, $providerRaw);
+
+    $localLocation = is_array($local['location'] ?? null)
+        ? $local['location']
+        : null;
+    $providerLocation = is_array($providerResponse['location'] ?? null)
+        ? $providerResponse['location']
+        : null;
+    $location = mergeApproximateLocations($localLocation, $providerLocation);
+
+    $localIsp = normalizeIspName($localRaw);
+    $providerIsp = normalizeIspName($providerRaw);
+    $isp = $localIsp ?: $providerIsp;
+    $countryCode = is_array($location)
+        ? normalizeIpInfoCountryCode($location)
+        : null;
+    $countryName = is_array($location)
+        ? normalizeIpInfoCountryName($location)
+        : null;
+    $ip = providerString($localRaw['ip'] ?? null) ??
+        providerString($providerRaw['ip'] ?? null) ??
+        '';
+
+    $processed = $ip;
+    $processedCountry = $countryCode ?: $countryName;
+    if ($isp !== null) {
+        $processed .= ' - ' . $isp;
+        if ($processedCountry !== null) {
+            $processed .= ', ' . $processedCountry;
+        }
+    } elseif ($processedCountry !== null) {
+        $processed .= ' - ' . $processedCountry;
+    }
+
+    $response = [
+        'processedString' => $processed,
+        'rawIspInfo' => $raw,
+    ];
+    if ($location !== null) {
+        $response['location'] = $location;
+    }
+    return $response;
+}
+
+function getIspInfoProviderFallback($ip)
+{
+    if (isIpInfoDisabled()) {
+        return null;
+    }
+    if (!isPublicIpAddress($ip)) {
+        return null;
+    }
+    $cached = getPositiveProviderCache($ip);
+    if (is_array($cached)) {
+        return json_encode($cached);
+    }
+    if (getNegativeProviderCache($ip)) {
+        return null;
+    }
+
+    $localJson = getIspInfo_ipinfoOfflineDb($ip);
+    $local = is_string($localJson) ? json_decode($localJson, true) : null;
+    $localComplete = is_array($local) &&
+        isset($local['location']['city'], $local['location']['country']) &&
+        is_array(normalizeIpInfoCoordinates($local['location']));
+    if ($localComplete) {
+        setPositiveProviderCache($ip, $local);
+        return $localJson;
+    }
+
+    $registry = loadIpProviderRegistry();
+    $timeout = isset($registry['provider_timeout_seconds'])
+        ? (float) $registry['provider_timeout_seconds']
+        : 1.5;
+    $maxAttempts = isset($registry['max_attempts'])
+        ? max(1, min(8, (int) $registry['max_attempts']))
+        : 8;
+    $attempted = 0;
+    $providerResponse = null;
+
+    foreach ($registry['providers'] as $provider) {
+        if ($attempted >= $maxAttempts) {
+            break;
+        }
+        if (($provider['enabled'] ?? false) !== true) {
+            continue;
+        }
+        $providerId = $provider['id'] ?? '';
+        if ($providerId === '' || isProviderCoolingDown($providerId)) {
+            continue;
+        }
+        $attempted++;
+        $url = providerUrlFor($provider, $ip);
+        if (!is_string($url)) {
+            setProviderCooldown($providerId);
+            continue;
+        }
+        $json = providerHttpGet($url, $timeout);
+        if (!is_string($json)) {
+            setProviderCooldown($providerId);
+            continue;
+        }
+        $data = json_decode($json, true);
+        $normalized = normalizeProviderResult(
+            $provider['normalizer'] ?? $providerId,
+            $data,
+            $ip
+        );
+        if (!is_array($normalized)) {
+            setProviderCooldown($providerId);
+            continue;
+        }
+        $providerResponse = $normalized;
+        break;
+    }
+
+    $response = mergeProviderResponseWithLocal($localJson, $providerResponse);
+    if (is_array($response)) {
+        setPositiveProviderCache($ip, $response);
+        return json_encode($response);
+    }
+    setNegativeProviderCache($ip);
+    return null;
 }
 
 function readIpInfoMmdb($ip, $path)
@@ -814,7 +1580,7 @@ function getIspInfo_ipinfoOfflineDb($ip)
 
     $response = [
         'processedString' => $processedString,
-        'rawIspInfo' => $rawData,
+        'rawIspInfo' => sanitizeIpInfoRawIspInfo($rawData, 'offline_mmdb'),
     ];
     if ($location !== null) {
         $response['location'] = $location;
@@ -853,16 +1619,11 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
             if (is_string($localIpInfo)) {
                 echo formatResponse_simple($ip, $localIpInfo);
             } else {
-                $r = getIspInfo_ipinfoApi($ip);
+                $r = getIspInfoProviderFallback($ip);
                 if (!is_null($r)) {
                     echo $r;
                 } else {
-                    $r = getIspInfo_ipinfoOfflineDb($ip);
-                    if (!is_null($r)) {
-                        echo $r;
-                    } else {
-                        echo formatResponse_simple($ip);
-                    }
+                    echo formatResponse_simple($ip);
                 }
             }
         }

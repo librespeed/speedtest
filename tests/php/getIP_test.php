@@ -15,6 +15,10 @@ function testGetIpInfo($name, $condition)
 
 $keyFile = dirname(__DIR__, 2) . '/backend/getIP_ipInfo_apikey.php';
 $originalKeyFile = file_exists($keyFile) ? file_get_contents($keyFile) : null;
+$providerCacheFile = IP_PROVIDER_CACHE_FILE;
+$originalProviderCache = file_exists($providerCacheFile)
+    ? file_get_contents($providerCacheFile)
+    : null;
 
 testGetIpInfo(
     'unauthenticated IPinfo URL omits token',
@@ -43,7 +47,7 @@ testGetIpInfo(
     && $apiShapeLocation['region'] === 'Indiana'
     && $apiShapeLocation['country'] === 'US'
     && $apiShapeLocation['countryCode'] === 'US'
-    && $apiShapeLocation['latitude'] === 39.7684
+    && $apiShapeLocation['latitude'] === 39.768
     && $apiShapeLocation['longitude'] === -86.1580
 );
 
@@ -251,6 +255,128 @@ testGetIpInfo(
     normalizeIpInfoCoordinates(['loc' => '91.0,-86.1580']) === null
 );
 
+testGetIpInfo(
+    'CGNAT and deprecated site-local IPv6 bypass providers',
+    !isPublicIpAddress('100.64.0.1')
+    && !isPublicIpAddress('fec0::1')
+);
+
+testGetIpInfo(
+    'public IP remains provider eligible',
+    isPublicIpAddress('128.94.2.134')
+);
+
+$trustedProxyBackup = [
+    'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
+    'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+];
+putenv('TRUSTED_PROXIES=10.0.0.0/8');
+$_SERVER['REMOTE_ADDR'] = '10.1.2.3';
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.10';
+testGetIpInfo(
+    'trusted proxy forwarding is honored',
+    getClientIp() === '203.0.113.10'
+);
+putenv('TRUSTED_PROXIES=');
+$_SERVER['REMOTE_ADDR'] = '10.1.2.3';
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '203.0.113.11';
+testGetIpInfo(
+    'untrusted forwarding header is ignored',
+    getClientIp() === '10.1.2.3'
+);
+foreach ($trustedProxyBackup as $key => $value) {
+    if ($value === null) {
+        unset($_SERVER[$key]);
+    } else {
+        $_SERVER[$key] = $value;
+    }
+}
+
+$providerResult = normalizeProviderResult('ipwhois', [
+    'success' => true,
+    'city' => 'Boydton',
+    'region' => 'Virginia',
+    'country' => 'United States',
+    'country_code' => 'US',
+    'latitude' => 36.66764,
+    'longitude' => -78.38754,
+    'connection' => ['org' => 'Microsoft Corporation'],
+], '128.94.2.134');
+testGetIpInfo(
+    'provider result is normalized and coordinates are rounded',
+    is_array($providerResult)
+    && $providerResult['location']['city'] === 'Boydton'
+    && $providerResult['location']['latitude'] === 36.668
+    && $providerResult['location']['longitude'] === -78.388
+    && $providerResult['location']['source'] === 'ipwhois'
+);
+testGetIpInfo(
+    'provider result does not retain raw provider payload',
+    is_array($providerResult)
+    && !isset($providerResult['rawIspInfo']['success'])
+    && isset($providerResult['rawIspInfo']['source'])
+);
+
+@unlink(IP_PROVIDER_CACHE_FILE);
+
+setPositiveProviderCache('203.0.113.7', $providerResult);
+$providerCachedResult = getPositiveProviderCache('203.0.113.7');
+testGetIpInfo(
+    'provider positive cache retains normalized response',
+    is_array($providerCachedResult)
+    && isset($providerCachedResult['rawIspInfo']['source'])
+    && isset($providerCachedResult['location']['city'])
+    && !isset($providerCachedResult['rawIspInfo']['ip'])
+    && !isset($providerCachedResult['rawIspInfo']['loc'])
+);
+setNegativeProviderCache('198.51.100.7');
+testGetIpInfo(
+    'provider negative cache is enforced',
+    getNegativeProviderCache('198.51.100.7')
+);
+$GLOBALS['getIP_provider_http_get'] = function ($url, $timeoutSeconds) {
+    if (strpos($url, 'ipinfo.io') !== false) {
+        return json_encode(['error' => 'unavailable']);
+    }
+    return json_encode([
+        'success' => true,
+        'city' => 'Boydton',
+        'region' => 'Virginia',
+        'country' => 'United States',
+        'country_code' => 'US',
+        'latitude' => 36.66764,
+        'longitude' => -78.38754,
+        'connection' => ['org' => 'Microsoft Corporation'],
+    ]);
+};
+$providerFallbackResponse = json_decode(
+    getIspInfoProviderFallback('128.94.2.134'),
+    true
+);
+testGetIpInfo(
+    'ordered provider fallback adds normalized location',
+    is_array($providerFallbackResponse)
+    && isset($providerFallbackResponse['location']['city'])
+    && $providerFallbackResponse['location']['country'] === 'United States'
+    && isset($providerFallbackResponse['location']['latitude'])
+);
+
+setProviderCooldown('ipwhois');
+testGetIpInfo(
+    'provider cooldown is enforced',
+    isProviderCoolingDown('ipwhois')
+);
+unset($GLOBALS['getIP_provider_http_get']);
+
+$GLOBALS['getIP_provider_http_get'] = function () {
+    throw new Exception('reserved IP provider call must not occur');
+};
+testGetIpInfo(
+    'reserved IP bypasses provider fallback',
+    getIspInfoProviderFallback('100.64.0.1') === null
+);
+unset($GLOBALS['getIP_provider_http_get']);
+
 putenv('DISABLE_IPINFO=true');
 testGetIpInfo('DISABLE_IPINFO disables metadata', isIpInfoDisabled());
 $GLOBALS['getIP_http_get'] = function ($url) {
@@ -415,6 +541,11 @@ if ($originalKeyFile !== null) {
     file_put_contents($keyFile, $originalKeyFile);
 } else {
     @unlink($keyFile);
+}
+if ($originalProviderCache !== null) {
+    file_put_contents($providerCacheFile, $originalProviderCache);
+} else {
+    @unlink($providerCacheFile);
 }
 unset($GLOBALS['getIP_http_get']);
 

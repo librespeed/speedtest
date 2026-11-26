@@ -81,6 +81,7 @@ Here's a list of additional environment variables available in this mode:
 * __`IPINFO_ASN_DB`__: Optional path to an offline ASN MMDB. Default: `backend/country_asn.mmdb`.
 * __`IPINFO_COUNTRY_DB`__: Optional path to an offline country MMDB. Default: the configured ASN database.
 * __`IPINFO_CITY_DB`__: Optional path to a compatible IPinfo or MaxMind city MMDB for approximate city, region, country, and coordinates.
+* __`TRUSTED_PROXIES`__: Optional comma-separated proxy IP/CIDR networks (for example `10.0.0.0/8,192.168.0.0/16`). Forwarding headers are ignored unless the immediate peer matches this list.
 * __`WEBPORT`__: Allows choosing a custom port for the included web server. Default value: `8080`. Note that you will have to expose it through docker with the -p argument. This is not the port where the service is exposed outside docker!
 
 If telemetry is enabled, a stats page will be available at `http://your.server/results/stats.php`, but a password must be specified.
