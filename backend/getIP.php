@@ -380,6 +380,26 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
 
     $merged = $apiLocation;
     if ($primaryHasPlace) {
+        $primaryCity = normalizeIpInfoText($apiLocation['city'] ?? null);
+        $fallbackCity = normalizeIpInfoText($offlineLocation['city'] ?? null);
+        $primaryRegion = normalizeIpInfoText($apiLocation['region'] ?? null);
+        $fallbackRegion = normalizeIpInfoText($offlineLocation['region'] ?? null);
+        $cityConflict = is_string($primaryCity) && is_string($fallbackCity) &&
+            strcasecmp($primaryCity, $fallbackCity) !== 0;
+        $regionConflict = is_string($primaryRegion) && is_string($fallbackRegion) &&
+            strcasecmp($primaryRegion, $fallbackRegion) !== 0;
+        $primaryCoordinates = normalizeIpInfoCoordinates($apiLocation);
+        $fallbackCoordinates = normalizeIpInfoCoordinates($offlineLocation);
+        $coordinateConflict =
+            (is_array($primaryCoordinates) &&
+             is_array($fallbackCoordinates) &&
+             abs($primaryCoordinates[0] - $fallbackCoordinates[0]) > 0.01) ||
+            (is_array($primaryCoordinates) &&
+             is_array($fallbackCoordinates) &&
+             abs($primaryCoordinates[1] - $fallbackCoordinates[1]) > 0.01);
+        if ($fallbackHasPlace && ($cityConflict || $regionConflict || $coordinateConflict)) {
+            return $apiLocation;
+        }
         foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon'] as $key) {
             if (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
                 $merged[$key] = $offlineLocation[$key];
@@ -1364,6 +1384,13 @@ function mergeEarlierProviderLocation($providerLocation, $earlierLocation)
     $earlierCode = $earlierLocation['countryCode'] ?? null;
     if (is_string($providerCode) && is_string($earlierCode) &&
         strtoupper($providerCode) !== strtoupper($earlierCode)) {
+        $providerHasPlace = array_key_exists('city', $providerLocation) ||
+            array_key_exists('region', $providerLocation) ||
+            array_key_exists('latitude', $providerLocation) ||
+            array_key_exists('longitude', $providerLocation);
+        if ($providerHasPlace) {
+            return $providerLocation;
+        }
         return $earlierLocation;
     }
 

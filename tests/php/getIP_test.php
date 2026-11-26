@@ -194,6 +194,36 @@ testGetIpInfo(
     && $providerPlaceLocation['countryCode'] === 'US'
 );
 
+$sameCodePlaceConflict = mergeApproximateLocations(
+    [
+        'city' => 'Boydton',
+        'region' => 'Virginia',
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'latitude' => 36.6676,
+        'longitude' => -78.3875,
+        'approximate' => true,
+        'source' => 'ipwhois',
+    ],
+    [
+        'city' => 'Washington',
+        'region' => 'District of Columbia',
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'latitude' => 38.9072,
+        'longitude' => -77.0369,
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ]
+);
+testGetIpInfo(
+    'same-country MMDB place conflict keeps provider place',
+    $sameCodePlaceConflict['city'] === 'Boydton'
+    && $sameCodePlaceConflict['region'] === 'Virginia'
+    && $sameCodePlaceConflict['countryCode'] === 'US'
+    && abs($sameCodePlaceConflict['latitude'] - 36.6676) < 0.0001
+);
+
 $partialCityLocation = supplementLocationCountry(
     [
         'city' => 'London',
