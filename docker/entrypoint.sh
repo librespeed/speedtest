@@ -91,6 +91,8 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   if [ -f /servers.json ]; then
     echo "using mounted /servers.json for server-list.json"
     cp /servers.json /var/www/html/server-list.json
+    # default the frontend list to the mounted file so the classic design uses it too
+    SERVER_LIST_URL="${SERVER_LIST_URL:-server-list.json}"
   elif [ -n "$SERVER_LIST_URL" ]; then
     echo "no /servers.json found, relying on SERVER_LIST_URL"
   elif [ "$MODE" == "frontend" ]; then
@@ -99,7 +101,7 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
   else
     echo "no /servers.json found, create one for local host"
     # generate config for just the local server
-    echo '[{"name":"local","server":"/backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
+    echo '[{"name":"local","server":"backend",  "dlURL": "garbage.php", "ulURL": "empty.php", "pingURL": "empty.php", "getIpURL": "getIP.php", "sponsorName": "", "sponsorURL": "", "id":1 }]' > /var/www/html/server-list.json
   fi
   if [ ! -z "$SERVER_LIST_URL" ]; then
     echo "using SERVER_LIST_URL for frontend server list"
