@@ -115,10 +115,10 @@ $mergedLocation = mergeApproximateLocations(
     ]
 );
 testGetIpInfo(
-    'city MMDB country wins over conflicting ASN/API country',
-    $mergedLocation['city'] === 'London'
-    && $mergedLocation['country'] === 'United Kingdom'
-    && $mergedLocation['countryCode'] === 'GB'
+    'country conflict preserves primary API country',
+    !array_key_exists('city', $mergedLocation)
+    && $mergedLocation['country'] === 'US'
+    && $mergedLocation['countryCode'] === 'US'
 );
 
 $mergedCountryLocation = mergeApproximateLocations(
@@ -136,9 +136,9 @@ $mergedCountryLocation = mergeApproximateLocations(
     ]
 );
 testGetIpInfo(
-    'configured country MMDB replaces conflicting API country',
-    $mergedCountryLocation['country'] === 'United Kingdom'
-    && $mergedCountryLocation['countryCode'] === 'GB'
+    'country-only fallback does not replace primary API country',
+    $mergedCountryLocation['country'] === 'US'
+    && $mergedCountryLocation['countryCode'] === 'US'
 );
 
 $detailedApiLocation = mergeApproximateLocations(
@@ -164,6 +164,34 @@ testGetIpInfo(
     $detailedApiLocation['city'] === 'London'
     && $detailedApiLocation['country'] === 'United Kingdom'
     && $detailedApiLocation['countryCode'] === 'GB'
+);
+
+$providerPlaceLocation = mergeApproximateLocations(
+    [
+        'city' => 'Boydton',
+        'region' => 'Virginia',
+        'country' => 'United States',
+        'countryCode' => 'US',
+        'latitude' => 36.6676,
+        'longitude' => -78.3875,
+        'approximate' => true,
+        'source' => 'ipwhois',
+    ],
+    [
+        'city' => 'London',
+        'region' => 'England',
+        'country' => 'United Kingdom',
+        'countryCode' => 'GB',
+        'approximate' => true,
+        'source' => 'maxmind_mmdb',
+    ]
+);
+testGetIpInfo(
+    'conflicting country MMDB does not replace a complete provider place',
+    $providerPlaceLocation['city'] === 'Boydton'
+    && $providerPlaceLocation['region'] === 'Virginia'
+    && $providerPlaceLocation['country'] === 'United States'
+    && $providerPlaceLocation['countryCode'] === 'US'
 );
 
 $partialCityLocation = supplementLocationCountry(

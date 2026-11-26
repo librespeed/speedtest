@@ -362,59 +362,42 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
         return $apiLocation;
     }
 
-    $offlineSource = $offlineLocation['source'] ?? '';
-    $apiHasPlace = array_key_exists('city', $apiLocation) ||
-        array_key_exists('region', $apiLocation) ||
-        array_key_exists('latitude', $apiLocation) ||
-        array_key_exists('longitude', $apiLocation);
-    $offlineHasPlace = array_key_exists('city', $offlineLocation) ||
-        array_key_exists('region', $offlineLocation) ||
-        array_key_exists('latitude', $offlineLocation) ||
-        array_key_exists('longitude', $offlineLocation);
-    $countryOnlyFallback = !$offlineHasPlace && in_array(
-        $offlineSource,
-        ['ipinfo_country_mmdb', 'maxmind_country_mmdb', 'ipinfo_mmdb'],
-        true
-    );
-    if ($apiHasPlace && $countryOnlyFallback) {
-        foreach (['country', 'countryCode'] as $key) {
-            if (!array_key_exists($key, $apiLocation) && array_key_exists($key, $offlineLocation)) {
-                $apiLocation[$key] = $offlineLocation[$key];
-            }
-        }
-        $apiLocation['approximate'] = true;
-        if (!isset($apiLocation['source'])) {
-            $apiLocation['source'] = $apiLocation['source'] ?? 'ipinfo_api';
-        }
+    $primaryCode = normalizeIpInfoCountryCode($apiLocation);
+    $fallbackCode = normalizeIpInfoCountryCode($offlineLocation);
+    if (is_string($primaryCode) && is_string($fallbackCode) &&
+        $primaryCode !== $fallbackCode) {
         return $apiLocation;
     }
 
-    $preferOfflinePlace = in_array(
-        $offlineSource,
-        [
-            'ipinfo_city_mmdb',
-            'ipinfo_country_mmdb',
-            'maxmind_mmdb',
-            'maxmind_country_mmdb',
-        ],
-        true
-    );
+    $primaryHasPlace = array_key_exists('city', $apiLocation) ||
+        array_key_exists('region', $apiLocation) ||
+        array_key_exists('latitude', $apiLocation) ||
+        array_key_exists('longitude', $apiLocation);
+    $fallbackHasPlace = array_key_exists('city', $offlineLocation) ||
+        array_key_exists('region', $offlineLocation) ||
+        array_key_exists('latitude', $offlineLocation) ||
+        array_key_exists('longitude', $offlineLocation);
 
     $merged = $apiLocation;
-    foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon'] as $key) {
-        if ($preferOfflinePlace && array_key_exists($key, $offlineLocation)) {
-            $merged[$key] = $offlineLocation[$key];
-        } elseif (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
-            $merged[$key] = $offlineLocation[$key];
+    if ($primaryHasPlace) {
+        foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon'] as $key) {
+            if (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
+                $merged[$key] = $offlineLocation[$key];
+            }
         }
-    }
-
-    if ($preferOfflinePlace) {
         foreach (['country', 'countryCode'] as $key) {
+            if (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
+                $merged[$key] = $offlineLocation[$key];
+            }
+        }
+    } else if ($fallbackHasPlace) {
+        foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon',
+                  'country', 'countryCode'] as $key) {
             if (array_key_exists($key, $offlineLocation)) {
                 $merged[$key] = $offlineLocation[$key];
             }
         }
+        $merged['source'] = $offlineLocation['source'] ?? ($apiLocation['source'] ?? 'provider');
     } else {
         foreach (['country', 'countryCode'] as $key) {
             if (!array_key_exists($key, $merged) && array_key_exists($key, $offlineLocation)) {
@@ -424,12 +407,8 @@ function mergeApproximateLocations($apiLocation, $offlineLocation)
     }
 
     $merged['approximate'] = true;
-    if (!$apiHasPlace && $offlineHasPlace) {
-        $merged['source'] = $offlineSource;
-    } else {
-        $merged['source'] = $preferOfflinePlace
-            ? $offlineSource
-            : ($apiLocation['source'] ?? $offlineSource);
+    if (!isset($merged['source'])) {
+        $merged['source'] = $apiLocation['source'] ?? ($offlineLocation['source'] ?? 'provider');
     }
     return $merged;
 }
