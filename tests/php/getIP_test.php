@@ -210,6 +210,34 @@ testGetIpInfo(
     && $partialCityWithAsnCountry['countryCode'] === 'GB'
 );
 
+$earlierProviderLocation = [
+    'city' => 'London',
+    'region' => 'England',
+    'country' => 'United Kingdom',
+    'countryCode' => 'GB',
+    'latitude' => 51.5074,
+    'longitude' => -0.1278,
+    'approximate' => true,
+    'source' => 'iplocate',
+];
+$laterProviderLocation = [
+    'country' => 'United States',
+    'countryCode' => 'US',
+    'approximate' => true,
+    'source' => 'ipwhois',
+];
+$earlierPreservedLocation = mergeEarlierProviderLocation(
+    $laterProviderLocation,
+    $earlierProviderLocation
+);
+testGetIpInfo(
+    'later ISP-only provider does not replace earlier detailed location',
+    $earlierPreservedLocation['city'] === 'London'
+    && $earlierPreservedLocation['country'] === 'United Kingdom'
+    && $earlierPreservedLocation['countryCode'] === 'GB'
+    && $earlierPreservedLocation['latitude'] === 51.5074
+);
+
 $existingUkLocation = supplementLocationCountry(
     [
         'city' => 'London',

@@ -1363,6 +1363,59 @@ function providerUrlFor($provider, $ip)
     return $url;
 }
 
+function mergeEarlierProviderLocation($providerLocation, $earlierLocation)
+{
+    if (!is_array($providerLocation)) {
+        return $earlierLocation;
+    }
+    if (!is_array($earlierLocation)) {
+        return $providerLocation;
+    }
+
+    $providerHasPlace = array_key_exists('city', $providerLocation) ||
+        array_key_exists('region', $providerLocation) ||
+        array_key_exists('latitude', $providerLocation) ||
+        array_key_exists('longitude', $providerLocation);
+    $earlierHasPlace = array_key_exists('city', $earlierLocation) ||
+        array_key_exists('region', $earlierLocation) ||
+        array_key_exists('latitude', $earlierLocation) ||
+        array_key_exists('longitude', $earlierLocation);
+
+    $providerCode = $providerLocation['countryCode'] ?? null;
+    $earlierCode = $earlierLocation['countryCode'] ?? null;
+    if (is_string($providerCode) && is_string($earlierCode) &&
+        strtoupper($providerCode) !== strtoupper($earlierCode)) {
+        return $earlierLocation;
+    }
+
+    if (!$providerHasPlace && $earlierHasPlace) {
+        $merged = $earlierLocation;
+        if (!array_key_exists('country', $merged) && array_key_exists('country', $providerLocation)) {
+            $merged['country'] = $providerLocation['country'];
+        }
+        if (!array_key_exists('countryCode', $merged) && array_key_exists('countryCode', $providerLocation)) {
+            $merged['countryCode'] = $providerLocation['countryCode'];
+        }
+        $merged['source'] = $earlierLocation['source'] ?? ($providerLocation['source'] ?? 'provider');
+        $merged['approximate'] = true;
+        return $merged;
+    }
+
+    $merged = $providerLocation;
+    foreach (['city', 'region', 'latitude', 'longitude', 'lat', 'lon'] as $key) {
+        if (!array_key_exists($key, $merged) && array_key_exists($key, $earlierLocation)) {
+            $merged[$key] = $earlierLocation[$key];
+        }
+    }
+    foreach (['country', 'countryCode'] as $key) {
+        if (!array_key_exists($key, $merged) && array_key_exists($key, $earlierLocation)) {
+            $merged[$key] = $earlierLocation[$key];
+        }
+    }
+    $merged['approximate'] = true;
+    return $merged;
+}
+
 function mergeProviderResponseWithLocal($localJson, $providerResponse)
 {
     if (!is_array($providerResponse)) {
@@ -1503,6 +1556,26 @@ function getIspInfoProviderFallback($ip)
                 $locationOnlyProviderResponse = $normalized;
             }
             continue;
+        }
+        if (is_array($locationOnlyProviderResponse['location'] ?? null) &&
+            is_array($normalized['location'] ?? null)) {
+            $normalized['location'] = mergeEarlierProviderLocation(
+                $normalized['location'],
+                $locationOnlyProviderResponse['location']
+            );
+            $coordinates = normalizeIpInfoCoordinates($normalized['location']);
+            if (is_array($coordinates)) {
+                $normalized['rawIspInfo']['loc'] =
+                    $coordinates[0] . ',' . $coordinates[1];
+            }
+        } elseif (is_array($locationOnlyProviderResponse['location'] ?? null) &&
+            !is_array($normalized['location'] ?? null)) {
+            $normalized['location'] = $locationOnlyProviderResponse['location'];
+            $coordinates = normalizeIpInfoCoordinates($normalized['location']);
+            if (is_array($coordinates)) {
+                $normalized['rawIspInfo']['loc'] =
+                    $coordinates[0] . ',' . $coordinates[1];
+            }
         }
         $providerResponse = $normalized;
         break;
