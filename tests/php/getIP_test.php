@@ -29,6 +29,22 @@ testGetIpInfo(
     buildIpInfoApiUrl('128.94.2.134', 'test-secret') === 'https://ipinfo.io/128.94.2.134/json?token=test-secret'
 );
 
+putenv('IPINFO_APIKEY=environment-secret');
+testGetIpInfo(
+    'IPINFO_APIKEY environment variable supplies provider token',
+    getIpInfoApiKey() === 'environment-secret'
+);
+$environmentProviderUrl = providerUrlFor([
+    'id' => 'ipinfo',
+    'url_template' => 'https://ipinfo.io/{ip}/json',
+    'api_key_env' => 'IPINFO_APIKEY',
+], '128.94.2.134');
+testGetIpInfo(
+    'provider registry API key environment variable is applied',
+    strpos($environmentProviderUrl, 'token=environment-secret') !== false
+);
+putenv('IPINFO_APIKEY=');
+
 testGetIpInfo(
     'malformed loc has no coordinates',
     normalizeIpInfoCoordinates(['loc' => 'not-a-location']) === null

@@ -45,7 +45,7 @@ More videos will be added later.
 Server side, you'll need:
 
 * Apache 2 (nginx and IIS also supported). A fast internet connection is required (possibly gigabit), and the web server must accept large POST requests (up to 20MB)
-* PHP 5.4 or newer (8.0 required for ISP and distance detection), a 64-bit version is strongly recommended
+* PHP 8.0 or newer (required for provider fallback, ISP/distance detection, and JSON location handling), a 64-bit version is strongly recommended
 * OpenSSL and its PHP module (this is usually installed automatically by most distros)
 * If you want to store test results (telemetry), one of the following:
   * MySQL/MariaDB and its PHP PDO module
