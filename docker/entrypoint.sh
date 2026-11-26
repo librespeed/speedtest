@@ -124,7 +124,9 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     TITLE_ESCAPED=$(sed_escape "$TITLE_HTML_ESCAPED")
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g; s/<h1>LibreSpeed<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-classic.html
     sed -i "s/<title>LibreSpeed<\\/title>/<title>$TITLE_ESCAPED<\\/title>/g" /var/www/html/index.html
-    sed -i "s/<title>LibreSpeed - Free and Open Source Speedtest<\\/title>/<title>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title>/g; s/<h1>Free and Open Source Speedtest\\.<\\/h1>/<h1>$TITLE_ESCAPED<\\/h1>/g" /var/www/html/index-modern.html
+    # Match the content rather than the whole element so data-i18n attributes
+    # remain in place for the browser-side localization script.
+    sed -i "s/>LibreSpeed - Free and Open Source Speedtest<\\/title/>$TITLE_ESCAPED - Free and Open Source Speedtest<\\/title/g; s/>Free and Open Source Speedtest\\.<\\/h1/>$TITLE_ESCAPED<\\/h1/g" /var/www/html/index-modern.html
   fi
 
   # Replace modern page tagline if TAGLINE is set
@@ -133,7 +135,8 @@ if [[ "$MODE" == "frontend" || "$MODE" == "dual" ||  "$MODE" == "standalone" ]];
     TAGLINE_ONE_LINE=${TAGLINE_ONE_LINE//$'\n'/ }
     TAGLINE_HTML_ESCAPED=$(html_escape "$TAGLINE_ONE_LINE")
     TAGLINE_ESCAPED=$(sed_escape "$TAGLINE_HTML_ESCAPED")
-    sed -i "s/<p class=\"tagline\">No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p>/<p class=\"tagline\">$TAGLINE_ESCAPED<\\/p>/g" /var/www/html/index-modern.html
+    # Preserve class and data-i18n attributes while replacing the default text.
+    sed -i "s/>No Flash, No Java, No Websockets, No Bullsh\\*t<\\/p/>$TAGLINE_ESCAPED<\\/p/g" /var/www/html/index-modern.html
   fi
 
   # Support legacy EMAIL env var as fallback for GDPR_EMAIL
