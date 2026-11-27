@@ -2,6 +2,14 @@
 
 A docker version of LibreSpeed is available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest)
 
+## PHP security updates
+
+LibreSpeed's PHP endpoints run with the PHP runtime supplied by the host or container. The [November 18, 2026 announcement](https://www.php.net/archive/2026.php#2026-11-18-1) was advance notice of security releases published November 19. These releases cover vulnerabilities that can lead to remote code execution in certain configurations; this is a runtime exposure, not a vulnerability specific to LibreSpeed's PHP code.
+
+Use a PHP build containing the fixes: PHP 8.2.36, 8.3.37, 8.4.28, 8.5.13, or 8.6.0, or a vendor build with equivalent backported fixes. Older unsupported PHP branches should be upgraded to a supported branch. The [CVE-2026-115560 advisory](https://www.php.net/security/advisories/cve-2026-115560) describes a session upload-progress issue that requires the feature to be enabled and the same session to be written using `php_binary` or `php_serialize` and later read using `php`. This mismatch can arise from changing the session serializer at runtime or from applications sharing a session store with different serializer settings; code execution depends on the reading application having a suitable gadget chain. A separate issue, [CVE-2026-126714](https://nvd.nist.gov/vuln/detail/CVE-2026-126714), can expose attacker-controlled upload-progress data to file-backed session handling when upload progress is enabled; code execution depends on the application having a suitable gadget chain. These are configuration-dependent PHP runtime risks, not evidence of a LibreSpeed-specific vulnerability.
+
+LibreSpeed does not use PHP's session upload-progress feature. Both supplied Dockerfiles disable it in `docker/librespeed-php.ini`, which mitigates that path but does not replace upgrading PHP. For manual installations, disable `session.upload_progress.enabled` in the PHP configuration used by the web server (for example, `php.ini` or the FPM pool configuration); changing it in application code is too late. For Docker deployments, pull and recreate containers from an image built with a patched PHP runtime. Updating the image tag alone does not update already-running containers.
+
 # Alpine Linux variant
 
 An Alpine Linux based docker version of LibreSpeed is also available here: [GitHub Packages](https://github.com/librespeed/speedtest/pkgs/container/speedtest) under all the tags that have the `-alpine` suffix. This variant is significantly smaller but can have slightly different behaviour due to its toolchain being based in [musl](https://en.wikipedia.org/wiki/Musl) libc as mentioned in [here](https://alpinelinux.org/about/).
